@@ -1,0 +1,11 @@
+formula,IC
+"WMA(Rsquare(Div(Greater($close, $change), EMA($volume, 30)), 12), 30)",0.14564076416893476
+"Mul(Med($change, 30), Greater($low, $open))",0.037136231081614055
+"Slope($vwap, 64)",0.036648725887289096
+"Max(EMA($change, 5), 12)",0.035372476627568025
+"Less(Slope($open, 30), IdxMax($low, 12))",0.03489116880736141
+"Slope($open, 30)",0.034777862345183194
+"Div($close, $volume)",0.034145013318932334
+"Std(Log(Sub(Less($amount, $high), Slope($vwap, 64))), 5)",0.033338316506875285
+"Mul(Slope(Log(Add($factor, $close)), 30), $close)",0.03315051225582678
+"Max(Mad(IdxMin(Var($open, 64), 12), 30), 64)",0.03290197455529235

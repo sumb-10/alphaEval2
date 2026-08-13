@@ -3,12 +3,13 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --output=out/slurm/%x-%j.log
 #
-# AlphaEval gplearn (fast runner) — one mining run per invocation.
+# AlphaEval gplearn (fast/tensor runner) — one mining run per invocation.
 #
 #   sbatch -p cpu1 scripts/slurm_gplearn.sbatch 2010-01-01 2019-12-31 1000 5 50 10
 #   sbatch -p cpu2 scripts/slurm_gplearn.sbatch 2010-01-01 2019-12-31 1000 5 50 10 7 csi300
+#   sbatch -p cpu1 scripts/slurm_gplearn.sbatch 2010-01-01 2019-12-31 1000 5 50 10 42 all tensor
 #
-# args: <start> <end> <pop> <gens> <hof> <ncomp> [seed=42] [market=all]
+# args: <start> <end> <pop> <gens> <hof> <ncomp> [seed=42] [market=all] [runner=fast|tensor]
 #
 # * partition은 제출 시 -p 로 지정 (cpu1: 48c/노드, cpu2: 256c/노드; GPU 불필요)
 # * out/slurm/ 은 제출 전에 존재해야 함 (Slurm이 로그 파일을 먼저 연다)
@@ -27,13 +28,14 @@ HOF="${5:?missing <hof>}"
 NCOMP="${6:?missing <ncomp>}"
 SEED="${7:-42}"
 MARKET="${8:-all}"
+RUNNER="${9:-fast}"          # fast = Qlib 배치조회(결과불변) | tensor = 패널 프리로드(10~18x)
 
 PY=/home1/sku07891/miniconda3/envs/AlphaEval38/bin/python
 
-echo "host=$(hostname) start=${START} end=${END} pop=${POP} gens=${GENS} hof=${HOF} ncomp=${NCOMP} seed=${SEED} market=${MARKET} cpus=${SLURM_CPUS_PER_TASK:-?}"
+echo "host=$(hostname) start=${START} end=${END} pop=${POP} gens=${GENS} hof=${HOF} ncomp=${NCOMP} seed=${SEED} market=${MARKET} runner=${RUNNER} cpus=${SLURM_CPUS_PER_TASK:-?}"
 $PY -c "import qlib, pandas, numpy, sklearn; print('preflight ok: qlib', qlib.__version__)"
 
-$PY scripts/run_gplearn_fast.py \
+$PY "scripts/run_gplearn_${RUNNER}.py" \
     --start_time "${START}" \
     --end_time "${END}" \
     --population_size "${POP}" \
@@ -42,4 +44,4 @@ $PY scripts/run_gplearn_fast.py \
     --n_components "${NCOMP}" \
     --seed "${SEED}" \
     --market "${MARKET}" \
-    --out "out/gplearn_fast_${MARKET}_seed${SEED}_${SLURM_JOB_ID:-local}"
+    --out "out/gplearn_${RUNNER}_${MARKET}_seed${SEED}_${SLURM_JOB_ID:-local}"

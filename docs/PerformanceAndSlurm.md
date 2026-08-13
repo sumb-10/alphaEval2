@@ -59,7 +59,9 @@
 "6,016개 종목 각각에 대해 표현식 재파싱·재계산 + 워커 프로세스 팬아웃 + 결과 concat"을 수행한다.
 즉 "미리 받아놓기"에 해당하는 올바른 처방은 다운로드가 아니라 **호출 중복 제거·캐싱·배칭**이며, 이것이 `scripts/fast_eval.py`가 하는 일이다.
 
-> 참고 — 더 근본적인 대안: `alphagen`처럼 raw 패널을 **한 번만** 텐서로 올리고 연산자를 메모리에서 직접 계산하는 방식(`alphagen/alphagen_qlib/stock_data.py`의 `StockData`)이 가장 빠르다. 다만 29개 Qlib 연산자를 재구현해야 하고 수치가 미세하게 달라질 수 있어, "결과 불변" 요구 범위 밖이므로 이번에는 채택하지 않았다.
+> 참고 — 더 근본적인 대안(구현됨): raw 패널을 **한 번만** 메모리에 올리고 29개 연산자를 직접 계산하는 텐서 트랙이 [`scripts/tensor_eval.py`](../scripts/tensor_eval.py)에 있다. qlib 0.9.0 소스의 의미론(min_periods=1, warm-up 좌/우 절단, Greater/Less=max/min, 최종 float32 캐스팅, Slope/Rsquare/Resi는 qlib Cython 직접 호출 등)을 미러링해 [`scripts/verify_tensor_eval.py`](../scripts/verify_tensor_eval.py) 기준 **연산자·합성식 37/37 float32 비트 단위 일치, IC 오차 ≤ 1e-17**(csi300, 일부 복합식은 all universe에서 ~1e-7)을 달성했다. 속도는 market=all에서 수식+IC 한 사이클 **12.9~41s → 0.7~4.2s (10~18×)**, 패널 적재 1회 ~49s. 단 이 트랙은 '결과 불변' **보장**이 아니라 '검증된 일치'이며, GP 실험에 쓰려면 fast runner의 평가기를 교체하는 추가 작업이 필요하다.
+>
+> 이 과정에서 발견한 qlib 재현성 특성 두 가지: (1) pandas `roll_skew`/`roll_kurt`가 배열 전체 평균으로 중심화하므로 **Skew/Kurt 값이 질의 구간의 오른쪽 끝(end_time)에 의존**한다 — 같은 날짜의 값이 질의 구간에 따라 달라질 수 있다. (2) rolling var/skew/kurt·EMA·Slope류는 스트리밍 누적이라 **warm-up 절단 위치(=트리의 extended window)에 값이 의존**한다. 원본 파이프라인도 동일 조건이므로 실험 내 일관성은 유지되지만, 구간이 다른 실험 간 factor 값 비교에는 주의.
 
 ### 1.4 구현: 결과 불변 최적화 (`scripts/`)
 

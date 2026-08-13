@@ -1,0 +1,11 @@
+formula,IC
+"Rsquare(Std(Var($factor, 6), 30), 5)",0.07482546331802799
+"Rsquare(Std(Var($factor, 6), 30), 5)",0.07482546331802799
+"Rsquare(Std(Var($factor, 6), 30), 5)",0.07482546331802799
+"Rsquare(Std(Var($factor, 6), 30), 5)",0.07482546331802799
+"Rsquare(Std(Var($factor, 6), 30), 5)",0.07482546331802799
+"Rsquare(Std(Var($factor, 6), 30), 5)",0.07482546331802799
+"Rsquare(Std(Var($factor, 6), 30), 5)",0.07482546331802799
+"Rsquare(Std(Var($factor, 6), 30), 5)",0.07482546331802799
+"Div(Less(Power($high, $change), Less(Rsquare(Std(Var($factor, 6), 30), 5), Less($close, $change))), $volume)",0.07464422134665537
+"Div(Less(Rsquare(Std(Var($factor, 6), 30), 5), Less($close, $change)), $volume)",0.07464422134665537
