@@ -23,7 +23,7 @@ from scipy.stats import spearmanr
 import time
 
 def main(args):
-    # start = time.perf_counter()
+    start = time.perf_counter()
 
     # 2. Prepare Qlib configuration
     qlib_config = {
@@ -48,8 +48,9 @@ def main(args):
         random_state=42
     )
 
-    # end = time.perf_counter()
-    # print(f"gplearn total time: {end - start:.6f} sec")
+    end = time.perf_counter()
+    print(f"gplearn total time: {end - start:.6f} sec")
+    transformer.fit() 
 
     # 6. Collect best programs and compute metrics
     programs = transformer._best_programs

@@ -1,0 +1,60 @@
+host=n046.hpc start=2010-01-01 end=2019-12-31 pop=50 gens=2 hof=20 ncomp=5 seed=42 market=all cpus=32
+preflight ok: qlib 0.9.0
+[2541130:MainThread](2026-08-13 19:58:29,409) INFO - qlib.Initialization - [config.py:415] - default_conf: client.
+[2541130:MainThread](2026-08-13 19:58:30,112) INFO - qlib.Initialization - [__init__.py:74] - qlib successfully initialized based on client settings.
+[2541130:MainThread](2026-08-13 19:58:30,112) INFO - qlib.Initialization - [__init__.py:76] - data_path={'__DEFAULT_FREQ': PosixPath('/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data')}
+[run] market=all kernels=32 chunk=24 pop=50 gens=2 seed=42
+Generation 0 starts.
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+  return func(x, start, end, min_periods, *numba_args)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/numpy/lib/function_base.py:2846: RuntimeWarning: Degrees of freedom <= 0 for slice
+  c = cov(x, y, rowvar, dtype=dtype)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/numpy/lib/function_base.py:2705: RuntimeWarning: divide by zero encountered in divide
+  c *= np.true_divide(1, fact)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/arraylike.py:402: RuntimeWarning: divide by zero encountered in log
+  result = getattr(ufunc, method)(*inputs, **kwargs)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+  return func(x, start, end, min_periods, *numba_args)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/arraylike.py:402: RuntimeWarning: divide by zero encountered in log
+  result = getattr(ufunc, method)(*inputs, **kwargs)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/arraylike.py:402: RuntimeWarning: divide by zero encountered in log
+  result = getattr(ufunc, method)(*inputs, **kwargs)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/arraylike.py:402: RuntimeWarning: divide by zero encountered in log
+  result = getattr(ufunc, method)(*inputs, **kwargs)
+[fast_eval] generation batch done: evaluated=50 memo_hits=0 chunk_calls=3 single_fallbacks=0 close_fallbacks=0
+final:  [0.004043645172170938, 0.006215130892677794, 0.049803019192721586, 2.983278629059823e-05, 0.0, 0.0, 4.682133608673848e-05, 0.003535307665795375, 0.01281281834400359, 0.03942118834754045, 0.0, 0.0009666179085062286, 2.1703319475021967e-05, 0.0, 0.0025568988699604086, 0.0016361031796795144, 0.00010121734354911485, 0.04819569424132379, 0.01170652186997319, 0.0015560815953046614, 0.0311573162087144, 0.010967312239037649, 0.007002349934983594, 0.027380273460431842, 0.007385586462189522, 0.014754065701386203, 0.003031222168449201, 0.001472619343993462, 0.004260559775752755, 0.015971763726152877, 0.004306541019882265, 0.023144287528680866, 0.0005760655296008612, 0.0003831127931283624, 0.03919099027257495, 0.07935805447821383, 0.0004306584299816731, 0.0, 0.001263007051138414, 0.005012029949406256, 0.0010357377456661375, 0.021694011265766665, 0.011662905318346222, 0.0010978369416435275, 0.0, 0.013214696071567788, 0.0, 0.0045287297760770425, 0.011398780579299316, 0.0014248982974294484]
+Generation 1 starts.
+[fast_eval] generation batch done: evaluated=69 memo_hits=24 chunk_calls=4 single_fallbacks=0 close_fallbacks=0
+final:  [0.06822375818056695, 0.047546851028077056, 0.03942118834754045, 0.03919099027257495, 0.002673438960067704, 0.03942118834754045, 0.07935805447821383, 0.07935805447821383, 0.0, 0.02226392495981795, 0.04819569424132379, 0.07973017336255275, 0.03942118834754045, 0.04819569424132379, 0.047546851028077056, 0.008533259302432008, 0.06832754087297632, 0.051893565981224, 0.0, 0.08233311221246487, 0.011618425433199261, 0.02829434371887685, 0.047546851028077056, 0.011398780579299316, 0.049803019192721586, 0.04819569424132379, 0.04819569424132379, 0.04819569424132379, 0.03919099027257495, 0.08012643362921579, 0.049803019192721586, 0.049803019192721586, 0.06338969183929433, 0.04819569424132379, 0.07935805447821383, 0.05695079331962076, 0.03919099027257495, 0.07935805447821383, 0.03919099027257495, 0.04819569424132379, 0.08233311221246487, 0.0, 0.03919099027257495, 0.07935805447821383, 0.002673438960067704, 0.002673438960067704, 0.0, 0.07935805447821383, 0.01239069225313178, 0.07935805447821383]
+executing:  Min(Abs($change), 12)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/numpy/lib/function_base.py:2846: RuntimeWarning: Degrees of freedom <= 0 for slice
+  c = cov(x, y, rowvar, dtype=dtype)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/numpy/lib/function_base.py:2705: RuntimeWarning: divide by zero encountered in divide
+  c *= np.true_divide(1, fact)
+executing:  Min(Abs($change), 12)
+executing:  Min(WMA(EMA(Abs($change), 5), 30), 12)
+executing:  Abs(Power(Resi($high, 30), EMA(Abs($change), 5)))
+executing:  WMA(EMA(Abs($change), 5), 30)
+executing:  WMA(EMA(Abs($change), 5), 30)
+executing:  WMA(EMA(Abs($change), 5), 30)
+executing:  WMA(EMA(Abs($change), 5), 30)
+executing:  WMA(EMA(Abs($change), 5), 30)
+executing:  WMA(EMA(Abs($change), 5), 30)
+executing:  WMA(EMA(Abs($change), 5), 30)
+executing:  WMA(EMA(Slope($low, 12), 5), 30)
+executing:  Min(EMA(Abs($change), 5), 12)
+executing:  WMA(EMA(Slope($close, 12), 5), 30)
+executing:  WMA(EMA(Log($volume), 5), 30)
+executing:  Abs(Power(Resi($high, 30), WMA(EMA(Abs($change), 5), 30)))
+executing:  Power(Resi($high, 30), Slope($close, 12))
+executing:  Abs(Power(Resi($high, 30), Slope($close, 12)))
+executing:  Power(Resi($high, 30), Slope($close, 12))
+executing:  Log($volume)
+                                          formula        IC
+0                           Min(Abs($change), 12)  0.082333
+1       Power(Resi($high, 30), Slope($close, 12))  0.049803
+2  Abs(Power(Resi($high, 30), Slope($close, 12)))  0.049803
+3       Power(Resi($high, 30), Slope($close, 12))  0.049803
+4                                    Log($volume)  0.048196
+[run] total 470.7s  eval[evaluated=69 memo_hits=24 chunk_calls=4 single_fallbacks=0 close_fallbacks=0]
+[run] results saved to: out/gplearn_fast_all_seed42_883881.csv, out/gplearn_fast_all_seed42_883881.pkl

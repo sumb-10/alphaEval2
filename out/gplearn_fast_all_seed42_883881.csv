@@ -1,0 +1,6 @@
+formula,IC
+"Min(Abs($change), 12)",0.08233311221246487
+"Power(Resi($high, 30), Slope($close, 12))",0.049803019192721586
+"Abs(Power(Resi($high, 30), Slope($close, 12)))",0.049803019192721586
+"Power(Resi($high, 30), Slope($close, 12))",0.049803019192721586
+Log($volume),0.04819569424132379
