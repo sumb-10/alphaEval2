@@ -1,0 +1,115 @@
+{
+  "gplearn_asb_version": "0.1.0",
+  "semantics_version": "1",
+  "run_id": "gplearn_asb_off_42",
+  "method": "gplearn_asb",
+  "constraint_mode": "off",
+  "seed": 42,
+  "worst_fitness": -1.0,
+  "thresholds": {
+    "min_mean_daily_coverage_ratio": 0.05,
+    "min_median_daily_n_valid": 30,
+    "min_valid_day_ratio": 0.9
+  },
+  "market": "csi300",
+  "search_window": [
+    "2018-01-01",
+    "2019-06-30"
+  ],
+  "label_horizon": 1,
+  "universe_hash": "3f84d42a0dfce972",
+  "close_fallback_signed_ic": 0.008021635069190569,
+  "gp_params": {
+    "population_size": 30,
+    "generations": 2,
+    "hall_of_fame": 10,
+    "n_components": 5,
+    "tournament_size": 20,
+    "p_crossover": 0.9,
+    "p_subtree_mutation": 0.01,
+    "p_hoist_mutation": 0.01,
+    "p_point_mutation": 0.01,
+    "p_point_replace": 0.05,
+    "init_depth": [
+      1,
+      4
+    ],
+    "init_method": "half and half",
+    "parsimony_coefficient": 0.0,
+    "metric": "pearson",
+    "stopping_criteria": 1.0,
+    "max_samples": 1.0
+  },
+  "budget": {
+    "total_evaluations": 60,
+    "unique_evaluations": 50,
+    "memo_hits": 15,
+    "wall_clock_seconds": 54.89303608238697,
+    "panel_setup_seconds": 45.15435544773936
+  },
+  "cache_context": {
+    "market": "csi300",
+    "universe_hash": "3f84d42a0dfce972",
+    "search_start": "2018-01-01",
+    "search_end": "2019-06-30",
+    "dataset_uri": "/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data",
+    "label_horizon": 1,
+    "semantics_version": "1"
+  },
+  "outputs": {
+    "final_pool_csv": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/gplearn_asb_off_42/metrics/final_pool_gplearn_asb_off_42.csv",
+    "trajectory": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/gplearn_asb_off_42/trajectory/gplearn_asb_off_42.jsonl"
+  },
+  "config_echo": {
+    "dataset": {
+      "provider_uri": "/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data",
+      "region": "cn",
+      "qlib_kernels": 8,
+      "warmup_start": null,
+      "right_buffer_days": 20
+    },
+    "market": "csi300",
+    "search": {
+      "start_date": "2018-01-01",
+      "end_date": "2019-06-30"
+    },
+    "label": {
+      "horizon": 1
+    },
+    "gp": {
+      "population_size": 30,
+      "generations": 2,
+      "hall_of_fame": 10,
+      "n_components": 5,
+      "tournament_size": 20,
+      "p_crossover": 0.9,
+      "p_subtree_mutation": 0.01,
+      "p_hoist_mutation": 0.01,
+      "p_point_mutation": 0.01,
+      "p_point_replace": 0.05,
+      "init_depth": [
+        1,
+        4
+      ],
+      "init_method": "half and half",
+      "parsimony_coefficient": 0.0,
+      "metric": "pearson",
+      "stopping_criteria": 1.0,
+      "max_samples": 1.0
+    },
+    "constraint": {
+      "mode": "off",
+      "worst_fitness": -1.0
+    },
+    "validity": {
+      "min_mean_daily_coverage_ratio": 0.05,
+      "min_median_daily_n_valid": 30,
+      "min_valid_day_ratio": 0.9
+    },
+    "seed": 42,
+    "run_id": null,
+    "output": {
+      "root": null
+    }
+  }
+}

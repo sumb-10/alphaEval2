@@ -1,0 +1,58 @@
+# AlphaAgent_asb framework 기본값 — 연구 실험 파라미터를 hard-code하지 않는다.
+# 원형 상수(모델/온도/max_rounds/seed_range)는 원형 값을 기본값으로 노출한다.
+
+dataset:
+  provider_uri: /gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data
+  region: cn
+  qlib_kernels: 8
+  warmup_start: null
+  right_buffer_days: 20
+
+market: null                    # 필수 — feedback(FactorBacktester instruments)과 진단 universe
+search:                         # 마이닝 창 (원형: 2010-01-01 ~ 2019-12-31)
+  start_date: null              # 필수
+  end_date: null                # 필수
+label:
+  horizon: 1
+
+llm:
+  provider: openai_compatible   # requests 기반 thin client
+  base_url: https://api.openai.com/v1
+  api_key_env: OPENAI_API_KEY
+  env_file: null                # null → AlphaEval repo 루트 .env 자동 탐색 (.gitignore 보호)
+  models:                       # 원형: 3-agent 전부 gpt-4o
+    idea: gpt-4o
+    factor: gpt-4o
+    eval: gpt-4o
+  temperatures:                 # 원형: idea 1.0 / factor 0.3 / eval 0.4
+    idea: 1.0
+    factor: 0.3
+    eval: 0.4
+  request_seed: null            # OpenAI seed 파라미터 (재현성 보조; 원형 미사용)
+  max_retries: 5                # D-1: 원형 무한재귀의 의도값(try_times < 5) 유한화
+  timeout_seconds: 120
+  price_per_1k:                 # estimated_cost 계산용 (null이면 비용 미추정)
+    prompt: null
+    completion: null
+
+agent:
+  max_rounds: 3                 # 원형 alphaagent.py:69
+  seed_range: [20, null]        # D-8: 원형 expressions[20:] (37개 중 17개)
+
+compatibility:
+  mode: parity                  # parity(원형 formatting/동작) | safe
+
+similarity:
+  distinguish_terminals: false  # 원형: AST 라벨 버그 보존 ($close ≡ $volume)
+
+constraint:                     # acceptance overlay — 기본 off(원형: validity가 search에 무영향)
+  mode: "off"                   # "off" | hard_penalty | strict_penalty
+validity:
+  min_mean_daily_coverage_ratio: null
+  min_median_daily_n_valid: null
+  min_valid_day_ratio: null
+
+seed: 42                        # 비-LLM 부분(FakeLLM 시나리오 등)
+run_id: null                    # null → alphaagent_asb_{compat}_{llm-mode}_{seed}
+output:
+  root: null                    # null → AlphaAgent_asb/out/{run_id}

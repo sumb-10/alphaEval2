@@ -1,0 +1,20 @@
+# 원본 동등성 검증 config — 883881(gp_smoke) 조건 그대로.
+# off 모드로 실행해 최종 CSV(formula/IC)를 out/gplearn_fast_all_seed42_883881.csv와 대조.
+
+market: all
+
+search:
+  start_date: "2010-01-01"
+  end_date: "2019-12-31"
+
+gp:                          # 883881 실제 인자 (out/slurm/alphaeval-gp-883881.log)
+  population_size: 50
+  generations: 2
+  hall_of_fame: 20
+  n_components: 5
+
+constraint:
+  mode: "off"
+
+seed: 42
+run_id: replicate_883881_off

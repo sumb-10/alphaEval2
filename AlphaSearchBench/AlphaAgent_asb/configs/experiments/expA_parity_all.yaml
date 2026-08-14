@@ -1,0 +1,29 @@
+# Experiment A — AlphaAgent parity reproduction (원형 재현)
+# universe/창/모드 전부 원형 그대로. live run은 사용자 승인 + OPENAI_API_KEY 필요.
+
+market: all                     # 원형 alphaagent.py:62
+search:
+  start_date: "2010-01-01"
+  end_date: "2019-12-31"
+
+agent:
+  max_rounds: 3                 # 원형
+  seed_range: [20, null]        # 원형 expressions[20:]
+
+compatibility:
+  mode: parity
+constraint:
+  mode: "off"                   # 원형: validity가 search에 무영향
+
+seed: 42
+run_id: alphaagent_asb_expA_parity_all
+
+llm:                            # 모델 편차 D-9: 원형은 gpt-4o — 대체 모델 사용을 기록
+  api_key_env: OPEN_AI_API_KEY  # 사용자 .env의 변수명에 맞춤
+  models:
+    idea: gpt-5.6-luna
+    factor: gpt-5.6-luna
+    eval: gpt-5.6-luna
+  price_per_1k:                 # manifest estimated_cost 자동 계산용 ($/1k tokens)
+    prompt: 0.0002
+    completion: 0.0012

@@ -1,0 +1,120 @@
+{
+  "gplearn_asb_version": "0.1.0",
+  "semantics_version": "1",
+  "run_id": "replicate_883881_off",
+  "method": "gplearn_asb",
+  "constraint_mode": "off",
+  "seed": 42,
+  "worst_fitness": -1.0,
+  "thresholds": {
+    "min_mean_daily_coverage_ratio": null,
+    "min_median_daily_n_valid": null,
+    "min_valid_day_ratio": null
+  },
+  "market": "all",
+  "search_window": [
+    "2010-01-01",
+    "2019-12-31"
+  ],
+  "label_horizon": 1,
+  "universe_hash": "a22c326c1efc83ff",
+  "close_fallback_signed_ic": -0.011718840510052713,
+  "gp_params": {
+    "population_size": 50,
+    "generations": 2,
+    "hall_of_fame": 20,
+    "n_components": 5,
+    "tournament_size": 20,
+    "p_crossover": 0.9,
+    "p_subtree_mutation": 0.01,
+    "p_hoist_mutation": 0.01,
+    "p_point_mutation": 0.01,
+    "p_point_replace": 0.05,
+    "init_depth": [
+      1,
+      4
+    ],
+    "init_method": "half and half",
+    "parsimony_coefficient": 0.0,
+    "metric": "pearson",
+    "stopping_criteria": 1.0,
+    "max_samples": 1.0
+  },
+  "budget": {
+    "total_evaluations": 100,
+    "unique_evaluations": 69,
+    "memo_hits": 24,
+    "wall_clock_seconds": 750.2516009230167,
+    "panel_setup_seconds": 58.88183405995369,
+    "cache_stats_incl_postfit": {
+      "unique_evaluations": 69,
+      "memo_hits": 36,
+      "total_lookups": 105
+    }
+  },
+  "cache_context": {
+    "market": "all",
+    "universe_hash": "a22c326c1efc83ff",
+    "search_start": "2010-01-01",
+    "search_end": "2019-12-31",
+    "dataset_uri": "/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data",
+    "label_horizon": 1,
+    "semantics_version": "1"
+  },
+  "outputs": {
+    "final_pool_csv": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/replicate_883881_off/metrics/final_pool_replicate_883881_off.csv",
+    "trajectory": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/replicate_883881_off/trajectory/replicate_883881_off.jsonl"
+  },
+  "config_echo": {
+    "dataset": {
+      "provider_uri": "/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data",
+      "region": "cn",
+      "qlib_kernels": 8,
+      "warmup_start": null,
+      "right_buffer_days": 20
+    },
+    "market": "all",
+    "search": {
+      "start_date": "2010-01-01",
+      "end_date": "2019-12-31"
+    },
+    "label": {
+      "horizon": 1
+    },
+    "gp": {
+      "population_size": 50,
+      "generations": 2,
+      "hall_of_fame": 20,
+      "n_components": 5,
+      "tournament_size": 20,
+      "p_crossover": 0.9,
+      "p_subtree_mutation": 0.01,
+      "p_hoist_mutation": 0.01,
+      "p_point_mutation": 0.01,
+      "p_point_replace": 0.05,
+      "init_depth": [
+        1,
+        4
+      ],
+      "init_method": "half and half",
+      "parsimony_coefficient": 0.0,
+      "metric": "pearson",
+      "stopping_criteria": 1.0,
+      "max_samples": 1.0
+    },
+    "constraint": {
+      "mode": "off",
+      "worst_fitness": -1.0
+    },
+    "validity": {
+      "min_mean_daily_coverage_ratio": null,
+      "min_median_daily_n_valid": null,
+      "min_valid_day_ratio": null
+    },
+    "seed": 42,
+    "run_id": "replicate_883881_off",
+    "output": {
+      "root": null
+    }
+  }
+}

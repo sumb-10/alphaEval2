@@ -1,0 +1,37 @@
+# Experiment B — Cross-method controlled comparison (GP 3-arm과 동일 조건)
+# ★ 원 저자 재현이 아님 — universe를 csi800으로 override (PROVENANCE D-7:
+# "original AlphaAgent used `all` universe; the csi800 comparison overrides
+#  the mining universe for cross-method experimental control.")
+# live run은 사용자 승인 + OPENAI_API_KEY 필요.
+
+market: csi800
+search:
+  start_date: "2010-01-01"      # = gplearn_asb pilot과 동일 창
+  end_date: "2019-12-31"
+
+agent:
+  max_rounds: 3
+  seed_range: [20, null]
+
+compatibility:
+  mode: parity
+constraint:
+  mode: "off"                   # 첫 live run은 off (원형 행동 관찰이 목적)
+
+validity:                       # 진단 기록·사후 분석용 (게이트 아님)
+  min_mean_daily_coverage_ratio: 0.05
+  min_median_daily_n_valid: 30
+  min_valid_day_ratio: 0.90
+
+seed: 42
+run_id: alphaagent_asb_expB_csi800
+
+llm:                            # 모델 편차 D-9: 원형은 gpt-4o — 대체 모델 사용을 기록
+  api_key_env: OPEN_AI_API_KEY  # 사용자 .env의 변수명에 맞춤
+  models:
+    idea: gpt-5.6-luna
+    factor: gpt-5.6-luna
+    eval: gpt-5.6-luna
+  price_per_1k:                 # manifest estimated_cost 자동 계산용 ($/1k tokens)
+    prompt: 0.0002
+    completion: 0.0012

@@ -1,0 +1,19 @@
+# 검증용 config — csi800 트랙(883929)의 train_sign 복원 창을 마이닝 창과 일치시킨 변형.
+# 상세 주석은 csi_mining_window.yaml 참조. sign 검증 전용.
+
+market: csi800
+
+splits:
+  train: ["2010-01-01", "2019-12-31"]   # = 마이닝 fitness 창 (883929)
+  valid: ["2017-01-01", "2019-12-31"]
+  test:  ["2021-01-01", "2024-12-31"]
+
+qd:
+  quality:
+    metric: IC
+    threshold: 0.02
+
+backtest:
+  mode: simple
+  execution: next_open_oo
+  transaction_cost_rate: 0.0015

@@ -1,0 +1,29 @@
+# 3-arm comparison pilot 공통 조건 — 883929(gp_csi800)와 동일한 마이닝 설정.
+# arm별 차이는 constraint.mode 하나뿐 (공정 비교 — 스펙 #28).
+# universe: csi800 (사용자 지시 2026-08-14 — pilot은 csi800에서만).
+
+market: csi800
+
+search:
+  start_date: "2010-01-01"
+  end_date: "2019-12-31"
+
+gp:                        # = 883929 인자 (out/slurm/alphaeval-gp-883929.log)
+  population_size: 1000
+  generations: 5
+  hall_of_fame: 50
+  n_components: 10
+
+constraint:
+  mode: "off"              # arm별 override
+  worst_fitness: -1.0
+
+# strict_penalty arm용 provisional threshold (파일럿 검증 V5 재도출값 —
+# 아티팩트 coverage ≤0.011 vs 정상 ≥0.477 gap의 하단. 규약: >= pass.
+# 보수적 대안은 0.15(gap 기하 중앙) — multi-seed pilot 후 재결정)
+validity:
+  min_mean_daily_coverage_ratio: 0.05
+  min_median_daily_n_valid: 30
+  min_valid_day_ratio: 0.90
+
+seed: 42

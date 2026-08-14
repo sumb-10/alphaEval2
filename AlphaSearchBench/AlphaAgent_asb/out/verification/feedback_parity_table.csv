@@ -1,0 +1,6 @@
+formula,orig_IC_prompt,orig_IC_raw,mining_signed_IC,diagnostics_source,abs_diff_raw
+($low - $high) / $close,-0.007,-0.006765567401230163,-0.0067655674012301525,qlib_fallback,1.0408340855860843e-17
+(2 * $close - ($high + $low) / 2) / $open,-0.02,-0.020355336023099736,-0.02035533602309974,qlib_fallback,3.469446951953614e-18
+"$high / Ref($close, 1)",0.042,0.042135788856667265,0.042135788856667265,qlib_fallback,0.0
+"WMA($low, 5) / $close",-0.034,-0.034124970316612165,-0.034124970316612165,qlib_fallback,0.0
+"Mean($close, 5) / $close",-0.023,-0.02317986000488113,-0.02317986000488114,qlib_fallback,1.0408340855860843e-17

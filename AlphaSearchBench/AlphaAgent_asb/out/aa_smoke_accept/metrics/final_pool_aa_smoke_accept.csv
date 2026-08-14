@@ -1,0 +1,4 @@
+formula,IC,signed_train_IC,train_sign,feedback_IC_raw,feedback_IC_prompt,feedback_AnnRet_prompt,ast_similarity,validity_pass,invalid_reason,mean_daily_coverage_ratio,seed_idx,round_id,method,compatibility_mode,constraint_mode,seed
+"Ref($close, 3) / $close",0.021083765937629912,-0.021083765937629912,-1,-0.02108376593762991,-0.021,-0.3635573504034425,0.0,True,,0.9729178208679594,20,0,alphaagent_asb,parity,off,42
+($high - $low) / $close,0.0067655674012301525,0.0067655674012301525,1,0.006765567401230163,0.007,-0.31775856819282067,0.45454545454545453,True,,0.9749215143120961,21,0,alphaagent_asb,parity,off,42
+"Sum($volume, 20) / $volume",0.014039883299838317,-0.014039883299838317,-1,-0.014039883299838308,-0.014,-0.31684148425465875,1.0,True,,0.9749215143120961,22,0,alphaagent_asb,parity,off,42

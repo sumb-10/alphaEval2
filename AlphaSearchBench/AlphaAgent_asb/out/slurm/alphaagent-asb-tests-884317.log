@@ -1,0 +1,27 @@
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.5, pluggy-1.5.0 -- /home1/sku07891/miniconda3/envs/AlphaEval38/bin/python
+cachedir: .pytest_cache
+rootdir: /gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/AlphaAgent_asb
+collecting ... collected 18 items
+
+tests/regression/test_feedback_parity_gate.py::test_vendored_equals_original PASSED [  5%]
+tests/regression/test_feedback_parity_gate.py::test_mining_asb_vs_original_documented PASSED [ 11%]
+tests/regression/test_parity_port.py::test_prompt_strings_match_original PASSED [ 16%]
+tests/regression/test_parity_port.py::test_eval_system_prompt_matches_source_text PASSED [ 22%]
+tests/regression/test_parity_port.py::test_parity_dict_repr_formatting PASSED [ 27%]
+tests/regression/test_parity_port.py::test_similarity_equivalence_with_original PASSED [ 33%]
+tests/regression/test_parity_port.py::test_label_bug_preserved_and_fix_option PASSED [ 38%]
+tests/regression/test_parity_port.py::test_seed_expressions_match_original_source PASSED [ 44%]
+tests/smoke/test_fake_e2e.py::test_trajectory_schema_and_axes PASSED     [ 50%]
+tests/smoke/test_fake_e2e.py::test_natural_language_feedback_present PASSED [ 55%]
+tests/smoke/test_fake_e2e.py::test_llm_calls_logged_and_budget PASSED    [ 61%]
+tests/smoke/test_fake_e2e.py::test_final_pool_asb_loadable_and_accept_path PASSED [ 66%]
+tests/unit/test_llm_layer.py::test_fake_deterministic PASSED             [ 72%]
+tests/unit/test_llm_layer.py::test_fake_eval_applies_original_rule PASSED [ 77%]
+tests/unit/test_llm_layer.py::test_budget_counters PASSED                [ 83%]
+tests/unit/test_llm_layer.py::test_replay_roundtrip PASSED               [ 88%]
+tests/unit/test_llm_layer.py::test_http_finite_retry_without_key PASSED  [ 94%]
+tests/unit/test_llm_layer.py::test_make_llm_modes PASSED                 [100%]
+
+======================== 18 passed in 222.51s (0:03:42) ========================
+TESTS_DONE rc=0

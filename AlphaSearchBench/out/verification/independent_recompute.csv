@@ -1,0 +1,3 @@
+method,formula,signed_train_IC(2010-2019),sign,test_IC_indep,test_RankIC_indep,test_ic_days
+gp_smoke,Log($volume),-0.04819569424132379,-1,0.021552082086796258,0.05635426858782418,969
+gp_main,"WMA(Rsquare(Div(WMA(Rsquare(Div(Power($volume, $open), Mean(",0.48530560611972107,1,-0.34946235287885424,-0.3409090909090909,44

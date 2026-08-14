@@ -1,0 +1,54 @@
+# gplearn_asb framework 기본값 — 연구 실험 파라미터를 hard-code하지 않는다.
+# null 필수값(market/search/population_size/generations)은 experiment config가 지정.
+# gp: 블록의 기본값은 원본 러너의 실효값과 동일하다
+# (gplearn/genetic.py:793-825 기본값 + scripts/run_gplearn_fast.py:87-99 — 감사 근거는
+#  IMPLEMENTATION_PLAN.md Phase A 표).
+
+dataset:
+  provider_uri: /gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data
+  region: cn
+  qlib_kernels: 8
+  warmup_start: null          # null → FormulaEngine CALENDAR_START(2005-01-04) = qlib 전체 이력
+  right_buffer_days: 20
+
+market: null                  # 필수 — universe mask + 원본 qlib_config.instruments
+
+search:                       # 마이닝 fitness·validity 창 (ASB evaluation split과 별개 — 스펙 #12)
+  start_date: null            # 필수
+  end_date: null              # 필수
+
+label:
+  horizon: 1                  # forward return k (원본: Ref($close,-1)/$close - 1)
+
+gp:
+  population_size: null       # 필수
+  generations: null           # 필수
+  hall_of_fame: 25
+  n_components: 10
+  tournament_size: 20
+  p_crossover: 0.9
+  p_subtree_mutation: 0.01
+  p_hoist_mutation: 0.01
+  p_point_mutation: 0.01
+  p_point_replace: 0.05
+  init_depth: [1, 4]
+  init_method: half and half
+  parsimony_coefficient: 0.0
+  metric: pearson
+  stopping_criteria: 1.0
+  max_samples: 1.0
+
+constraint:
+  mode: "off"                 # "off" | hard_penalty | strict_penalty (따옴표 필수 — YAML off=False)
+  worst_fitness: -1.0         # 유한 sentinel. 모든 valid |IC|(≥0)보다 항상 작아야 하며,
+                              # parsimony≠0이면 parsimony·max_len < |worst_fitness| 조건을 CLI가 경고.
+
+validity:                     # research threshold — strict_penalty에서만 게이트로 사용.
+  min_mean_daily_coverage_ratio: null   # 규약: value >= threshold → pass (경계값 통과)
+  min_median_daily_n_valid: null
+  min_valid_day_ratio: null
+
+seed: 42
+run_id: null                  # null → "{method}_{mode}_{seed}"
+output:
+  root: null                  # null → gplearn_asb/out/{run_id}

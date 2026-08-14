@@ -1,0 +1,25 @@
+# Smoke config — 빠른 end-to-end 검증용 (csi300, 짧은 구간, warmup 축소)
+market: csi300
+
+dataset:
+  warmup_start: "2016-01-01"   # 짧은 warmup — smoke 전용 (중첩 rolling 최대 절단 커버)
+  qlib_kernels: 8
+
+splits:
+  train: ["2018-01-01", "2018-12-31"]
+  valid: ["2019-01-01", "2019-06-30"]
+  test:  ["2019-07-01", "2019-12-31"]
+
+qd:
+  grid:
+    resolution: [8, 8]
+  rarefaction:
+    n: 3
+    repeats: 20
+
+pfs:
+  enabled: true
+  k_draws: 2
+
+backtest:
+  mode: simple

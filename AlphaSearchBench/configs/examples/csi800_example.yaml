@@ -1,0 +1,19 @@
+# csi800 트랙 실험 config — csi_example과 동일 split, universe만 csi800.
+# (마이닝 universe와 평가 universe를 일치시킨다 — 883929 pool용)
+
+market: csi800
+
+splits:
+  train: ["2010-01-01", "2016-12-31"]
+  valid: ["2017-01-01", "2019-12-31"]
+  test:  ["2021-01-01", "2024-12-31"]
+
+qd:
+  quality:
+    metric: IC
+    threshold: 0.02
+
+backtest:
+  mode: simple
+  execution: next_open_oo
+  transaction_cost_rate: 0.0015

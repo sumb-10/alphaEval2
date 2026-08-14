@@ -1,0 +1,11 @@
+formula,IC
+"WMA(Rsquare(Div(Div(Mul(WMA(Slope($vwap, 64), 64), $close), EMA($volume, 30)), EMA($volume, 30)), 12), 30)",0.5652173913043478
+"WMA(Rsquare(Div(WMA(Rsquare(Div(Div(Power($volume, $open), Mean(Sign($change), 12)), Mean(Sign($change), 12)), 64), 30), EMA($volume, 30)), 12), 30)",0.4853059336241708
+"WMA(Rsquare(Div(WMA(Rsquare(Div(Power($volume, $open), Mean(Sign($change), 12)), 64), 30), EMA($volume, 30)), 12), 30)",0.48530560611972107
+"WMA(Rsquare(Div(WMA(Rsquare(Div(Power($volume, $open), Mean(Sign($change), 12)), 64), 30), EMA($volume, 30)), 12), 30)",0.48530560611972107
+"WMA(Rsquare(Div(WMA(Rsquare(Div(Power($volume, $open), Mean(Sign($change), 12)), 64), 30), EMA($volume, 30)), 12), 30)",0.48530560611972107
+"WMA(Rsquare(Div(WMA(Rsquare(Div(Power($volume, $open), Mean(Sign($change), 12)), 64), 30), EMA($volume, 30)), 12), 30)",0.48530560611972107
+"WMA(Rsquare(Div(WMA(Rsquare(Div(Power($volume, $open), Mean(Sign($change), 12)), 64), 30), EMA($volume, 30)), 12), 30)",0.48530560611972107
+"WMA(Rsquare(Div(WMA(Rsquare(Div(Power($volume, $open), Mean(Sign($change), 12)), 64), 30), EMA($volume, 30)), 12), 30)",0.48530560611972107
+"WMA(Rsquare(Div(WMA(Rsquare(Div(Power($volume, $open), Abs($change)), 64), 30), EMA($volume, 30)), 12), 30)",0.48530456953178136
+"WMA(Rsquare(Div(WMA(Rsquare(Div(Power($volume, $open), Abs($change)), 64), 30), EMA($volume, 30)), 12), 30)",0.48530456953178136

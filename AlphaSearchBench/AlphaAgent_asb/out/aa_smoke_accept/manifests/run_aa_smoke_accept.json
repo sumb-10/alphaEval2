@@ -1,0 +1,119 @@
+{
+  "alphaagent_asb_version": "0.1.0",
+  "run_id": "aa_smoke_accept",
+  "method": "alphaagent_asb",
+  "compatibility_mode": "parity",
+  "constraint_mode": "off",
+  "llm_mode": "fake",
+  "llm": {
+    "models": {
+      "idea": "gpt-4o",
+      "factor": "gpt-4o",
+      "eval": "gpt-4o"
+    },
+    "temperatures": {
+      "idea": 1.0,
+      "factor": 0.3,
+      "eval": 0.4
+    },
+    "request_seed": null
+  },
+  "seed": 42,
+  "market": "csi300",
+  "search_window": [
+    "2018-01-01",
+    "2019-06-30"
+  ],
+  "universe_hash": "3f84d42a0dfce972",
+  "thresholds": {
+    "min_mean_daily_coverage_ratio": null,
+    "min_median_daily_n_valid": null,
+    "min_valid_day_ratio": null
+  },
+  "trajectory_semantics": "generation=round_id is an ASB compatibility field. AlphaAgent candidates belonging to different seed_idx values are independent refinement trajectories and do not form a reproducing population.",
+  "budget": {
+    "n_idea_calls": 3,
+    "n_factor_calls": 3,
+    "n_eval_calls": 3,
+    "n_retry_calls": 0,
+    "n_total_llm_calls": 9,
+    "prompt_tokens": 1976,
+    "completion_tokens": 288,
+    "estimated_cost": null,
+    "n_seed_formulas": 3,
+    "n_candidate_rounds": 3,
+    "n_seed_aborted": 0,
+    "mining_wall_seconds": 20.477432314306498
+  },
+  "pool_size": 3,
+  "outputs": {
+    "final_pool_csv": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/AlphaAgent_asb/out/aa_smoke_accept/metrics/final_pool_aa_smoke_accept.csv",
+    "trajectory": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/AlphaAgent_asb/out/aa_smoke_accept/trajectory/aa_smoke_accept.jsonl"
+  },
+  "config_echo": {
+    "dataset": {
+      "provider_uri": "/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data",
+      "region": "cn",
+      "qlib_kernels": 8,
+      "warmup_start": null,
+      "right_buffer_days": 20
+    },
+    "market": "csi300",
+    "search": {
+      "start_date": "2018-01-01",
+      "end_date": "2019-06-30"
+    },
+    "label": {
+      "horizon": 1
+    },
+    "llm": {
+      "provider": "openai_compatible",
+      "base_url": "https://api.openai.com/v1",
+      "api_key_env": "OPENAI_API_KEY",
+      "models": {
+        "idea": "gpt-4o",
+        "factor": "gpt-4o",
+        "eval": "gpt-4o"
+      },
+      "temperatures": {
+        "idea": 1.0,
+        "factor": 0.3,
+        "eval": 0.4
+      },
+      "request_seed": null,
+      "max_retries": 5,
+      "timeout_seconds": 120,
+      "price_per_1k": {
+        "prompt": null,
+        "completion": null
+      },
+      "fake_accept_rule": "always"
+    },
+    "agent": {
+      "max_rounds": 2,
+      "seed_range": [
+        20,
+        23
+      ]
+    },
+    "compatibility": {
+      "mode": "parity"
+    },
+    "similarity": {
+      "distinguish_terminals": false
+    },
+    "constraint": {
+      "mode": "off"
+    },
+    "validity": {
+      "min_mean_daily_coverage_ratio": null,
+      "min_median_daily_n_valid": null,
+      "min_valid_day_ratio": null
+    },
+    "seed": 42,
+    "run_id": null,
+    "output": {
+      "root": null
+    }
+  }
+}

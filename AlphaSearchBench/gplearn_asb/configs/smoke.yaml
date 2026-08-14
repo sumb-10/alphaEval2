@@ -1,0 +1,23 @@
+# smoke 실험 — csi300, 짧은 창, 작은 population (기능 검증 전용)
+
+market: csi300
+
+search:
+  start_date: "2018-01-01"
+  end_date: "2019-06-30"
+
+gp:
+  population_size: 30
+  generations: 2
+  hall_of_fame: 10
+  n_components: 5
+
+constraint:
+  mode: "off"
+
+validity:                     # smoke에서 strict 테스트 시 사용될 예시값
+  min_mean_daily_coverage_ratio: 0.05
+  min_median_daily_n_valid: 30
+  min_valid_day_ratio: 0.90
+
+seed: 42

@@ -1,0 +1,26 @@
+# 검증용 config — train_sign 복원 창을 **마이닝 fitness 창(2010–2019)과 일치**시킨 변형.
+#
+# 용도: pilot(csi_example, train 2010-2016)의 train_sign이 마이닝 창(2010-2019)의
+# 부호와 다른지 검사(asb_pilot_verification.md V1). train은 sign 복원과
+# signed_train_IC 계산에만 쓰이므로, 이 config의 train=마이닝 창 설정이
+# "마이닝 당시 fitness가 본 것과 같은 부호"를 복원한다.
+# valid/test는 csi_example과 동일 (test 2021-2024는 여전히 완전 분리).
+# 주의: train과 valid가 겹치므로(2017-2019) 이 config는 sign 검증 전용 —
+# 일반 연구 실험에는 csi_example을 쓸 것.
+
+market: all
+
+splits:
+  train: ["2010-01-01", "2019-12-31"]   # = 마이닝 fitness 창 (883881/882/883)
+  valid: ["2017-01-01", "2019-12-31"]
+  test:  ["2021-01-01", "2024-12-31"]
+
+qd:
+  quality:
+    metric: IC
+    threshold: 0.02
+
+backtest:
+  mode: simple
+  execution: next_open_oo
+  transaction_cost_rate: 0.0015

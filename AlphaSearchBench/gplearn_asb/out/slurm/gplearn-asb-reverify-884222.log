@@ -1,0 +1,23 @@
+== (a) two-pass Div-formula 값 확인 ==
+[1013434:MainThread](2026-08-14 09:52:14,255) INFO - qlib.Initialization - [config.py:415] - default_conf: client.
+[1013434:MainThread](2026-08-14 09:52:15,728) INFO - qlib.Initialization - [__init__.py:74] - qlib successfully initialized based on client settings.
+[1013434:MainThread](2026-08-14 09:52:15,728) INFO - qlib.Initialization - [__init__.py:76] - data_path={'__DEFAULT_FREQ': PosixPath('/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data')}
+Rsquare(Std(Var($factor, 6), 30), 5)... signed=+0.074825 n_obs=1456
+Div(Less(Power($high, $change), Less(Rsquare(... signed=+0.000000 n_obs=645
+== (b) 883881 재현 (two-pass) ==
+                                       formula       IC  signed_train_IC  validity_pass
+                         Min(Abs($change), 12) 0.082333         0.082333           True
+     Power(Resi($high, 30), Slope($close, 12)) 0.049803        -0.049803           True
+Abs(Power(Resi($high, 30), Slope($close, 12))) 0.049803        -0.049803           True
+     Power(Resi($high, 30), Slope($close, 12)) 0.049803        -0.049803           True
+                                  Log($volume) 0.048196        -0.048196           True
+[gplearn_asb] fit 750.3s  budget={'total_evaluations': 100, 'unique_evaluations': 69, 'memo_hits': 24, 'wall_clock_seconds': 750.2516009230167, 'panel_setup_seconds': 58.88183405995369, 'cache_stats_incl_postfit': {'unique_evaluations': 69, 'memo_hits': 36, 'total_lookups': 105}}
+[gplearn_asb] outputs → /gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/replicate_883881_off
+REPLICATION formula 목록 동일: True
+REPLICATION IC max diff: 0.0
+== (c) 전체 테스트 ==
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/regression/test_pathological_fixture.py::test_pathological_high_raw_ic_but_worst_effective
+1 failed, 18 passed, 1664 warnings in 936.53s (0:15:36)
+REVERIFY_DONE rc=1

@@ -1,0 +1,9 @@
+== alphasearchbench suite ==
+=========================== short test summary info ============================
+FAILED tests/smoke/test_phase1_signal_validity.py::test_engine_no_silent_fallback
+1 failed, 79 passed, 9 warnings in 315.79s (0:05:15)
+== gplearn_asb suite ==
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+19 passed, 1664 warnings in 810.31s (0:13:30)
+ALL_TESTS_DONE

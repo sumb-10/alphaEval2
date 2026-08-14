@@ -1,0 +1,117 @@
+# AlphaSearchBench framework defaults.
+#
+# 원칙: 연구 실험 파라미터(split 날짜 등)는 여기 hard-code하지 않는다.
+# splits가 null이면 실행 시 명확한 에러 — experiment config에서 지정할 것.
+# (예: configs/examples/csi_example.yaml)
+
+dataset:
+  provider_uri: /gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data
+  region: cn
+  qlib_kernels: 8
+  # 패널 warmup 시작(어떤 중첩 rolling의 좌측 절단점도 커버해야 함).
+  # null이면 캘린더 시작(2005-01-04)을 사용. smoke에서는 좁혀서 가속 가능.
+  warmup_start: null
+  right_buffer_days: 20
+
+market: null            # csi300 | csi500 | csi800 | csi1000 | all  (필수)
+
+benchmark:
+  # market → 지수 티커 매핑 (데이터 번들에 실존 확인됨)
+  map:
+    csi300: SH000300
+    csi500: SH000905
+    csi800: SH000906
+    csi1000: SH000852
+    all: SH000985
+
+splits:
+  train: null           # [start, end] — experiment config에서 지정
+  valid: null
+  test: null
+
+label:
+  # OOS 기본 label: close_t -> close_(t+1)
+  horizon: 1
+  uses_post_end_price: true   # qlib extended-window 방식 허용 (manifest에 기록)
+
+signal:
+  # train_sign = sign(signed_train_IC); 평가기는 sign을 입력으로만 받는다.
+  train_sign_rule: sign_of_signed_train_IC
+
+validity:
+  mode: report_only      # report_only | strict
+  # research threshold — null이면 report만 하고 게이트하지 않음 (pilot 후 결정)
+  min_valid_day_ratio: null
+  min_mean_daily_coverage_ratio: null
+  min_median_daily_n_valid: null
+  # hard invalid(수학적으로 metric 정의 불가)는 코드에 고정되어 있으며
+  # mode와 무관하게 downstream 평가에서 제외된다:
+  #   formula_eval_failed / all_nonfinite / no_correlatable_day / zero_ic_observations
+
+oos:
+  horizons: [1]          # OOS는 기본 1d (QD horizon은 qd.horizons)
+  save_daily_series: true
+
+qd:
+  horizons: [1, 5, 10, 20]
+  contrast_eps: 1.0e-4
+  contrast_denom_threshold: 1.0e-3   # |a|+|b| < threshold → denom_small 플래그
+  volatility:
+    window: 20
+    quantiles: [0.3333, 0.6667]      # train에서 캘리브레이션 후 freeze
+    use_mid: false
+  liquidity:
+    adv_window: 20
+    split: tercile                    # tercile | median
+  horizon_reducer: weighted_abs_ic    # configurable — raw IC들은 항상 저장
+  descriptor_set:
+    name: core
+    columns:
+      - horizon
+      - volatility_response
+      - market_direction_response
+      - liquidity_response
+      - activation_breadth
+      - rre_qd
+  projection:
+    reference_split: valid            # PCA/scaler fit은 valid descriptor만
+    n_components: 2
+  grid:
+    resolution: [20, 20]
+    bounds: null                      # null이면 reference에서 결정 후 freeze
+  quality:
+    metric: IC
+    threshold: null                   # HQ coverage threshold — pilot 후 결정
+  rarefaction:
+    n: null                           # null이면 미실행
+    repeats: 100
+    seed: 20260814
+  dedup: exact                        # QD point는 formula string exact dedup
+
+pfs:
+  enabled: false          # PFS는 비용 때문에 기본 off (final pool 등에 선별 적용)
+  mode: paper_literal     # legacy_alphaeval | paper_literal | relative_input(experimental)
+  sigma_def: index_daily_ret_std   # train 구간 benchmark 일수익률 std
+  k_draws: 3
+  seed: 20260814
+  student_t_dof: 3
+
+backtest:
+  mode: simple            # simple | qlib(optional integration)
+  execution: next_open_oo # same_close(legacy/optimistic) | next_open_oo | next_open_oc | delayed_close_cc
+  top_fraction: 0.2
+  bottom_fraction: 0.2
+  transaction_cost_rate: 0.0015
+  cost_turnover_definition: oneway   # oneway | l1  (manifest에 기록)
+  qlib:                    # backtest.mode=qlib일 때만
+    deal_price: open
+    open_cost: 0.0015
+    close_cost: 0.0025
+    min_cost: 5
+    limit_threshold: 0.095
+
+output:
+  root: null               # null이면 AlphaSearchBench/out
+  formats: [parquet]       # parquet 실패 시 pickle 폴백은 writer가 자동 처리
+
+seed: 20260814

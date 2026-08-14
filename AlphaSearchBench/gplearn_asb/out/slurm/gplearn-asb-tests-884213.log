@@ -1,0 +1,67 @@
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.5, pluggy-1.5.0 -- /home1/sku07891/miniconda3/envs/AlphaEval38/bin/python
+cachedir: .pytest_cache
+rootdir: /gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb
+collecting ... collected 19 items
+
+tests/regression/test_gen0_and_population.py::test_gen0_same_seed_identical_formulas PASSED [  5%]
+tests/regression/test_gen0_and_population.py::test_population_size_preserved_with_90pct_invalid PASSED [ 10%]
+tests/regression/test_pathological_fixture.py::test_pathological_high_raw_ic_but_worst_effective FAILED [ 15%]
+tests/regression/test_pathological_fixture.py::test_normal_formula_passes PASSED [ 21%]
+tests/regression/test_pathological_fixture.py::test_eval_failure_is_hard_invalid_in_penalty_modes FAILED [ 26%]
+tests/smoke/test_smoke_modes.py::test_population_size_constant_all_modes PASSED [ 31%]
+tests/smoke/test_smoke_modes.py::test_trajectory_schema_and_fields PASSED [ 36%]
+tests/smoke/test_smoke_modes.py::test_gen0_identical_across_modes PASSED [ 42%]
+tests/smoke/test_smoke_modes.py::test_invalid_kept_with_worst_fitness PASSED [ 47%]
+tests/smoke/test_smoke_modes.py::test_generation_stats_complete PASSED   [ 52%]
+tests/smoke/test_smoke_modes.py::test_final_pool_asb_loadable PASSED     [ 57%]
+tests/unit/test_fitness_constraints.py::test_threshold_boundary_exact_pass PASSED [ 63%]
+tests/unit/test_fitness_constraints.py::test_threshold_below_fails_each PASSED [ 68%]
+tests/unit/test_fitness_constraints.py::test_threshold_nan_fails_and_null_skipped PASSED [ 73%]
+tests/unit/test_fitness_constraints.py::test_sentinel_below_all_valid PASSED [ 78%]
+tests/unit/test_fitness_constraints.py::test_hard_penalty_only_hard PASSED [ 84%]
+tests/unit/test_fitness_constraints.py::test_tournament_prefers_valid_despite_high_raw_ic PASSED [ 89%]
+tests/unit/test_fitness_constraints.py::test_off_mode_fallback_and_no_gating PASSED [ 94%]
+tests/unit/test_fitness_constraints.py::test_sentinel_separation_warning PASSED [100%]
+
+=================================== FAILURES ===================================
+______________ test_pathological_high_raw_ic_but_worst_effective _______________
+
+evaluator = <gplearn_asb.evaluator.MiningEvaluator object at 0x7f3a67e2f340>
+
+    def test_pathological_high_raw_ic_but_worst_effective(evaluator):
+        for f in PATHOLOGICAL:
+            diag = evaluator.diagnose(f)
+            info = apply_constraint("strict_penalty", diag, TH, WORST,
+                                    evaluator.close_signed_ic)
+            # raw IC는 보존된다 (883929 마이닝 fitness ≈ 0.075)
+>           assert info["raw_fitness"] > 0.03, f
+E           AssertionError: Div(Less(Power($high, $change), Less(Rsquare(Std(Var($factor, 6), 30), 5), Power($high, $change))), Rsquare(Std(Var($factor, 6), 30), 5))
+E           assert 0.0 > 0.03
+
+tests/regression/test_pathological_fixture.py:58: AssertionError
+______________ test_eval_failure_is_hard_invalid_in_penalty_modes ______________
+
+evaluator = <gplearn_asb.evaluator.MiningEvaluator object at 0x7f3a67e2f340>
+
+    def test_eval_failure_is_hard_invalid_in_penalty_modes(evaluator):
+        diag = evaluator.diagnose("Mean($close, 0)")     # window 0 → eval 실패
+>       assert diag["eval_failed"] and diag["hard_invalid"]
+E       assert (False)
+
+tests/regression/test_pathological_fixture.py:82: AssertionError
+=============================== warnings summary ===============================
+tests/smoke/test_smoke_modes.py: 18 warnings
+  /home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+    return func(x, start, end, min_periods, *numba_args)
+
+tests/smoke/test_smoke_modes.py: 1646 warnings
+  /home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/arraylike.py:402: RuntimeWarning: divide by zero encountered in log
+    result = getattr(ufunc, method)(*inputs, **kwargs)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/regression/test_pathological_fixture.py::test_pathological_high_raw_ic_but_worst_effective
+FAILED tests/regression/test_pathological_fixture.py::test_eval_failure_is_hard_invalid_in_penalty_modes
+=========== 2 failed, 17 passed, 1664 warnings in 940.15s (0:15:40) ============
+TESTS_DONE rc=1

@@ -1,0 +1,21 @@
+# 예시 실험 config — 연구 split은 framework default가 아니라 여기서 지정한다.
+#
+# split 근거(예시): 마이닝/학습 2010-2016, 검증 2017-2019, 평가 2021-2024.
+# 2020년은 train/test 완충(버퍼)으로 비워둔 예시이며, 연구 목적에 따라 조정할 것.
+
+market: all
+
+splits:
+  train: ["2010-01-01", "2016-12-31"]
+  valid: ["2017-01-01", "2019-12-31"]
+  test:  ["2021-01-01", "2024-12-31"]
+
+qd:
+  quality:
+    metric: IC
+    threshold: 0.02    # 예시 값 — pilot 후 확정
+
+backtest:
+  mode: simple
+  execution: next_open_oo
+  transaction_cost_rate: 0.0015
