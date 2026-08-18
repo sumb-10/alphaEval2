@@ -1,0 +1,6 @@
+formula,IC,signed_train_IC,train_sign,abs_train_IC,raw_fitness,effective_fitness,hard_invalid,research_invalid,validity_pass,invalid_reason,mean_daily_coverage_ratio,median_daily_n_valid,valid_day_ratio,method,constraint_mode,seed
+"Sum($factor, 12)",0.18429879936268984,-0.003861954400579053,-1,0.003861954400579053,0.18429879936268984,0.18429879936268984,False,False,True,,1.0,300.0,1.0,gplearn_asb,strict_penalty,42
+"Sum($factor, 12)",0.18429879936268984,-0.003861954400579053,-1,0.003861954400579053,0.18429879936268984,0.18429879936268984,False,False,True,,1.0,300.0,1.0,gplearn_asb,strict_penalty,42
+"Sum($factor, 12)",0.18429879936268984,-0.003861954400579053,-1,0.003861954400579053,0.18429879936268984,0.18429879936268984,False,False,True,,1.0,300.0,1.0,gplearn_asb,strict_penalty,42
+"Sum($factor, 12)",0.18429879936268984,-0.003861954400579053,-1,0.003861954400579053,0.18429879936268984,0.18429879936268984,False,False,True,,1.0,300.0,1.0,gplearn_asb,strict_penalty,42
+"Sum($factor, 12)",0.18429879936268984,-0.003861954400579053,-1,0.003861954400579053,0.18429879936268984,0.18429879936268984,False,False,True,,1.0,300.0,1.0,gplearn_asb,strict_penalty,42

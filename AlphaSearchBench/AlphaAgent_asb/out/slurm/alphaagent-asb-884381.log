@@ -5032,3 +5032,4 @@ Traceback (most recent call last):
     expression = eval(parse_field(field))
   File "<string>", line 1, in <module>
 NameError: name 'close' is not defined
+slurmstepd-n041: error: *** JOB 884381 ON n041 CANCELLED AT 2026-08-14T15:38:20 ***

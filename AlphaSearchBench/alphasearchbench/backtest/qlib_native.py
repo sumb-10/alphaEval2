@@ -109,3 +109,21 @@ class QlibBacktestEvaluator:
                   "train_sign": train_sign})
         d.insert(1, "formula_id", formula)
         return m, d
+
+    def evaluate_pool(self, formulas, weights, split: str = "test",
+                      pool_id: str = "pool") -> Tuple[Dict, pd.DataFrame]:
+        """결합 신호(개별 factor 경로와 동일 의미론)를 top-k long-only로 실행.
+
+        simple 모드의 evaluate_pool과 동일하게 z=0(결측 대체)은 신호 없음으로
+        간주해 qlib signal에서 제외한다 — 두 모드의 유효 셀 정의를 일치시킨다.
+        """
+        combo, mask = self.ctx.combined_signal(list(formulas), list(weights), split)
+        valid = mask & np.isfinite(combo) & (np.abs(combo) > 0)
+        sig = self._to_signal_series(combo, valid, split)
+        start, end = self.ctx.splits_cfg[split]
+        m, d = run_qlib_long_only(sig, start, end,
+                                  benchmark=self.ctx.benchmark_ticker, **self.kw)
+        m.update({"formula": pool_id, "split": split, "kind": "pool",
+                  "n_factors": len(formulas)})
+        d.insert(1, "formula_id", pool_id)
+        return m, d

@@ -1,0 +1,20 @@
+MINING_OK 884717 pilot_csi800_ictstat_42 -> eval 884775
+MINING_OK 884719 pilot_csi800_fbfit_42 -> eval 884798
+MINING_OK 884718 pilot_csi800_nsguard_42 -> eval 884861
+ALL_EVALS_FINISHED
+out/slurm/asb-eval-one-884723.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_off_2
+out/slurm/asb-eval-fixedhof-884762.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_netsharpe_2_fixedhof
+out/slurm/asb-eval-fixedhof-884761.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_netsharpe_1_fixedhof
+out/slurm/asb-eval-fixedhof-884760.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_netsharpe_0_fixedhof
+out/slurm/asb-eval-fixedhof-884759.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_strict_42_fixedhof
+out/slurm/asb-eval-fixedhof-884755.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_strict_0_fixedhof
+out/slurm/asb-eval-fixedhof-884756.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_strict_1_fixedhof
+out/slurm/asb-eval-fixedhof-884757.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_strict_2_fixedhof
+out/slurm/asb-eval-fixedhof-884758.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_strict_3_fixedhof
+out/slurm/asb-eval-one-884708.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_off_2
+out/slurm/asb-eval-one-884640.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_netsharpe_1
+out/slurm/asb-eval-one-884639.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_netsharpe_0
+out/slurm/asb-eval-one-884613.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_off_0
+out/slurm/asb-eval-one-884638.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_strict_2
+out/slurm/asb-eval-one-884623.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_off_42
+out/slurm/asb-eval-one-884614.log:EVAL_ONE_DONE rc=0 rid=pilot_csi800_strict_0

@@ -1,0 +1,122 @@
+{
+  "alphaagent_asb_version": "0.1.0",
+  "run_id": "alphaagent_asb_expB_csi800",
+  "method": "alphaagent_asb",
+  "compatibility_mode": "parity",
+  "constraint_mode": "off",
+  "llm_mode": "live",
+  "llm": {
+    "models": {
+      "idea": "gpt-5.6-luna",
+      "factor": "gpt-5.6-luna",
+      "eval": "gpt-5.6-luna"
+    },
+    "temperatures": {
+      "idea": 1.0,
+      "factor": 0.3,
+      "eval": 0.4
+    },
+    "request_seed": null,
+    "temperature_fallback_models": [
+      "gpt-5.6-luna"
+    ]
+  },
+  "seed": 42,
+  "market": "csi800",
+  "search_window": [
+    "2010-01-01",
+    "2019-12-31"
+  ],
+  "universe_hash": "23c5105bb3c0f9d8",
+  "thresholds": {
+    "min_mean_daily_coverage_ratio": 0.05,
+    "min_median_daily_n_valid": 30,
+    "min_valid_day_ratio": 0.9
+  },
+  "trajectory_semantics": "generation=round_id is an ASB compatibility field. AlphaAgent candidates belonging to different seed_idx values are independent refinement trajectories and do not form a reproducing population.",
+  "budget": {
+    "n_idea_calls": 51,
+    "n_factor_calls": 51,
+    "n_eval_calls": 25,
+    "n_retry_calls": 0,
+    "n_total_llm_calls": 127,
+    "prompt_tokens": 44133,
+    "completion_tokens": 29219,
+    "estimated_cost": 0.043889399999999995,
+    "n_seed_formulas": 17,
+    "n_candidate_rounds": 51,
+    "n_seed_aborted": 0,
+    "mining_wall_seconds": 796.2244903095998
+  },
+  "pool_size": 0,
+  "outputs": {
+    "final_pool_csv": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/AlphaAgent_asb/out/alphaagent_asb_expB_csi800/metrics/final_pool_alphaagent_asb_expB_csi800.csv",
+    "trajectory": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/AlphaAgent_asb/out/alphaagent_asb_expB_csi800/trajectory/alphaagent_asb_expB_csi800.jsonl"
+  },
+  "config_echo": {
+    "dataset": {
+      "provider_uri": "/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data",
+      "region": "cn",
+      "qlib_kernels": 8,
+      "warmup_start": null,
+      "right_buffer_days": 20
+    },
+    "market": "csi800",
+    "search": {
+      "start_date": "2010-01-01",
+      "end_date": "2019-12-31"
+    },
+    "label": {
+      "horizon": 1
+    },
+    "llm": {
+      "provider": "openai_compatible",
+      "base_url": "https://api.openai.com/v1",
+      "api_key_env": "OPEN_AI_API_KEY",
+      "env_file": null,
+      "models": {
+        "idea": "gpt-5.6-luna",
+        "factor": "gpt-5.6-luna",
+        "eval": "gpt-5.6-luna"
+      },
+      "temperatures": {
+        "idea": 1.0,
+        "factor": 0.3,
+        "eval": 0.4
+      },
+      "request_seed": null,
+      "max_retries": 5,
+      "timeout_seconds": 120,
+      "price_per_1k": {
+        "prompt": 0.0002,
+        "completion": 0.0012
+      }
+    },
+    "agent": {
+      "max_rounds": 3,
+      "seed_range": [
+        20,
+        null
+      ]
+    },
+    "compatibility": {
+      "mode": "parity"
+    },
+    "similarity": {
+      "distinguish_terminals": false
+    },
+    "constraint": {
+      "mode": "off"
+    },
+    "validity": {
+      "min_mean_daily_coverage_ratio": 0.05,
+      "min_median_daily_n_valid": 30,
+      "min_valid_day_ratio": 0.9
+    },
+    "seed": 42,
+    "run_id": "alphaagent_asb_expB_csi800",
+    "output": {
+      "root": null
+    }
+  }
+}

@@ -1,0 +1,29 @@
+# 실험2 — 비용 인지형 fitness ablation (strict 조건, fitness만 net_sharpe로 교체)
+# 다른 모든 조건은 pilot_csi800_base와 동일 (공정 비교).
+
+market: csi800
+
+search:
+  start_date: "2010-01-01"
+  end_date: "2019-12-31"
+
+gp:
+  population_size: 1000
+  generations: 5
+  hall_of_fame: 50
+  n_components: 10
+  fitness_metric: net_sharpe    # ★ ablation 축
+  stopping_criteria: 1.0e9      # Sharpe 스케일 — 원본 1.0은 조기종료 오발 (가드됨)
+
+constraint:
+  mode: strict_penalty
+  worst_fitness: -1.0e6         # Sharpe 스케일 sentinel (가드됨)
+
+validity:
+  min_mean_daily_coverage_ratio: 0.05
+  min_median_daily_n_valid: 30
+  min_valid_day_ratio: 0.90
+
+backtest:
+  transaction_cost_rate: 0.0015 # fitness의 비용률 (ASB 평가와 동일)
+  long_short_quantile: 0.2

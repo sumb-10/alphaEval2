@@ -1,0 +1,1 @@
+formula,IC,signed_train_IC,train_sign,feedback_IC_raw,feedback_IC_prompt,feedback_AnnRet_prompt,ast_similarity,validity_pass,invalid_reason,mean_daily_coverage_ratio,seed_idx,round_id,method,compatibility_mode,constraint_mode,seed

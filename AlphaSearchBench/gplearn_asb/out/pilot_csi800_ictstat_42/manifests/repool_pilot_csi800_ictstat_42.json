@@ -1,0 +1,31 @@
+{
+  "source_run_id": "pilot_csi800_ictstat_42",
+  "run_id": "pilot_csi800_ictstat_42_fixedhof",
+  "hof_mode": "fixed",
+  "hof_diag": {
+    "hof_mode": "fixed",
+    "n_input": 1000,
+    "n_dedup_removed": 741,
+    "n_unique": 259,
+    "n_top": 50,
+    "n_signal_failed": 0,
+    "decorr_degenerate_pairs": 0,
+    "n_decorr_removed": 40,
+    "decorr_max_abs_corr_final": 1.0
+  },
+  "final_generation": 4,
+  "population_rows": 1000,
+  "selected": [
+    "Div(Div(Less(Min(Power($high, $change), 64), Less($close, $change)), $volume), $volume)",
+    "Div(Div(Less(Min(EMA($volume, 64), 64), Less($close, $change)), $volume), $volume)",
+    "Div(Div(Less($high, $change), $volume), $volume)",
+    "Div(Less($high, $change), $volume)",
+    "Div(Div(Div(Less($high, $change), $volume), $volume), $volume)",
+    "Div(Div(Div(Less(Min(EMA($volume, 64), 64), Less($close, $change)), $volume), $volume), $volume)",
+    "Div(Div(Div(Div(Less($change, $vwap), $volume), $volume), $volume), $volume)",
+    "Div(Div(Less(Less($close, $change), Resi(EMA($change, 5), 64)), $volume), $volume)",
+    "Div(Div(Less(Min(EMA($volume, 64), 64), Resi(EMA($change, 5), 64)), $volume), $volume)",
+    "Div(Less(Min(EMA($volume, 64), 64), Div(Less(Min(Log($volume), 64), Resi(EMA($change, 5), 64)), $volume)), $volume)"
+  ],
+  "pool_csv": "out/pilot_csi800_ictstat_42/metrics/final_pool_pilot_csi800_ictstat_42_fixedhof.csv"
+}

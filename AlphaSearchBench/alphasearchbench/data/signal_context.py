@@ -194,6 +194,12 @@ class SignalContext:
         key = (formula, split)
         if key in self._qlib_native_cache:
             return self._qlib_native_cache[key]
+        # bare 필드명($ 없는 close 등)은 qlib이 종목별 NameError를 폭주시키며
+        # joblib 교착을 유발(AlphaAgent_asb D-11 실측) — 호출 전 차단.
+        import re
+        if re.search(r"(?<!\$)\b(open|high|low|close|volume|amount|vwap|change)\b",
+                     formula):
+            raise FormulaEvalError("eval_error:bare_field_name", formula)
         from qlib.data import D
         sc = self.split[split]
         try:

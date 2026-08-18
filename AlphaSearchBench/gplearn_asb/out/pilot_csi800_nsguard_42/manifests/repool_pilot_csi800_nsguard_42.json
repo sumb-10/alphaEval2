@@ -1,0 +1,31 @@
+{
+  "source_run_id": "pilot_csi800_nsguard_42",
+  "run_id": "pilot_csi800_nsguard_42_fixedhof",
+  "hof_mode": "fixed",
+  "hof_diag": {
+    "hof_mode": "fixed",
+    "n_input": 1000,
+    "n_dedup_removed": 560,
+    "n_unique": 440,
+    "n_top": 50,
+    "n_signal_failed": 0,
+    "decorr_degenerate_pairs": 0,
+    "n_decorr_removed": 40,
+    "decorr_max_abs_corr_final": 0.9889042758764388
+  },
+  "final_generation": 4,
+  "population_rows": 1000,
+  "selected": [
+    "Std(WMA(Mad($amount, 5), 12), 12)",
+    "Std(WMA(Std($amount, 5), 12), 12)",
+    "Greater(Mad(EMA($amount, 12), 12), Std(Abs(Std($amount, 5)), 30))",
+    "Abs(Greater(IdxMin(WMA(Power($amount, $change), 5), 12), Std(Mad($amount, 5), 30)))",
+    "Std(Mad($amount, 5), 12)",
+    "Std(Abs(EMA($amount, 12)), 12)",
+    "Std(WMA(Abs(Greater($factor, $amount)), 12), 12)",
+    "Std(Std(Abs(EMA($amount, 12)), 12), 30)",
+    "Greater(Std(EMA($amount, 5), 30), Std(Abs(Greater($factor, $amount)), 30))",
+    "Log(Greater(Mad(EMA($amount, 12), 12), Std(Abs(Greater($factor, $amount)), 30)))"
+  ],
+  "pool_csv": "out/pilot_csi800_nsguard_42/metrics/final_pool_pilot_csi800_nsguard_42_fixedhof.csv"
+}

@@ -1,0 +1,31 @@
+{
+  "source_run_id": "pilot_csi800_fbfit_3",
+  "run_id": "pilot_csi800_fbfit_3_fixedhof",
+  "hof_mode": "fixed",
+  "hof_diag": {
+    "hof_mode": "fixed",
+    "n_input": 1000,
+    "n_dedup_removed": 953,
+    "n_unique": 47,
+    "n_top": 47,
+    "n_signal_failed": 0,
+    "decorr_degenerate_pairs": 0,
+    "n_decorr_removed": 37,
+    "decorr_max_abs_corr_final": 0.7477886202528524
+  },
+  "final_generation": 4,
+  "population_rows": 1000,
+  "selected": [
+    "Std(WMA($amount, 5), 64)",
+    "Max(Var(Sub($close, $vwap), 30), 64)",
+    "Less($high, Mean($close, 5))",
+    "Ref(Min($factor, 64), 5)",
+    "Greater($low, $volume)",
+    "Max(Slope($change, 12), 64)",
+    "Max(Kurt($adjclose, 30), 64)",
+    "Max(Log(Ref(Mad($factor, 5), 12)), 64)",
+    "Kurt($close, 12)",
+    "Resi($high, 5)"
+  ],
+  "pool_csv": "out/pilot_csi800_fbfit_3/metrics/final_pool_pilot_csi800_fbfit_3_fixedhof.csv"
+}

@@ -47,6 +47,17 @@
    컬럼에 기록된다. 비용: 해당 formula × split당 qlib 쿼리 1회(캐시됨).
    진짜 평가 실패(eval_error 등)는 종전대로 hard invalid로 전파된다.
 
+5. **all_candidates descriptor 덤프 + search-QD 좌표의 valid 전환**
+   (2026-08-14, 후속 실험 배치에서 추가):
+   - `qd.descriptor_scope: all_candidates` — trajectory의 unique 후보 전부에
+     descriptor 행을 추가(`scope="all_candidates"`, 평가 불가 후보는
+     `skip_reason` stub — 조용한 유실 금지). projection/grid/pool metrics는
+     종전대로 **final_pool로만 fit**하고 all_candidates는 transform만.
+     입력 pool에 없는 trajectory 후보의 train_sign은 train 재평가로 복원.
+   - **search-QD(generation metrics) 좌표·quality를 test→valid로 전환**:
+     탐색 동학 분석에 test 행동을 쓰지 않는다(test 봉인). 기존 run의
+     gen-metrics와 수치가 달라질 수 있는 의미론 변경 — 재평가 시 일괄 적용.
+
 ## Engineering decisions (문서화된 선택)
 
 3. **weights 미제공 시 equal weights(1/n)** — pool 평가를 생략하는 대신

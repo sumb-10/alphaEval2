@@ -1,0 +1,31 @@
+{
+  "source_run_id": "pilot_csi800_fbfit_2",
+  "run_id": "pilot_csi800_fbfit_2_fixedhof",
+  "hof_mode": "fixed",
+  "hof_diag": {
+    "hof_mode": "fixed",
+    "n_input": 1000,
+    "n_dedup_removed": 681,
+    "n_unique": 319,
+    "n_top": 50,
+    "n_signal_failed": 0,
+    "decorr_degenerate_pairs": 0,
+    "n_decorr_removed": 40,
+    "decorr_max_abs_corr_final": 0.9472264632263281
+  },
+  "final_generation": 4,
+  "population_rows": 1000,
+  "selected": [
+    "Mul(EMA(Var($amount, 12), 30), WMA($open, 12))",
+    "Mul(EMA(Var($amount, 5), 30), Std($amount, 30))",
+    "Mul(EMA(Var($amount, 12), 30), EMA(Add(Var($amount, 5), Var(Greater(Mul($volume, $high), Mad($vwap, 5)), 30)), 12))",
+    "Mul(EMA(Var($amount, 12), 30), Max(Std($amount, 30), 64))",
+    "Mul(EMA(Var($amount, 12), 30), Mul($vwap, Mean(EMA(Var($amount, 12), 30), 5)))",
+    "EMA(Add(Var($amount, 5), Sub(Var($amount, 12), $adjclose)), 12)",
+    "Mul(EMA(Var($amount, 12), 30), Max(Var($amount, 12), 64))",
+    "Add(Mean(EMA(Var($amount, 12), 30), 5), EMA(Var($amount, 5), 30))",
+    "EMA(Add(Sum(Std($amount, 64), 5), Var(Greater(Var($amount, 12), Mad($vwap, 5)), 30)), 12)",
+    "Add(Max(Mad($amount, 30), 64), Std($amount, 30))"
+  ],
+  "pool_csv": "out/pilot_csi800_fbfit_2/metrics/final_pool_pilot_csi800_fbfit_2_fixedhof.csv"
+}

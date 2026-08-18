@@ -1,0 +1,31 @@
+{
+  "source_run_id": "pilot_csi800_netsharpe_1",
+  "run_id": "pilot_csi800_netsharpe_1_fixedhof",
+  "hof_mode": "fixed",
+  "hof_diag": {
+    "hof_mode": "fixed",
+    "n_input": 1000,
+    "n_dedup_removed": 953,
+    "n_unique": 47,
+    "n_top": 47,
+    "n_signal_failed": 0,
+    "decorr_degenerate_pairs": 46,
+    "n_decorr_removed": 37,
+    "decorr_max_abs_corr_final": 0.15725869979764662
+  },
+  "final_generation": 4,
+  "population_rows": 1000,
+  "selected": [
+    "EMA(Div($close, $vwap), 12)",
+    "EMA(WMA(Div($close, $vwap), 5), 12)",
+    "WMA(Var(EMA($amount, 5), 12), 5)",
+    "EMA(Delta($volume, 64), 30)",
+    "EMA(EMA(EMA($factor, 5), 30), 12)",
+    "Slope(Slope(Div($close, $vwap), 64), 64)",
+    "WMA(Var(Slope(Div($close, $vwap), 64), 12), 5)",
+    "Div($adjclose, $high)",
+    "Skew($close, 12)",
+    "EMA(Min(Sign(WMA($open, 64)), 64), 30)"
+  ],
+  "pool_csv": "out/pilot_csi800_netsharpe_1/metrics/final_pool_pilot_csi800_netsharpe_1_fixedhof.csv"
+}

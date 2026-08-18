@@ -1,0 +1,31 @@
+{
+  "source_run_id": "pilot_csi800_strict_2",
+  "run_id": "pilot_csi800_strict_2_fixedhof",
+  "hof_mode": "fixed",
+  "hof_diag": {
+    "hof_mode": "fixed",
+    "n_input": 1000,
+    "n_dedup_removed": 984,
+    "n_unique": 16,
+    "n_top": 16,
+    "n_signal_failed": 0,
+    "decorr_degenerate_pairs": 0,
+    "n_decorr_removed": 6,
+    "decorr_max_abs_corr_final": 0.4856203635953009
+  },
+  "final_generation": 4,
+  "population_rows": 1000,
+  "selected": [
+    "Div($change, $volume)",
+    "Less($change, $volume)",
+    "Div(8, $volume)",
+    "Delta($vwap, 5)",
+    "Min($amount, 5)",
+    "Slope($open, 12)",
+    "IdxMax(Var($vwap, 64), 64)",
+    "Log($factor)",
+    "Less(Mul($low, $factor), Min($amount, 5))",
+    "Abs($adjclose)"
+  ],
+  "pool_csv": "out/pilot_csi800_strict_2/metrics/final_pool_pilot_csi800_strict_2_fixedhof.csv"
+}

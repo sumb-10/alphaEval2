@@ -1,0 +1,30 @@
+# B ablation ③ — fb_fitness = net_sharpe×√(|AnnRet|/ann_turnover)
+# (원본 backtester의 미사용 Fitness 정신, ASB 의미론 재정의 — fitness.py 참조).
+# strict 조건, fitness만 교체 — 나머지는 pilot_csi800_base와 동일.
+
+market: csi800
+
+search:
+  start_date: "2010-01-01"
+  end_date: "2019-12-31"
+
+gp:
+  population_size: 1000
+  generations: 5
+  hall_of_fame: 50
+  n_components: 10
+  fitness_metric: fb_fitness    # ★ ablation 축
+  stopping_criteria: 1.0e9
+
+constraint:
+  mode: strict_penalty
+  worst_fitness: -1.0e6         # fb는 net_sharpe 부호를 따름 — 큰 음수 가능
+
+validity:
+  min_mean_daily_coverage_ratio: 0.05
+  min_median_daily_n_valid: 30
+  min_valid_day_ratio: 0.90
+
+backtest:
+  transaction_cost_rate: 0.0015
+  long_short_quantile: 0.2

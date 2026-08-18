@@ -37,6 +37,23 @@ gp:
   metric: pearson
   stopping_criteria: 1.0
   max_samples: 1.0
+  fitness_metric: abs_ic      # abs_ic | net_sharpe | ic_tstat | fb_fitness
+                              # ic_tstat [B1]: |mean daily IC|/SE — 관측일 수 반영.
+                              #   stopping_criteria를 크게(예 1e9) 설정해야 함 (CLI 가드).
+                              # fb_fitness [B3]: net_sharpe×√(|AnnRet|/ann_turnover) —
+                              #   원본 backtester의 미사용 Fitness의 ASB 의미론 재정의
+                              #   (oneway L1 turnover·산술 AnnRet — 원본과 수치 다름).
+                              #   worst_fitness ≤ -100, stopping ≥ 100 필요 (CLI 가드).
+  net_sharpe_min_traded_days: null  # [B2] n_traded_days < 값 → worst (규약: >= pass)
+  net_sharpe_min_abs_ic: null       # [B2] |signed_train_IC| < 값 → worst ("IC 없는 Sharpe" 차단)
+  max_program_length: null    # [P2-3] program_size > 값 → worst (penalty 모드 전용, 기본 off)
+  hof_mode: original          # original | fixed
+                              # fixed [A]: 최종 population에서 exact-dup 제거 +
+                              #   NaN-safe decorrelation 재선택 (원본 HOF 중복 버그 수정판).
+                              #   fit 이후 단계라 탐색 재현성 불변 — pool 구성만 달라짐.
+  static_gate: true           # [P2] penalty 모드에서 static invalid(상수식·bad window)의
+                              #   데이터 접근 스킵. static ⊂ hard 증명으로 effective fitness
+                              #   불변(사유 문자열·비용만 변화). off 모드는 항상 원형(기록만).
 
 constraint:
   mode: "off"                 # "off" | hard_penalty | strict_penalty (따옴표 필수 — YAML off=False)

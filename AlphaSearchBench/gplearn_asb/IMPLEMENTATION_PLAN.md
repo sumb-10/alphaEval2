@@ -81,7 +81,72 @@ constraint mode → effective_fitness → p.raw_fitness_ (selection·HOF 소비)
 3. **`Mean($close, 0)`은 유효**(qlib 의미론 N=0 → expanding) — eval 실패
    fixture로는 미지 연산자(`Quantile(...)`)를 써야 한다.
 
+## 확장 (2026-08-14, 실험2용): fitness_metric = net_sharpe
+
+- `gp.fitness_metric: abs_ic(기본) | net_sharpe`. net_sharpe = oriented 신호의
+  search-창 일별 20/20 long-short **net Sharpe** (ASB simple backtest와 동일
+  수학: gross 1=0.5/0.5, turnover_oneway=l1/2, 첫날 건립 비용, ddof=1, ×√252;
+  비용률·quantile은 `backtest.*` config 주입). 부호는 train IC로 고정(oriented).
+- 스케일 가드(cli 강제): worst_fitness ≤ −100 요구(음수 Sharpe도 valid),
+  stopping_criteria ≥ 100 요구(원본 1.0은 Sharpe≥1 조기 종료 오발).
+  net_sharpe NaN(무거래 등)은 `fitness_undefined:net_sharpe_nan`으로 worst.
+- 진단 캐시에는 net_sharpe·연환산수익·turnover가 함께 저장되고, trajectory에
+  `fitness_metric`/`net_sharpe` 컬럼 추가. IC 필드 의미는 불변.
+
 ## Phase 순서
 A 감사(본 문서) → B vendored copy + off 동등성(gen-0 + 883881 재현) → C diagnostics
 상시화 → D hard_penalty → E strict_penalty → F trajectory/gen-stats/parent diversity
 → G 테스트(unit/smoke/regression) → H 3-arm pilot(Slurm) + ASB evaluate + REPORT.md
+
+## 확장 (2026-08-14, A+B+P): fixed HOF · 신뢰도 fitness · 정적 사전검증층
+
+기본값은 전부 원형 유지(기존 run 재현성 불변 — 883881 재현 테스트가 강제),
+vendored_gplearn 무수정.
+
+### A. `gp.hof_mode: original(기본) | fixed` (hof.py)
+- 근거: seed sweep 실측 — 원본 HOF exact-dup 미제거로 strict pool 유효 unique
+  1–2/10 (seed 1, 2). HOF는 fit 이후 선택 단계 → vendored 무수정, RNG 불소비
+  (탐색 재현성 불변, pool 구성만 교체).
+- fixed 알고리즘: 최종 population(=trajectory 마지막 세대) → exact-dup 선제거
+  (formula 문자열, best effective 유지) → effective 상위 hall_of_fame → NaN-safe
+  decorrelation(일별 z-score 신호의 공통 finite 셀 Pearson; 퇴화 쌍=공통 셀
+  <min_common_cells(100) 또는 corr NaN은 0 취급+`decorr_degenerate_pairs` 기록;
+  |corr| 최대 쌍에서 낮은 eff 제거) → n_components.
+- 소급: `scripts/repool_fixed_hof.py` — 완주 run의 trajectory 마지막 세대에
+  오프라인 적용, `final_pool_<rid>_fixedhof.csv` + 파생 run 디렉토리 생성
+  (원본 pool CSV 보존).
+
+### B. fitness 계열 확장 (fitness.py / evaluator.py)
+- **B1 `ic_tstat`** = |mean(daily IC)|/(std(daily IC, ddof=1)/√n_obs). `_daily_ic`가
+  (ic, n_obs, daily_std) 3-튜플 반환으로 확장(AA diagnostics 호출부 동반 수정),
+  진단에 `ic_daily_std`/`ic_tstat` 상시 저장. 판정 불가(n<2, std=0)는 NaN→worst
+  (`fitness_undefined:ic_tstat_nan`). cli 가드: stopping ≥ 100 (t=1은 사소).
+- **B2 net_sharpe 부가 조건** (기본 null=off): `gp.net_sharpe_min_traded_days`,
+  `gp.net_sharpe_min_abs_ic` — 규약 value ≥ threshold → pass. 판정은 fitness.py
+  (진단 캐시 순수 유지). 모드 무관(=fitness 정의의 일부), raw는 보존(스펙 #19),
+  effective만 worst + `fitness_condition_failed` 기록.
+- **B3 `fb_fitness`** = net_sharpe×√(|net_ann_ret_arith|/ann_turnover_oneway) —
+  원본 backtester의 미사용 Fitness의 **ASB 의미론 재정의**(원본은 카운트
+  turnover·기하 AnnRet — 수치 다름). turnover≤0/구성 NaN → worst
+  (`fitness_undefined:fb_fitness_nan`). cli 가드 = net_sharpe와 동일.
+- off-모드 $close fallback은 활성 metric 기준(`evaluator.close_raw_fitness`).
+
+### P. 정적 사전검증층 (static_check.py, `gp.static_gate: true`)
+- 2단 게이트: 생성 → [P1 문법(기존 파서) + P2 정적 규칙] → 합격만 데이터 접근
+  → [P3 데이터 validity(기존 strict)]. **static ⊂ hard 증명이 성립하는 규칙만
+  invalid로 승격** — 그래서 penalty 모드에서 effective fitness 불변(사유
+  문자열·데이터 비용만 변화), off 모드는 원형(기록만, fallback 경로 불변).
+  게이트 켠 evaluator는 캐시 네임스페이스 분리(`static_gate` 키 조건부 추가 —
+  기존 run fingerprint 불변).
+- 규칙: ① 상수식(`Sub(x,x)`/`Div(x,x)`/전-인자-상수 전파) →
+  `static_invalid:constant_expression`. ② `gp.max_program_length`(기본 null) 초과
+  → `static_invalid:too_long`(fitness.py 판정, penalty 모드 전용).
+  ③ flag 전용(탐색 불개입): `static_flag_constant_subtree`,
+  `static_flag_nonstd_window`, `program_size` 상시 기록.
+- **정정 2건 (구현 중 실측)**: (a) Greater/Less는 qlib에서 element-wise
+  max/min → f(x,x)=x 항등, 상수 아님 — 초안 판정기의 오판 101건/13 run을
+  단위테스트로 고정. (b) window 0=expanding, 0<w<1 float도 엔진이 유효 평가 →
+  "bad window" invalid 규칙은 static ⊂ hard를 깨므로 flag로 강등.
+- 사전 실측(scripts/measure_static_savings.py, 13 run/22,539 unique): 진짜
+  상수식 72(0.32%), bad-window 0, canonical 병합 271(1.2%) → **canonical memo
+  키(P2-4)는 보류**(절감 대비 캐시 이중 키 복잡성).

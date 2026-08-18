@@ -12,9 +12,18 @@ eval_failed}를 기록한다.
 """
 from __future__ import annotations
 
+import re
 from typing import Any, Dict
 
 import numpy as np
+
+_BARE_FIELD = re.compile(r"(?<!\$)\b(open|high|low|close|volume|vwap|amount|factor)\b")
+
+
+def has_bare_field(formula: str) -> bool:
+    """$ 없는 필드명 존재 여부 — qlib에 던지면 종목별 NameError 폭주로
+    joblib 교착을 유발할 수 있어 사전 차단한다 (D-11)."""
+    return bool(_BARE_FIELD.search(formula or ""))
 
 
 class DiagnosticsWithQlibFallback:
@@ -40,6 +49,8 @@ class DiagnosticsWithQlibFallback:
 
     def _qlib_fallback(self, formula: str):
         """qlib D.features로 신호 계산 → engine 격자로 정렬 → 동일 의미론 진단."""
+        if has_bare_field(formula):
+            return None          # D-11: bare-name은 qlib 교착 위험 — 즉시 실패 처리
         from qlib.data import D
         from alphasearchbench.validity.metrics import compute_validity_stats
         ev = self.ev
@@ -53,7 +64,7 @@ class DiagnosticsWithQlibFallback:
         except Exception:  # noqa: BLE001 — qlib도 못 읽으면 진짜 eval 실패
             return None
         stats = compute_validity_stats(values, ev.universe_mask)
-        ic, n_obs = ev._daily_ic(values)
+        ic, n_obs, ic_std = ev._daily_ic(values)
         hard_reason = None
         if stats["n_valid_cells"] == 0:
             hard_reason = "all_nonfinite"
@@ -63,7 +74,10 @@ class DiagnosticsWithQlibFallback:
             hard_reason = "zero_ic_observations"
         out: Dict[str, Any] = {"formula": formula}
         out.update(stats)
+        from gplearn_asb.evaluator import _ic_tstat
         out.update({"signed_train_IC": float(ic), "abs_train_IC": float(abs(ic)),
+                    "ic_daily_std": float(ic_std),
+                    "ic_tstat": _ic_tstat(ic, n_obs, ic_std),
                     "n_ic_obs": int(n_obs), "eval_failed": False,
                     "hard_invalid": hard_reason is not None,
                     "invalid_reason": hard_reason})

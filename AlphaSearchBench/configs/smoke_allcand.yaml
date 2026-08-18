@@ -1,0 +1,13 @@
+# smoke + all_candidates 덤프 (기능 검증용)
+market: csi300
+splits:
+  train: ["2018-01-01", "2018-12-31"]
+  valid: ["2019-01-01", "2019-06-30"]
+  test:  ["2019-07-01", "2019-12-31"]
+dataset:
+  warmup_start: "2016-01-01"
+qd:
+  descriptor_scope: all_candidates
+  quality:
+    metric: IC
+    threshold: 0.02

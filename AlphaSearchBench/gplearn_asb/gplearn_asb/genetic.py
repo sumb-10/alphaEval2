@@ -32,7 +32,8 @@ def make_asb_parallel_evolve(evaluator: MiningEvaluator,
                              gen_stats: GenStatsCollector,
                              constraint_mode_field: str,
                              vendored_program_cls,
-                             vendored_check_random_state):
+                             vendored_check_random_state,
+                             fitness_opts: Optional[Dict[str, Any]] = None):
     """vendored gplearn genetic._parallel_evolve 대체 함수 생성."""
     _Program = vendored_program_cls
     check_random_state = vendored_check_random_state
@@ -113,7 +114,11 @@ def make_asb_parallel_evolve(evaluator: MiningEvaluator,
         for idx, (p, expr, genome) in enumerate(zip(programs, exprs, genomes)):
             diag = evaluator.diagnose(expr)
             info = apply_constraint(mode, diag, thresholds, worst_fitness,
-                                    evaluator.close_signed_ic)
+                                    evaluator.close_signed_ic,
+                                    fitness_metric=getattr(evaluator, "fitness_metric", "abs_ic"),
+                                    close_net_sharpe=getattr(evaluator, "close_net_sharpe", float("nan")),
+                                    fitness_opts=fitness_opts,
+                                    close_raw_fitness=getattr(evaluator, "close_raw_fitness", None))
             info["formula"] = expr
             info["mean_daily_coverage_ratio"] = diag.get("mean_daily_coverage_ratio")
             info["median_daily_n_valid"] = diag.get("median_daily_n_valid")
@@ -130,6 +135,12 @@ def make_asb_parallel_evolve(evaluator: MiningEvaluator,
                 effective_fitness=info["effective_fitness"],
                 signed_train_IC=info["signed_train_IC"],
                 abs_train_IC=info["abs_train_IC"],
+                fitness_metric=info.get("fitness_metric", "abs_ic"),
+                net_sharpe=diag.get("net_sharpe"),
+                ic_tstat=diag.get("ic_tstat"),
+                static_invalid_reason=diag.get("static_invalid_reason"),
+                static_flag_constant_subtree=diag.get("static_flag_constant_subtree"),
+                fitness_condition_failed=info.get("fitness_condition_failed"),
                 constraint_mode=constraint_mode_field,
                 hard_invalid=info["hard_invalid"],
                 research_invalid=info["research_invalid"],

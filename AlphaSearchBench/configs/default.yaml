@@ -53,6 +53,7 @@ oos:
   save_daily_series: true
 
 qd:
+  descriptor_scope: final_pool   # final_pool | all_candidates(trajectory 필요 — attempted 후보 전부 덤프)
   horizons: [1, 5, 10, 20]
   contrast_eps: 1.0e-4
   contrast_denom_threshold: 1.0e-3   # |a|+|b| < threshold → denom_small 플래그

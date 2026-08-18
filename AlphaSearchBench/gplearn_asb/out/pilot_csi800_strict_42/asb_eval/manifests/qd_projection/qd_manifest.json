@@ -11,7 +11,7 @@
   "n_reference_rows": 10,
   "explained_variance_ratio": [
     1.0,
-    2.0239620475296468e-33
+    2.7733391199176176e-33
   ],
   "reference_split": "valid",
   "reference_runs": [

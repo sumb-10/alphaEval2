@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "scripts/repool_fixed_hof.py", line 156, in <module>
+    main()
+  File "scripts/repool_fixed_hof.py", line 148, in main
+    summaries = [repool_run(r) for r in runs]
+  File "scripts/repool_fixed_hof.py", line 148, in <listcomp>
+    summaries = [repool_run(r) for r in runs]
+  File "scripts/repool_fixed_hof.py", line 66, in repool_run
+    assert len(manifests) == 1, f"manifest 1개 기대: {run_dir} → {manifests}"
+AssertionError: manifest 1개 기대: out/pilot_csi800_strict_0 → []
+REPOOL_DONE rc=1

@@ -1,0 +1,9 @@
+tests/smoke/test_phase8_qlib_timestamp.py::test_timestamp_audit_next_open_and_deal_price
+tests/smoke/test_phase8_qlib_timestamp.py::test_timestamp_audit_next_open_and_deal_price
+tests/smoke/test_phase8_qlib_timestamp.py::test_timestamp_audit_next_open_and_deal_price
+  /home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/qlib/utils/index_data.py:482: RuntimeWarning: Mean of empty slice
+    return np.nanmean(self.data)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+80 passed, 9 warnings in 493.95s (0:08:13)
+ASB_TESTS_DONE rc=0

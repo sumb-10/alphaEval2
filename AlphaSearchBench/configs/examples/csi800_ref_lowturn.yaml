@@ -1,0 +1,28 @@
+# [WS-A / A2] 저회전 long-short — A1과 **선택 규칙·보유기간만** 다르다.
+#
+# 목적: 회전율 상한 효과를 단독 분리. 실측에서 |IC| pool의 연회전(편도)은
+# 96~193배로 15bps에서 연 14~29%p가 비용으로 증발했다. 참고연구는 top-k +
+# 교체 제한(n_drop)으로 회전을 구조적으로 묶는다 — 여기서는 동일 목적을
+# top-k 카운트 선택 + 5일 보유로 구현한다(qlib 의존 없이 simple 모드에서).
+
+market: csi800
+
+splits:
+  train: ["2010-01-01", "2019-12-31"]
+  valid: ["2020-01-01", "2020-12-31"]
+  test:  ["2021-01-01", "2024-12-31"]
+
+qd:
+  descriptor_scope: all_candidates
+  quality:
+    metric: IC
+    threshold: 0.02
+
+backtest:
+  mode: simple
+  execution: next_open_oo
+  selection: topk                  # ★ A2 축 1 — 분위 대신 상·하위 K종목
+  topk: 50                         #   AlphaAgent KDD'25 / AlphaGen의 top-50 관행
+  rebalance_days: 5                # ★ A2 축 2 — 5거래일 보유(비리밸런스일 회전 0)
+  transaction_cost_rate: 0.0015
+  cost_turnover_definition: oneway

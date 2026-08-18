@@ -1,0 +1,4 @@
+  File "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/alphasearchbench/config.py", line 77, in load
+    with open(path) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '../configs/examples/csi800_ref.yaml'
+EVAL_ONE_DONE rc=1 rid=pilot_csi800_netsharpe_1

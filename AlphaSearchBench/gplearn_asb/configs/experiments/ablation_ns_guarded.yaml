@@ -1,0 +1,32 @@
+# B ablation ② — net_sharpe + 신뢰 가드 2종 (실험2 netsharpe와의 차이는
+# 가드 유무뿐 — "IC 없는 Sharpe"(seed 0 승자 |IC| 0.006)와
+# 소수 거래일 착시(n_traded_days 최소) 차단 효과 측정).
+
+market: csi800
+
+search:
+  start_date: "2010-01-01"
+  end_date: "2019-12-31"
+
+gp:
+  population_size: 1000
+  generations: 5
+  hall_of_fame: 50
+  n_components: 10
+  fitness_metric: net_sharpe
+  stopping_criteria: 1.0e9
+  net_sharpe_min_traded_days: 252   # ★ 가드 1 — 최소 1년치 거래일 (>= pass)
+  net_sharpe_min_abs_ic: 0.01       # ★ 가드 2 — 신호 없는 Sharpe 차단
+
+constraint:
+  mode: strict_penalty
+  worst_fitness: -1.0e6
+
+validity:
+  min_mean_daily_coverage_ratio: 0.05
+  min_median_daily_n_valid: 30
+  min_valid_day_ratio: 0.90
+
+backtest:
+  transaction_cost_rate: 0.0015
+  long_short_quantile: 0.2

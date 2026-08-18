@@ -1,0 +1,31 @@
+{
+  "source_run_id": "pilot_csi800_fbfit_1",
+  "run_id": "pilot_csi800_fbfit_1_fixedhof",
+  "hof_mode": "fixed",
+  "hof_diag": {
+    "hof_mode": "fixed",
+    "n_input": 1000,
+    "n_dedup_removed": 696,
+    "n_unique": 304,
+    "n_top": 50,
+    "n_signal_failed": 0,
+    "decorr_degenerate_pairs": 0,
+    "n_decorr_removed": 40,
+    "decorr_max_abs_corr_final": 0.9877403205772725
+  },
+  "final_generation": 4,
+  "population_rows": 1000,
+  "selected": [
+    "Add(Max(Mean(Var($amount, 12), 5), 30), Greater(Var($amount, 30), EMA(Var($amount, 30), 64)))",
+    "Sub(Greater(Var($amount, 30), Max(Mean(Var($amount, 12), 5), 30)), Sub(WMA($low, 30), Std(Var($amount, 30), 64)))",
+    "EMA(Sub(Greater(Var($amount, 30), EMA(Var($amount, 30), 12)), Sub(WMA($low, 30), IdxMax(Skew($volume, 30), 64))), 5)",
+    "Sub(Greater(Var($amount, 12), Max(Mean(Var($amount, 12), 5), 30)), Sub(WMA($low, 30), WMA(Var($amount, 30), 5)))",
+    "Sub(Greater(Var($amount, 30), EMA(Var($amount, 30), 64)), Sub(WMA($low, 30), WMA(Var($amount, 30), 5)))",
+    "Max(EMA(Var($amount, 12), 12), 30)",
+    "Add(Max(Mean(EMA(Var($amount, 12), 12), 5), 30), Var($amount, 30))",
+    "Sub(Greater(Var($amount, 30), Max(Mean(Mean(Var($amount, 12), 5), 5), 30)), Sub(WMA($low, 30), IdxMax(Skew($volume, 30), 64)))",
+    "Sub(Greater(Max(Var($amount, 12), 30), EMA(Var($amount, 30), 64)), Sub(WMA($low, 30), IdxMax(Skew($volume, 30), 64)))",
+    "Sub(Greater(Var($amount, 30), EMA(Var($amount, 30), 30)), Sub(WMA($low, 30), Std($amount, 30)))"
+  ],
+  "pool_csv": "out/pilot_csi800_fbfit_1/metrics/final_pool_pilot_csi800_fbfit_1_fixedhof.csv"
+}

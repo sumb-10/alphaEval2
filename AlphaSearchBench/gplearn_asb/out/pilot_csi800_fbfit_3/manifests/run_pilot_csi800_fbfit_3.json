@@ -1,0 +1,139 @@
+{
+  "gplearn_asb_version": "0.1.0",
+  "semantics_version": "1",
+  "run_id": "pilot_csi800_fbfit_3",
+  "method": "gplearn_asb",
+  "constraint_mode": "strict_penalty",
+  "fitness_metric": "fb_fitness",
+  "fitness_opts": {
+    "net_sharpe_min_traded_days": null,
+    "net_sharpe_min_abs_ic": null,
+    "max_program_length": null
+  },
+  "hof_mode": "original",
+  "static_gate": true,
+  "seed": 3,
+  "worst_fitness": -1000000.0,
+  "thresholds": {
+    "min_mean_daily_coverage_ratio": 0.05,
+    "min_median_daily_n_valid": 30,
+    "min_valid_day_ratio": 0.9
+  },
+  "market": "csi800",
+  "search_window": [
+    "2010-01-01",
+    "2019-12-31"
+  ],
+  "label_horizon": 1,
+  "universe_hash": "23c5105bb3c0f9d8",
+  "close_fallback_signed_ic": -0.0024472249735089024,
+  "gp_params": {
+    "population_size": 1000,
+    "generations": 5,
+    "hall_of_fame": 50,
+    "n_components": 10,
+    "tournament_size": 20,
+    "p_crossover": 0.9,
+    "p_subtree_mutation": 0.01,
+    "p_hoist_mutation": 0.01,
+    "p_point_mutation": 0.01,
+    "p_point_replace": 0.05,
+    "init_depth": [
+      1,
+      4
+    ],
+    "init_method": "half and half",
+    "parsimony_coefficient": 0.0,
+    "metric": "pearson",
+    "stopping_criteria": "1.0e9",
+    "max_samples": 1.0
+  },
+  "budget": {
+    "total_evaluations": 5000,
+    "unique_evaluations": 1378,
+    "memo_hits": 3336,
+    "wall_clock_seconds": 6784.358390424401,
+    "panel_setup_seconds": 72.43832379300147,
+    "cache_stats_incl_postfit": {
+      "unique_evaluations": 1378,
+      "memo_hits": 3632,
+      "total_lookups": 5010
+    }
+  },
+  "cache_context": {
+    "market": "csi800",
+    "universe_hash": "23c5105bb3c0f9d8",
+    "search_start": "2010-01-01",
+    "search_end": "2019-12-31",
+    "dataset_uri": "/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data",
+    "label_horizon": 1,
+    "semantics_version": "1",
+    "static_gate": true
+  },
+  "outputs": {
+    "final_pool_csv": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/pilot_csi800_fbfit_3/metrics/final_pool_pilot_csi800_fbfit_3.csv",
+    "trajectory": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/pilot_csi800_fbfit_3/trajectory/pilot_csi800_fbfit_3.jsonl"
+  },
+  "config_echo": {
+    "dataset": {
+      "provider_uri": "/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data",
+      "region": "cn",
+      "qlib_kernels": 8,
+      "warmup_start": null,
+      "right_buffer_days": 20
+    },
+    "market": "csi800",
+    "search": {
+      "start_date": "2010-01-01",
+      "end_date": "2019-12-31"
+    },
+    "label": {
+      "horizon": 1
+    },
+    "gp": {
+      "population_size": 1000,
+      "generations": 5,
+      "hall_of_fame": 50,
+      "n_components": 10,
+      "tournament_size": 20,
+      "p_crossover": 0.9,
+      "p_subtree_mutation": 0.01,
+      "p_hoist_mutation": 0.01,
+      "p_point_mutation": 0.01,
+      "p_point_replace": 0.05,
+      "init_depth": [
+        1,
+        4
+      ],
+      "init_method": "half and half",
+      "parsimony_coefficient": 0.0,
+      "metric": "pearson",
+      "stopping_criteria": "1.0e9",
+      "max_samples": 1.0,
+      "fitness_metric": "fb_fitness",
+      "net_sharpe_min_traded_days": null,
+      "net_sharpe_min_abs_ic": null,
+      "max_program_length": null,
+      "hof_mode": "original",
+      "static_gate": true
+    },
+    "constraint": {
+      "mode": "strict_penalty",
+      "worst_fitness": "-1.0e6"
+    },
+    "validity": {
+      "min_mean_daily_coverage_ratio": 0.05,
+      "min_median_daily_n_valid": 30,
+      "min_valid_day_ratio": 0.9
+    },
+    "seed": 3,
+    "run_id": null,
+    "output": {
+      "root": null
+    },
+    "backtest": {
+      "transaction_cost_rate": 0.0015,
+      "long_short_quantile": 0.2
+    }
+  }
+}

@@ -68,6 +68,34 @@ def cmd_mine(args) -> int:
     warn = check_sentinel_separation(worst, parsimony)
     if warn:
         print(f"[gplearn_asb][WARN] {warn}")
+    fitness_metric = str(cfg.get("gp.fitness_metric", "abs_ic"))
+    from gplearn_asb.fitness import FITNESS_METRICS
+    if fitness_metric not in FITNESS_METRICS:
+        raise SystemExit(f"gp.fitness_metric은 {FITNESS_METRICS} 중 하나여야 "
+                         f"합니다 (현재 {fitness_metric!r})")
+    if fitness_metric in ("net_sharpe", "fb_fitness"):
+        # Sharpe 스케일 가드: valid도 크게 음수 가능 + 원본 stopping 1.0은 오발
+        if worst > -100:
+            raise SystemExit(f"{fitness_metric} 모드에는 constraint.worst_fitness를 "
+                             f"충분히 낮게 설정하세요 (현재 {worst}, 권장 -1e6)")
+        if float(cfg.get("gp.stopping_criteria", 1.0)) < 100:
+            raise SystemExit(f"{fitness_metric} 모드에는 gp.stopping_criteria를 크게 "
+                             "설정하세요 (예: 1e9 — 원본 1.0은 Sharpe≥1에서 조기 종료)")
+    if fitness_metric == "ic_tstat":
+        # t=1은 사소하게 도달 — 원본 stopping 1.0이면 gen-0 조기 종료 오발.
+        # sentinel은 t≥0이므로 −1.0으로 충분 (가드 불필요).
+        if float(cfg.get("gp.stopping_criteria", 1.0)) < 100:
+            raise SystemExit("ic_tstat 모드에는 gp.stopping_criteria를 크게 "
+                             "설정하세요 (예: 1e9 — t-stat은 1.0을 사소하게 넘음)")
+    # [B2/P2-3] fitness 부가 조건 (기본 전부 null=off — 기존 run 의미 불변)
+    fitness_opts = {
+        "net_sharpe_min_traded_days": cfg.get("gp.net_sharpe_min_traded_days"),
+        "net_sharpe_min_abs_ic": cfg.get("gp.net_sharpe_min_abs_ic"),
+        "max_program_length": cfg.get("gp.max_program_length"),
+    }
+    hof_mode = str(cfg.get("gp.hof_mode", "original"))
+    if hof_mode not in ("original", "fixed"):
+        raise SystemExit(f"gp.hof_mode는 original|fixed 중 하나 (현재 {hof_mode!r})")
 
     run_id = args.run_id or cfg.get("run_id") or f"{METHOD_NAME}_{mode}_{seed}"
     out_root = args.out or cfg.get("output.root") or os.path.join(_PKG_ROOT, "out", run_id)
@@ -120,7 +148,8 @@ def cmd_mine(args) -> int:
             evaluator, mode, thresholds, worst, traj, gen_stats,
             constraint_mode_field=mode,
             vendored_program_cls=_Program,
-            vendored_check_random_state=check_random_state)
+            vendored_check_random_state=check_random_state,
+            fitness_opts=fitness_opts)
 
         transformer = SymbolicTransformer(
             population_size=int(cfg.require("gp.population_size")),
@@ -154,36 +183,59 @@ def cmd_mine(args) -> int:
     from alphasearchbench.inputs.trajectory import load_trajectory
     from gplearn_asb.fitness import apply_constraint
 
-    # 최종 pool (원본 러너와 동일한 _best_programs; IC=fitness_ 컬럼 유지 + 확장)
-    pool_rows = []
-    for p in transformer._best_programs:
-        f = str(p)
-        diag = evaluator.diagnose(f)   # 캐시 히트
-        info = apply_constraint(mode, diag, thresholds, worst, evaluator.close_signed_ic)
-        pool_rows.append({
-            "formula": f,
-            "IC": float(p.fitness_),                       # 원본 CSV 호환(=effective 기반)
-            "signed_train_IC": info["signed_train_IC"],
-            "train_sign": 1 if info["signed_train_IC"] >= 0 else -1,
-            "abs_train_IC": info["abs_train_IC"],
-            "raw_fitness": info["raw_fitness"],
-            "effective_fitness": info["effective_fitness"],
-            "hard_invalid": info["hard_invalid"],
-            "research_invalid": info["research_invalid"],
-            "validity_pass": info["validity_pass"],
-            "invalid_reason": info["invalid_reason"],
-            "mean_daily_coverage_ratio": diag.get("mean_daily_coverage_ratio"),
-            "median_daily_n_valid": diag.get("median_daily_n_valid"),
-            "valid_day_ratio": diag.get("valid_day_ratio"),
-            "method": METHOD_NAME, "constraint_mode": mode, "seed": seed,
-        })
+    traj_df = load_trajectory(traj_path)
+
+    # 최종 pool
+    if hof_mode == "fixed":
+        # [A] fixed HOF: 최종 population(=trajectory 마지막 세대)에서 dedup +
+        # NaN-safe decorrelation으로 재선택 — _best_programs(원본 버그) 무시.
+        from gplearn_asb.hof import select_pool_fixed, build_pool_rows
+        last_gen = traj_df[traj_df["generation"] == traj_df["generation"].max()]
+        selected, hof_diag = select_pool_fixed(
+            last_gen[["formula", "effective_fitness"]].to_dict("records"),
+            signal_fn=lambda f: evaluator.engine.compute(
+                f, evaluator.search_start, evaluator.search_end),
+            universe_mask=evaluator.universe_mask,
+            hall_of_fame=int(cfg.get("gp.hall_of_fame", 25)),
+            n_components=int(cfg.get("gp.n_components", 10)))
+        print(f"[gplearn_asb] hof_mode=fixed: {hof_diag}")
+        pool_rows = build_pool_rows(selected, evaluator, mode, thresholds, worst,
+                                    seed, METHOD_NAME, fitness_opts=fitness_opts,
+                                    hof_diag=hof_diag)
+    else:
+        # 원본 러너와 동일한 _best_programs (IC=fitness_ 컬럼 유지 + 확장)
+        pool_rows = []
+        for p in transformer._best_programs:
+            f = str(p)
+            diag = evaluator.diagnose(f)   # 캐시 히트
+            info = apply_constraint(mode, diag, thresholds, worst, evaluator.close_signed_ic,
+                                    fitness_metric=evaluator.fitness_metric,
+                                    close_net_sharpe=getattr(evaluator, "close_net_sharpe", float("nan")),
+                                    fitness_opts=fitness_opts,
+                                    close_raw_fitness=getattr(evaluator, "close_raw_fitness", None))
+            pool_rows.append({
+                "formula": f,
+                "IC": float(p.fitness_),                   # 원본 CSV 호환(=effective 기반)
+                "signed_train_IC": info["signed_train_IC"],
+                "train_sign": 1 if info["signed_train_IC"] >= 0 else -1,
+                "abs_train_IC": info["abs_train_IC"],
+                "raw_fitness": info["raw_fitness"],
+                "effective_fitness": info["effective_fitness"],
+                "hard_invalid": info["hard_invalid"],
+                "research_invalid": info["research_invalid"],
+                "validity_pass": info["validity_pass"],
+                "invalid_reason": info["invalid_reason"],
+                "mean_daily_coverage_ratio": diag.get("mean_daily_coverage_ratio"),
+                "median_daily_n_valid": diag.get("median_daily_n_valid"),
+                "valid_day_ratio": diag.get("valid_day_ratio"),
+                "method": METHOD_NAME, "constraint_mode": mode, "seed": seed,
+            })
     pool_df = pd.DataFrame(pool_rows)
     pool_csv = os.path.join(out_root, "metrics", f"final_pool_{run_id}.csv")
     pool_df.to_csv(pool_csv, index=False)
     writer_out.write_table(pool_df, f"final_pool_{run_id}")
 
     # 후보 단위 진단 (unique formula; first_seen은 trajectory에서 병합)
-    traj_df = load_trajectory(traj_path)
     first_seen = (traj_df.sort_values(["generation", "idx_in_population"])
                   .drop_duplicates("formula")[["formula", "generation",
                                                "idx_in_population"]]
@@ -191,12 +243,16 @@ def cmd_mine(args) -> int:
                                    "idx_in_population": "first_seen_candidate_id"}))
     diag_rows = []
     for f, d in evaluator.cache.all_items():
-        info = apply_constraint(mode, d, thresholds, worst, evaluator.close_signed_ic)
+        info = apply_constraint(mode, d, thresholds, worst, evaluator.close_signed_ic,
+                                fitness_metric=evaluator.fitness_metric,
+                                close_net_sharpe=getattr(evaluator, "close_net_sharpe", float("nan")),
+                                fitness_opts=fitness_opts,
+                                close_raw_fitness=getattr(evaluator, "close_raw_fitness", None))
         row = dict(d)
         row.update({k: info[k] for k in
                     ("raw_fitness", "effective_fitness", "hard_invalid",
                      "research_invalid", "validity_pass", "invalid_reason",
-                     "fallback_used")})
+                     "fallback_used", "fitness_condition_failed")})
         row.update({"method": METHOD_NAME, "constraint_mode": mode, "seed": seed})
         diag_rows.append(row)
     diag_df = pd.DataFrame(diag_rows).merge(first_seen, on="formula", how="left")
@@ -217,6 +273,10 @@ def cmd_mine(args) -> int:
         "gplearn_asb_version": __version__,
         "semantics_version": SEMANTICS_VERSION,
         "run_id": run_id, "method": METHOD_NAME, "constraint_mode": mode,
+        "fitness_metric": fitness_metric,
+        "fitness_opts": fitness_opts,
+        "hof_mode": hof_mode,
+        "static_gate": evaluator.static_gate,
         "seed": seed, "worst_fitness": worst, "thresholds": thresholds,
         "market": market, "search_window": [start, end],
         "label_horizon": int(cfg.get("label.horizon", 1)),

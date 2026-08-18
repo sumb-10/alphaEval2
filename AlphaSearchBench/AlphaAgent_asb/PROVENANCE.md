@@ -17,6 +17,7 @@
 | D-8 | seed 수식 슬라이스 `expressions[20:]`를 config `agent.seed_range`로 노출 (기본값 = 원형 [20, null]) | 재현·통제 | config |
 | D-9 | LLM 모델: 원형 gpt-4o → **gpt-5.6-luna** (live 실험, 2026-08-14 사용자 선택 — 비용·JSON 준수 근거). LLM이 search를 이끌므로 탐색 행동이 원저자 실행과 다를 수 있음 — Exp A도 "gpt-4o 재현"이 아니라 "원형 파이프라인 + 대체 모델" | 실험 조건 | live config |
 | D-10 | **온도 프로필 강제 편차**: gpt-5.6-luna는 temperature=1(기본값)만 허용 (실측 400: "Only the default (1) value is supported") → 원형 factor 0.3/eval 0.4를 재현 불가. HTTPLLM이 temperature 미지원 400 감지 시 파라미터를 제거하고 모델 기본값으로 진행하며, manifest `llm.temperature_fallback_models`에 기록. 온도 프로필 원형 재현이 필요하면 gpt-4o-mini 등 온도 지원 모델 사용 | 모델 제약 | live(luna) |
+| D-11 | **행(hang) 방지 가드 2종** (Exp B 1차 실행에서 실측 — $ 없는 bare-name 수식을 qlib market=all에 던지면 종목별 NameError 폭주로 joblib 교착): ① bare 필드명 수식은 feedback·진단 모두 즉시 실패 처리(원형은 그대로 qlib에 전달돼 예외/교착), ② feedback 백테스트에 후보별 SIGALRM 타임아웃(기본 600s, config) — 타임아웃은 원형의 '예외 삼킴' 경로와 동일하게 is_valid=False로 분류 | 실행 위험 | parity+safe |
 
 추가 기록 원칙: parity mode의 탐색 행동에 영향을 줄 수 있는 어떤 변경도 새
 D-번호로 이 표에 등록한 뒤에만 적용한다.

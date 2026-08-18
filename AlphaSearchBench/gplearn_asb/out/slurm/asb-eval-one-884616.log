@@ -1,0 +1,4 @@
+  File "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/alphasearchbench/qd/projection.py", line 36, in fit_reference
+    raise ValueError(
+ValueError: reference descriptor가 부족합니다: finite rows=2
+EVAL_ONE_DONE rc=1 rid=pilot_csi800_strict_1

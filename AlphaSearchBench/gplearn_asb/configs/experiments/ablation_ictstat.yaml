@@ -1,0 +1,25 @@
+# B ablation ① — ic_tstat fitness (strict 조건, fitness만 교체; 나머지는
+# pilot_csi800_base와 동일 — 공정 비교). 1-seed(42) 예비 ablation.
+
+market: csi800
+
+search:
+  start_date: "2010-01-01"
+  end_date: "2019-12-31"
+
+gp:
+  population_size: 1000
+  generations: 5
+  hall_of_fame: 50
+  n_components: 10
+  fitness_metric: ic_tstat      # ★ ablation 축 — |mean IC|/SE (관측일 수 반영)
+  stopping_criteria: 1.0e9      # t-stat은 1.0을 사소하게 넘음 (CLI 가드)
+
+constraint:
+  mode: strict_penalty
+  worst_fitness: -1.0           # t≥0 — 원형 sentinel로 충분
+
+validity:
+  min_mean_daily_coverage_ratio: 0.05
+  min_median_daily_n_valid: 30
+  min_valid_day_ratio: 0.90

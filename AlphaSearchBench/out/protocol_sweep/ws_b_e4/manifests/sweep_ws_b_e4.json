@@ -1,0 +1,227 @@
+{
+  "tag": "ws_b_e4",
+  "split": "test",
+  "arms": [
+    {
+      "arm": "A1",
+      "config": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/configs/examples/csi800_ref.yaml",
+      "backtest": {
+        "mode": "simple",
+        "execution": "next_open_oo",
+        "top_fraction": 0.2,
+        "bottom_fraction": 0.2,
+        "transaction_cost_rate": 0.0015,
+        "cost_turnover_definition": "oneway",
+        "qlib": {
+          "deal_price": "open",
+          "open_cost": 0.0015,
+          "close_cost": 0.0025,
+          "min_cost": 5,
+          "limit_threshold": 0.095
+        },
+        "selection": "quantile",
+        "rebalance_days": 1
+      },
+      "splits": {
+        "train": [
+          "2010-01-01",
+          "2019-12-31"
+        ],
+        "valid": [
+          "2020-01-01",
+          "2020-12-31"
+        ],
+        "test": [
+          "2021-01-01",
+          "2024-12-31"
+        ]
+      },
+      "market": "csi800",
+      "validity_thresholds": {
+        "min_valid_day_ratio": null,
+        "min_mean_daily_coverage_ratio": null,
+        "min_median_daily_n_valid": null
+      },
+      "seconds": 557.5814776225016
+    },
+    {
+      "arm": "A2",
+      "config": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/configs/examples/csi800_ref_lowturn.yaml",
+      "backtest": {
+        "mode": "simple",
+        "execution": "next_open_oo",
+        "top_fraction": 0.2,
+        "bottom_fraction": 0.2,
+        "transaction_cost_rate": 0.0015,
+        "cost_turnover_definition": "oneway",
+        "qlib": {
+          "deal_price": "open",
+          "open_cost": 0.0015,
+          "close_cost": 0.0025,
+          "min_cost": 5,
+          "limit_threshold": 0.095
+        },
+        "selection": "topk",
+        "topk": 50,
+        "rebalance_days": 5
+      },
+      "splits": {
+        "train": [
+          "2010-01-01",
+          "2019-12-31"
+        ],
+        "valid": [
+          "2020-01-01",
+          "2020-12-31"
+        ],
+        "test": [
+          "2021-01-01",
+          "2024-12-31"
+        ]
+      },
+      "market": "csi800",
+      "validity_thresholds": {
+        "min_valid_day_ratio": null,
+        "min_mean_daily_coverage_ratio": null,
+        "min_median_daily_n_valid": null
+      },
+      "seconds": 475.85198614373803
+    },
+    {
+      "arm": "A3",
+      "config": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/configs/examples/csi800_ref_qlib.yaml",
+      "backtest": {
+        "mode": "qlib",
+        "execution": "next_open_oo",
+        "top_fraction": 0.2,
+        "bottom_fraction": 0.2,
+        "transaction_cost_rate": 0.0015,
+        "cost_turnover_definition": "oneway",
+        "qlib": {
+          "deal_price": "open",
+          "open_cost": 0.0005,
+          "close_cost": 0.0015,
+          "min_cost": 5,
+          "limit_threshold": 0.095,
+          "topk": 50,
+          "n_drop": 5
+        }
+      },
+      "splits": {
+        "train": [
+          "2010-01-01",
+          "2019-12-31"
+        ],
+        "valid": [
+          "2020-01-01",
+          "2020-12-31"
+        ],
+        "test": [
+          "2021-01-01",
+          "2024-12-31"
+        ]
+      },
+      "market": "csi800",
+      "validity_thresholds": {
+        "min_valid_day_ratio": null,
+        "min_mean_daily_coverage_ratio": null,
+        "min_median_daily_n_valid": null
+      },
+      "seconds": 3323.0372533695772
+    },
+    {
+      "arm": "A4",
+      "config": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/configs/examples/csi800_ref_legacy.yaml",
+      "backtest": {
+        "mode": "simple",
+        "execution": "same_close",
+        "top_fraction": 0.2,
+        "bottom_fraction": 0.2,
+        "transaction_cost_rate": 0.0015,
+        "cost_turnover_definition": "l1",
+        "qlib": {
+          "deal_price": "open",
+          "open_cost": 0.0015,
+          "close_cost": 0.0025,
+          "min_cost": 5,
+          "limit_threshold": 0.095
+        },
+        "selection": "quantile",
+        "rebalance_days": 1
+      },
+      "splits": {
+        "train": [
+          "2010-01-01",
+          "2019-12-31"
+        ],
+        "valid": [
+          "2020-01-01",
+          "2020-12-31"
+        ],
+        "test": [
+          "2021-01-01",
+          "2024-12-31"
+        ]
+      },
+      "market": "csi800",
+      "validity_thresholds": {
+        "min_valid_day_ratio": null,
+        "min_mean_daily_coverage_ratio": null,
+        "min_median_daily_n_valid": null
+      },
+      "seconds": 546.4408371252939
+    }
+  ],
+  "pools": [
+    {
+      "run_id": "pilot_csi800_fbfit_0",
+      "path": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/pilot_csi800_fbfit_0/metrics/final_pool_pilot_csi800_fbfit_0.csv"
+    },
+    {
+      "run_id": "pilot_csi800_fbfit_0_fixedhof",
+      "path": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/pilot_csi800_fbfit_0/metrics/final_pool_pilot_csi800_fbfit_0_fixedhof.csv"
+    },
+    {
+      "run_id": "pilot_csi800_fbfit_1",
+      "path": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/pilot_csi800_fbfit_1/metrics/final_pool_pilot_csi800_fbfit_1.csv"
+    },
+    {
+      "run_id": "pilot_csi800_fbfit_1_fixedhof",
+      "path": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/pilot_csi800_fbfit_1/metrics/final_pool_pilot_csi800_fbfit_1_fixedhof.csv"
+    },
+    {
+      "run_id": "pilot_csi800_fbfit_2",
+      "path": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/pilot_csi800_fbfit_2/metrics/final_pool_pilot_csi800_fbfit_2.csv"
+    },
+    {
+      "run_id": "pilot_csi800_fbfit_2_fixedhof",
+      "path": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/pilot_csi800_fbfit_2/metrics/final_pool_pilot_csi800_fbfit_2_fixedhof.csv"
+    },
+    {
+      "run_id": "pilot_csi800_fbfit_3",
+      "path": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/pilot_csi800_fbfit_3/metrics/final_pool_pilot_csi800_fbfit_3.csv"
+    },
+    {
+      "run_id": "pilot_csi800_fbfit_3_fixedhof",
+      "path": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/pilot_csi800_fbfit_3/metrics/final_pool_pilot_csi800_fbfit_3_fixedhof.csv"
+    },
+    {
+      "run_id": "pilot_csi800_fbfit_42",
+      "path": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/pilot_csi800_fbfit_42/metrics/final_pool_pilot_csi800_fbfit_42.csv"
+    },
+    {
+      "run_id": "pilot_csi800_fbfit_42_fixedhof",
+      "path": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/pilot_csi800_fbfit_42/metrics/final_pool_pilot_csi800_fbfit_42_fixedhof.csv"
+    },
+    {
+      "run_id": "pilot_csi800_fbfitguard_42",
+      "path": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/pilot_csi800_fbfitguard_42/metrics/final_pool_pilot_csi800_fbfitguard_42.csv"
+    },
+    {
+      "run_id": "pilot_csi800_fbfitguard_42_fixedhof",
+      "path": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/pilot_csi800_fbfitguard_42/metrics/final_pool_pilot_csi800_fbfitguard_42_fixedhof.csv"
+    }
+  ],
+  "n_rows": 48,
+  "wall_seconds": 4903.8876414252445
+}

@@ -1,0 +1,31 @@
+{
+  "source_run_id": "pilot_csi800_netsharpe_2",
+  "run_id": "pilot_csi800_netsharpe_2_fixedhof",
+  "hof_mode": "fixed",
+  "hof_diag": {
+    "hof_mode": "fixed",
+    "n_input": 1000,
+    "n_dedup_removed": 524,
+    "n_unique": 476,
+    "n_top": 50,
+    "n_signal_failed": 0,
+    "decorr_degenerate_pairs": 0,
+    "n_decorr_removed": 40,
+    "decorr_max_abs_corr_final": 0.9149402756727582
+  },
+  "final_generation": 4,
+  "population_rows": 1000,
+  "selected": [
+    "Add(Med(Sub(Var(EMA($amount, 30), 12), $adjclose), 12), Var(Abs(EMA(Std($amount, 5), 12)), 12))",
+    "Add(Sum(Var(EMA($amount, 30), 12), 5), Greater(EMA(Var($amount, 12), 12), Mad($vwap, 5)))",
+    "Add(Mad($amount, 30), Var(Greater(WMA($amount, 5), Std($amount, 5)), 30))",
+    "EMA(Var(Std($amount, 12), 12), 12)",
+    "EMA(Sub(Var($amount, 5), $adjclose), 12)",
+    "Add(Greater(Mul($volume, $high), Mad($vwap, 5)), Var(Greater(Std($amount, 12), Mad($amount, 30)), 30))",
+    "EMA(Add(WMA($amount, 5), Sub(Var(Var($amount, 12), 12), Add(Var($amount, 12), Resi($change, 5)))), 12)",
+    "Var(EMA(Sub(Std($amount, 5), $adjclose), 12), 30)",
+    "Add(EMA(Sub(Std($amount, 12), $adjclose), 12), Std($amount, 30))",
+    "Std(Abs(EMA(Std($amount, 5), 12)), 30)"
+  ],
+  "pool_csv": "out/pilot_csi800_netsharpe_2/metrics/final_pool_pilot_csi800_netsharpe_2_fixedhof.csv"
+}

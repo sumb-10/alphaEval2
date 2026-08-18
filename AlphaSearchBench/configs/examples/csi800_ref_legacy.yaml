@@ -1,0 +1,33 @@
+# [WS-A / A4] AlphaEval repo 원형 프로토콜 재현 — 낙관적 실행·l1 회전 비용.
+#
+# 원형(Alphaagent/backtester.py:104-134, backtest/modeltester.py:166-195) 실측:
+#   * 분위 20/20 long-short, gross 1 ((long+short)/2), 매일 리밸런스
+#   * **same-day close 신호 → same-day close 체결** (실행 지연 0 — 낙관적)
+#   * 비용 = 0.0015 × "종목수 기반 two-way 회전"(0~2 범위)
+# 우리 l1 회전(Σ|Δw|, 0~2 범위)이 그 카운트 회전과 스케일이 가장 가까우므로
+# cost_turnover_definition: l1로 근사한다 — **정의가 다름을 보고서에 명시**
+# (원형은 종목 수 비율, 우리는 가중 L1; 등가중·등크기 구간에서만 일치).
+# 원형의 첫날 NaN 비용 버그는 재현하지 않는다(우리는 건립 비용 명시 부과).
+
+market: csi800
+
+splits:
+  train: ["2010-01-01", "2019-12-31"]
+  valid: ["2020-01-01", "2020-12-31"]
+  test:  ["2021-01-01", "2024-12-31"]
+
+qd:
+  descriptor_scope: all_candidates
+  quality:
+    metric: IC
+    threshold: 0.02
+
+backtest:
+  mode: simple
+  execution: same_close            # ★ A4 축 1 — 원형의 무지연 체결(낙관적)
+  selection: quantile
+  top_fraction: 0.2
+  bottom_fraction: 0.2
+  rebalance_days: 1
+  transaction_cost_rate: 0.0015
+  cost_turnover_definition: l1     # ★ A4 축 2 — 원형 two-way 회전 근사

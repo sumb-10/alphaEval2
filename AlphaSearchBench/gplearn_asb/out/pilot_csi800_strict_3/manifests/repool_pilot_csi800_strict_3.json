@@ -1,0 +1,31 @@
+{
+  "source_run_id": "pilot_csi800_strict_3",
+  "run_id": "pilot_csi800_strict_3_fixedhof",
+  "hof_mode": "fixed",
+  "hof_diag": {
+    "hof_mode": "fixed",
+    "n_input": 1000,
+    "n_dedup_removed": 951,
+    "n_unique": 49,
+    "n_top": 49,
+    "n_signal_failed": 1,
+    "decorr_degenerate_pairs": 473,
+    "n_decorr_removed": 39,
+    "decorr_max_abs_corr_final": 0.0
+  },
+  "final_generation": 4,
+  "population_rows": 1000,
+  "selected": [
+    "Less($change, Sub(Less($change, $amount), Log(Ref(Mad($factor, 5), 12))))",
+    "Sub(Less($change, $amount), Less($change, $amount))",
+    "Sign($close)",
+    "Less($change, Sub(Less($change, $amount), Sign(1)))",
+    "Sub(Less($change, $amount), Less($amount, $change))",
+    "Sub(Less($change, $amount), Less($change, Log($amount)))",
+    "Sub(Less($change, Less($change, $amount)), Less($change, $amount))",
+    "Sub(Less($amount, $change), Less($change, Less($change, $amount)))",
+    "Sub(Less($amount, $change), Less($amount, $change))",
+    "Sub(Less($amount, $change), Less($change, $amount))"
+  ],
+  "pool_csv": "out/pilot_csi800_strict_3/metrics/final_pool_pilot_csi800_strict_3_fixedhof.csv"
+}

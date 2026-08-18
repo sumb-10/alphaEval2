@@ -1,0 +1,11 @@
+formula,IC,signed_train_IC,train_sign,abs_train_IC,raw_fitness,effective_fitness,hard_invalid,research_invalid,validity_pass,invalid_reason,mean_daily_coverage_ratio,median_daily_n_valid,valid_day_ratio,method,constraint_mode,seed,hof_mode,n_dedup_removed,decorr_degenerate_pairs,n_decorr_removed,decorr_max_abs_corr_final
+"Less($change, Sub(Less($change, $amount), Log(Ref(Mad($factor, 5), 12))))",0.033105112400589394,0.033105112400589394,1,0.033105112400589394,0.033105112400589394,0.033105112400589394,False,False,True,,0.9595525423250337,759.0,1.0,gplearn_asb,strict_penalty,3,fixed,951,473,39,0.0
+"Sub(Less($change, $amount), Less($change, $amount))",-1.0,,-1,,,-1.0,True,True,False,static_invalid:constant_expression,,,,gplearn_asb,strict_penalty,3,fixed,951,473,39,0.0
+Sign($close),-1.0,0.0,1,0.0,0.0,-1.0,True,False,False,no_correlatable_day,0.9595653971173003,759.0,1.0,gplearn_asb,strict_penalty,3,fixed,951,473,39,0.0
+"Less($change, Sub(Less($change, $amount), Sign(1)))",-1.0,,-1,,,-1.0,True,True,False,formula_eval_failed:eval_error:AttributeError:'int' object has no attribute 'astype',,,,gplearn_asb,strict_penalty,3,fixed,951,473,39,0.0
+"Sub(Less($change, $amount), Less($amount, $change))",-1.0,0.0,1,0.0,0.0,-1.0,True,False,False,no_correlatable_day,0.9595653971173003,759.0,1.0,gplearn_asb,strict_penalty,3,fixed,951,473,39,0.0
+"Sub(Less($change, $amount), Less($change, Log($amount)))",-1.0,0.0,1,0.0,0.0,-1.0,True,False,False,no_correlatable_day,0.9595653971173003,759.0,1.0,gplearn_asb,strict_penalty,3,fixed,951,473,39,0.0
+"Sub(Less($change, Less($change, $amount)), Less($change, $amount))",-1.0,0.0,1,0.0,0.0,-1.0,True,False,False,no_correlatable_day,0.9595653971173003,759.0,1.0,gplearn_asb,strict_penalty,3,fixed,951,473,39,0.0
+"Sub(Less($amount, $change), Less($change, Less($change, $amount)))",-1.0,0.0,1,0.0,0.0,-1.0,True,False,False,no_correlatable_day,0.9595653971173003,759.0,1.0,gplearn_asb,strict_penalty,3,fixed,951,473,39,0.0
+"Sub(Less($amount, $change), Less($amount, $change))",-1.0,,-1,,,-1.0,True,True,False,static_invalid:constant_expression,,,,gplearn_asb,strict_penalty,3,fixed,951,473,39,0.0
+"Sub(Less($amount, $change), Less($change, $amount))",-1.0,0.0,1,0.0,0.0,-1.0,True,False,False,no_correlatable_day,0.9595653971173003,759.0,1.0,gplearn_asb,strict_penalty,3,fixed,951,473,39,0.0

@@ -1,0 +1,16 @@
+# smoke — [B1] ic_tstat fitness
+market: csi300
+search: {start_date: "2018-01-01", end_date: "2019-06-30"}
+gp:
+  population_size: 30
+  generations: 2
+  hall_of_fame: 10
+  n_components: 5
+  fitness_metric: ic_tstat
+  stopping_criteria: 1.0e9
+constraint: {mode: strict_penalty}
+validity:
+  min_mean_daily_coverage_ratio: 0.05
+  min_median_daily_n_valid: 30
+  min_valid_day_ratio: 0.90
+seed: 42

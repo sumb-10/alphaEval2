@@ -1,0 +1,31 @@
+{
+  "source_run_id": "pilot_csi800_strict_0",
+  "run_id": "pilot_csi800_strict_0_fixedhof",
+  "hof_mode": "fixed",
+  "hof_diag": {
+    "hof_mode": "fixed",
+    "n_input": 1000,
+    "n_dedup_removed": 689,
+    "n_unique": 311,
+    "n_top": 50,
+    "n_signal_failed": 0,
+    "decorr_degenerate_pairs": 0,
+    "n_decorr_removed": 40,
+    "decorr_max_abs_corr_final": 1.0
+  },
+  "final_generation": 4,
+  "population_rows": 1000,
+  "selected": [
+    "Div(Less($low, $change), Abs($amount))",
+    "Div(Div(Less($change, $change), IdxMax(Med($adjclose, 5), 5)), Sub($volume, $change))",
+    "Less(Div(Less($low, $change), Sub($volume, $change)), $open)",
+    "Less(Div(Less($low, $change), Sub($volume, 3)), $open)",
+    "Less(Div(Div(Less($change, $open), Sub($volume, $change)), Sub($volume, $change)), $open)",
+    "Less(Div(Less(Sum(Rsquare($factor, 30), 5), $change), Sub($volume, $change)), $open)",
+    "Div(Less(Sum(Rsquare($factor, 30), 5), $change), Sub($volume, $change))",
+    "Less(Div(Less($change, Less(Sum(Rsquare($factor, 30), 5), $change)), Sub($volume, $change)), $open)",
+    "Less(Less(Sum(Delta(Div($vwap, $close), 64), 5), $change), $open)",
+    "Less(Less(Sum(Delta(Div($vwap, $close), 64), 5), $change), $change)"
+  ],
+  "pool_csv": "out/pilot_csi800_strict_0/metrics/final_pool_pilot_csi800_strict_0_fixedhof.csv"
+}

@@ -1,0 +1,17 @@
+# smoke — [B3] fb_fitness (+ [B2] 가드 발동 경로 포함)
+market: csi300
+search: {start_date: "2018-01-01", end_date: "2019-06-30"}
+gp:
+  population_size: 30
+  generations: 2
+  hall_of_fame: 10
+  n_components: 5
+  fitness_metric: fb_fitness
+  stopping_criteria: 1.0e9
+constraint: {mode: strict_penalty, worst_fitness: -1.0e6}
+validity:
+  min_mean_daily_coverage_ratio: 0.05
+  min_median_daily_n_valid: 30
+  min_valid_day_ratio: 0.90
+backtest: {transaction_cost_rate: 0.0015, long_short_quantile: 0.2}
+seed: 42

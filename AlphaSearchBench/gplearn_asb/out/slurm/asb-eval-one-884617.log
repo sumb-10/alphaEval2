@@ -1,0 +1,4 @@
+[alphasearchbench] oos_factor: gplearn_asb/out/pilot_csi800_off_2/asb_eval/metrics/oos_factor_metrics.parquet
+[alphasearchbench] bt_factor: gplearn_asb/out/pilot_csi800_off_2/asb_eval/metrics/backtest_factor_metrics.parquet
+[alphasearchbench] manifest: gplearn_asb/out/pilot_csi800_off_2/asb_eval/manifests/run_gplearn_asb_off_2.json
+EVAL_ONE_DONE rc=0 rid=pilot_csi800_off_2

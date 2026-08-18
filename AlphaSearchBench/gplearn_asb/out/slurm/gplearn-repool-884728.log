@@ -1,0 +1,79 @@
+[171611:MainThread](2026-08-14 19:56:21,517) INFO - qlib.Initialization - [config.py:415] - default_conf: client.
+[171611:MainThread](2026-08-14 19:56:47,018) INFO - qlib.Initialization - [__init__.py:74] - qlib successfully initialized based on client settings.
+[171611:MainThread](2026-08-14 19:56:47,019) INFO - qlib.Initialization - [__init__.py:76] - data_path={'__DEFAULT_FREQ': PosixPath('/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data')}
+[repool] pilot_csi800_strict_0 mode=strict_penalty seed=0 metric=None
+  final population: gen=4 n=1000 unique=311
+  evaluator ready (232.3s) key=('csi800', '2010-01-01', '2019-12-31', 1, 'abs_ic')
+  hof: {'hof_mode': 'fixed', 'n_input': 1000, 'n_dedup_removed': 689, 'n_unique': 311, 'n_top': 50, 'n_signal_failed': 0, 'decorr_degenerate_pairs': 0, 'n_decorr_removed': 40, 'decorr_max_abs_corr_final': 1.0}
+  → out/pilot_csi800_strict_0/metrics/final_pool_pilot_csi800_strict_0_fixedhof.csv
+  → out/pilot_csi800_strict_0_fixedhof/
+[repool] pilot_csi800_strict_1 mode=strict_penalty seed=1 metric=None
+  final population: gen=4 n=1000 unique=118
+  hof: {'hof_mode': 'fixed', 'n_input': 1000, 'n_dedup_removed': 882, 'n_unique': 118, 'n_top': 50, 'n_signal_failed': 0, 'decorr_degenerate_pairs': 0, 'n_decorr_removed': 40, 'decorr_max_abs_corr_final': 0.5771132403784096}
+  → out/pilot_csi800_strict_1/metrics/final_pool_pilot_csi800_strict_1_fixedhof.csv
+  → out/pilot_csi800_strict_1_fixedhof/
+[repool] pilot_csi800_strict_2 mode=strict_penalty seed=2 metric=None
+  final population: gen=4 n=1000 unique=16
+  hof: {'hof_mode': 'fixed', 'n_input': 1000, 'n_dedup_removed': 984, 'n_unique': 16, 'n_top': 16, 'n_signal_failed': 0, 'decorr_degenerate_pairs': 0, 'n_decorr_removed': 6, 'decorr_max_abs_corr_final': 0.4856203635953009}
+  → out/pilot_csi800_strict_2/metrics/final_pool_pilot_csi800_strict_2_fixedhof.csv
+  → out/pilot_csi800_strict_2_fixedhof/
+[repool] pilot_csi800_strict_3 mode=strict_penalty seed=3 metric=None
+  final population: gen=4 n=1000 unique=49
+  hof: {'hof_mode': 'fixed', 'n_input': 1000, 'n_dedup_removed': 951, 'n_unique': 49, 'n_top': 49, 'n_signal_failed': 1, 'decorr_degenerate_pairs': 473, 'n_decorr_removed': 39, 'decorr_max_abs_corr_final': 0.0}
+  → out/pilot_csi800_strict_3/metrics/final_pool_pilot_csi800_strict_3_fixedhof.csv
+  → out/pilot_csi800_strict_3_fixedhof/
+[repool] pilot_csi800_strict_42 mode=strict_penalty seed=42 metric=None
+  final population: gen=4 n=1000 unique=283
+  hof: {'hof_mode': 'fixed', 'n_input': 1000, 'n_dedup_removed': 717, 'n_unique': 283, 'n_top': 50, 'n_signal_failed': 0, 'decorr_degenerate_pairs': 0, 'n_decorr_removed': 40, 'decorr_max_abs_corr_final': 0.9999996578693946}
+  → out/pilot_csi800_strict_42/metrics/final_pool_pilot_csi800_strict_42_fixedhof.csv
+  → out/pilot_csi800_strict_42_fixedhof/
+[repool] pilot_csi800_netsharpe_0 mode=strict_penalty seed=0 metric=net_sharpe
+  final population: gen=4 n=1000 unique=118
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+  return func(x, start, end, min_periods, *numba_args)
+/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/gplearn_asb/hof.py:31: RuntimeWarning: Mean of empty slice
+  m = np.nanmean(v, axis=1, keepdims=True)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1872: RuntimeWarning: Degrees of freedom <= 0 for slice.
+  var = nanvar(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/gplearn_asb/hof.py:31: RuntimeWarning: Mean of empty slice
+  m = np.nanmean(v, axis=1, keepdims=True)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1872: RuntimeWarning: Degrees of freedom <= 0 for slice.
+  var = nanvar(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/gplearn_asb/hof.py:31: RuntimeWarning: Mean of empty slice
+  m = np.nanmean(v, axis=1, keepdims=True)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1872: RuntimeWarning: Degrees of freedom <= 0 for slice.
+  var = nanvar(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+  return func(x, start, end, min_periods, *numba_args)
+/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/gplearn_asb/hof.py:31: RuntimeWarning: Mean of empty slice
+  m = np.nanmean(v, axis=1, keepdims=True)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1872: RuntimeWarning: Degrees of freedom <= 0 for slice.
+  var = nanvar(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+  return func(x, start, end, min_periods, *numba_args)
+  evaluator ready (50.5s) key=('csi800', '2010-01-01', '2019-12-31', 1, 'net_sharpe')
+  hof: {'hof_mode': 'fixed', 'n_input': 1000, 'n_dedup_removed': 882, 'n_unique': 118, 'n_top': 50, 'n_signal_failed': 0, 'decorr_degenerate_pairs': 0, 'n_decorr_removed': 40, 'decorr_max_abs_corr_final': 0.9593593290522977}
+  → out/pilot_csi800_netsharpe_0/metrics/final_pool_pilot_csi800_netsharpe_0_fixedhof.csv
+  → out/pilot_csi800_netsharpe_0_fixedhof/
+[repool] pilot_csi800_netsharpe_1 mode=strict_penalty seed=1 metric=net_sharpe
+  final population: gen=4 n=1000 unique=47
+  hof: {'hof_mode': 'fixed', 'n_input': 1000, 'n_dedup_removed': 953, 'n_unique': 47, 'n_top': 47, 'n_signal_failed': 0, 'decorr_degenerate_pairs': 46, 'n_decorr_removed': 37, 'decorr_max_abs_corr_final': 0.15725869979764662}
+  → out/pilot_csi800_netsharpe_1/metrics/final_pool_pilot_csi800_netsharpe_1_fixedhof.csv
+  → out/pilot_csi800_netsharpe_1_fixedhof/
+[repool] pilot_csi800_netsharpe_2 mode=strict_penalty seed=2 metric=net_sharpe
+  final population: gen=4 n=1000 unique=476
+  hof: {'hof_mode': 'fixed', 'n_input': 1000, 'n_dedup_removed': 524, 'n_unique': 476, 'n_top': 50, 'n_signal_failed': 0, 'decorr_degenerate_pairs': 0, 'n_decorr_removed': 40, 'decorr_max_abs_corr_final': 0.9149402756727582}
+  → out/pilot_csi800_netsharpe_2/metrics/final_pool_pilot_csi800_netsharpe_2_fixedhof.csv
+  → out/pilot_csi800_netsharpe_2_fixedhof/
+
+=== repool summary ===
+                     run  pool_unique  pool_valid hof_mode  n_input  n_dedup_removed  n_unique  n_top  n_signal_failed  decorr_degenerate_pairs  n_decorr_removed  decorr_max_abs_corr_final
+   pilot_csi800_strict_0           10          10    fixed     1000              689       311     50                0                        0                40                   1.000000
+   pilot_csi800_strict_1           10          10    fixed     1000              882       118     50                0                        0                40                   0.577113
+   pilot_csi800_strict_2           10          10    fixed     1000              984        16     16                0                        0                 6                   0.485620
+   pilot_csi800_strict_3           10           1    fixed     1000              951        49     49                1                      473                39                   0.000000
+  pilot_csi800_strict_42           10          10    fixed     1000              717       283     50                0                        0                40                   1.000000
+pilot_csi800_netsharpe_0           10          10    fixed     1000              882       118     50                0                        0                40                   0.959359
+pilot_csi800_netsharpe_1           10           9    fixed     1000              953        47     47                0                       46                37                   0.157259
+pilot_csi800_netsharpe_2           10          10    fixed     1000              524       476     50                0                        0                40                   0.914940
+REPOOL_DONE rc=0

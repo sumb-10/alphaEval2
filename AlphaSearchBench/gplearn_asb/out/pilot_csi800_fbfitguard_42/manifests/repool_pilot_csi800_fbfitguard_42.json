@@ -1,0 +1,31 @@
+{
+  "source_run_id": "pilot_csi800_fbfitguard_42",
+  "run_id": "pilot_csi800_fbfitguard_42_fixedhof",
+  "hof_mode": "fixed",
+  "hof_diag": {
+    "hof_mode": "fixed",
+    "n_input": 1000,
+    "n_dedup_removed": 587,
+    "n_unique": 413,
+    "n_top": 50,
+    "n_signal_failed": 0,
+    "decorr_degenerate_pairs": 0,
+    "n_decorr_removed": 40,
+    "decorr_max_abs_corr_final": 0.9999251558079516
+  },
+  "final_generation": 4,
+  "population_rows": 1000,
+  "selected": [
+    "Greater(Log(Mad($amount, 64)), Std(Abs(Add(Mad($amount, 5), Div($vwap, $high))), 30))",
+    "Std(Abs(Add(Mad($amount, 5), IdxMin(IdxMin(WMA(Power(3, $change), 5), 12), 12))), 30)",
+    "Std(Mad($amount, 5), 30)",
+    "Abs(Greater(IdxMin(WMA(Power($amount, $change), 5), 12), Std(Mad($amount, 5), 30)))",
+    "Log(Greater(IdxMin(WMA(Power($amount, $change), 5), 12), Std(Mad($amount, 5), 30)))",
+    "Greater(IdxMin(WMA(Max($amount, 30), 5), 12), Std(Abs(WMA(Mul($low, $volume), 5)), 30))",
+    "Std(Abs(Add(Mad($amount, 5), Greater($factor, $amount))), 30)",
+    "Add(Std(Abs(Abs(Greater($factor, $amount))), 30), $factor)",
+    "Greater(Power($amount, $change), Std(Abs(Greater($factor, $amount)), 30))",
+    "Log(Greater(IdxMin(WMA(Power($amount, $change), 5), 12), Std(Abs(Abs(Greater($factor, $amount))), 30)))"
+  ],
+  "pool_csv": "out/pilot_csi800_fbfitguard_42/metrics/final_pool_pilot_csi800_fbfitguard_42_fixedhof.csv"
+}

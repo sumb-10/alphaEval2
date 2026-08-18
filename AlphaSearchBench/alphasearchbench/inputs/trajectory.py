@@ -50,6 +50,7 @@ class TrajectoryWriter:
                     "raw_fitness": float(raw_fitness)})
         rec.update(extra)
         self._fh.write(json.dumps(rec, default=str) + "\n")
+        self._fh.flush()   # 장시간 마이닝 중단 시에도 진행분 보존 (내구성)
 
     def close(self) -> None:
         self._fh.flush()

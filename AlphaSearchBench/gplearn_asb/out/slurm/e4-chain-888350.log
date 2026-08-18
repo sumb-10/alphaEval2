@@ -1,0 +1,72 @@
+MINING 888250 state=COMPLETED
+MINING 888251 state=COMPLETED
+MINING 888252 state=COMPLETED
+MINING 888253 state=COMPLETED
+MINING 888254 state=COMPLETED
+  → out/pilot_csi800_fbfit_3/metrics/final_pool_pilot_csi800_fbfit_3_fixedhof.csv
+  → out/pilot_csi800_fbfit_3_fixedhof/
+[repool] pilot_csi800_fbfitguard_42 mode=strict_penalty seed=42 metric=fb_fitness
+  final population: gen=4 n=1000 unique=413
+  hof: {'hof_mode': 'fixed', 'n_input': 1000, 'n_dedup_removed': 587, 'n_unique': 413, 'n_top': 50, 'n_signal_failed': 0, 'decorr_degenerate_pairs': 0, 'n_decorr_removed': 40, 'decorr_max_abs_corr_final': 0.9999251558079516}
+  → out/pilot_csi800_fbfitguard_42/metrics/final_pool_pilot_csi800_fbfitguard_42_fixedhof.csv
+  → out/pilot_csi800_fbfitguard_42_fixedhof/
+
+=== repool summary ===
+                       run  pool_unique  pool_valid hof_mode  n_input  n_dedup_removed  n_unique  n_top  n_signal_failed  decorr_degenerate_pairs  n_decorr_removed  decorr_max_abs_corr_final
+      pilot_csi800_fbfit_0           10          10    fixed     1000              874       126     50                0                        0                40                   0.972673
+      pilot_csi800_fbfit_1           10          10    fixed     1000              696       304     50                0                        0                40                   0.987740
+      pilot_csi800_fbfit_2           10          10    fixed     1000              681       319     50                0                        0                40                   0.947226
+      pilot_csi800_fbfit_3           10          10    fixed     1000              953        47     47                0                        0                37                   0.747789
+pilot_csi800_fbfitguard_42           10          10    fixed     1000              587       413     50                0                        0                40                   0.999925
+REPOOL_DONE rc=0
+arm                              run_id status    Sharpe  AnnRet_arith  AnnRet_excess        IR      MDD  annualized_turnover_oneway  n_gated
+ A1                pilot_csi800_fbfit_0     ok -1.208289     -0.091249            NaN       NaN 0.334315                    6.501548        3
+ A1       pilot_csi800_fbfit_0_fixedhof     ok -1.196482     -0.095502            NaN       NaN 0.347190                    4.524265       10
+ A1                pilot_csi800_fbfit_1     ok -1.131297     -0.089628            NaN       NaN 0.329484                    4.046401        9
+ A1       pilot_csi800_fbfit_1_fixedhof     ok -1.142878     -0.090892            NaN       NaN 0.333814                    3.800155       10
+ A1                pilot_csi800_fbfit_2     ok -1.280133     -0.103776            NaN       NaN 0.374371                    4.142299        6
+ A1       pilot_csi800_fbfit_2_fixedhof     ok -1.066470     -0.086270            NaN       NaN 0.328134                    4.442183       10
+ A1                pilot_csi800_fbfit_3     ok -0.991060     -0.081039            NaN       NaN 0.329492                    2.836300        2
+ A1       pilot_csi800_fbfit_3_fixedhof     ok -1.598585     -0.095574            NaN       NaN 0.319850                   51.324033       10
+ A1               pilot_csi800_fbfit_42     ok  0.953236      0.076820            NaN       NaN 0.091518                    3.106927        3
+ A1      pilot_csi800_fbfit_42_fixedhof     ok -0.209433     -0.011725            NaN       NaN 0.138093                    6.341447       10
+ A1          pilot_csi800_fbfitguard_42     ok -1.191154     -0.098354            NaN       NaN 0.356115                    7.221594       10
+ A1 pilot_csi800_fbfitguard_42_fixedhof     ok -1.194585     -0.095687            NaN       NaN 0.348397                    6.989977       10
+ A2                pilot_csi800_fbfit_0     ok -0.892937     -0.090839            NaN       NaN 0.373829                    7.682229        3
+ A2       pilot_csi800_fbfit_0_fixedhof     ok -0.855009     -0.093162            NaN       NaN 0.382151                    5.315666       10
+ A2                pilot_csi800_fbfit_1     ok -0.808804     -0.087431            NaN       NaN 0.388776                    4.657709        9
+ A2       pilot_csi800_fbfit_1_fixedhof     ok -0.758435     -0.082458            NaN       NaN 0.379510                    4.506873       10
+ A2                pilot_csi800_fbfit_2     ok -0.900579     -0.098811            NaN       NaN 0.399384                    4.431455        6
+ A2       pilot_csi800_fbfit_2_fixedhof     ok -0.850074     -0.094122            NaN       NaN 0.395031                    4.868359       10
+ A2                pilot_csi800_fbfit_3     ok -0.774545     -0.087547            NaN       NaN 0.405422                    3.451022        2
+ A2       pilot_csi800_fbfit_3_fixedhof     ok -1.085135     -0.088184            NaN       NaN 0.320663                   22.204087       10
+ A2               pilot_csi800_fbfit_42     ok  0.662389      0.073022            NaN       NaN 0.127082                    3.856718        3
+ A2      pilot_csi800_fbfit_42_fixedhof     ok -0.195938     -0.016528            NaN       NaN 0.211718                    6.244087       10
+ A2          pilot_csi800_fbfitguard_42     ok -0.931281     -0.104591            NaN       NaN 0.407584                    7.528793       10
+ A2 pilot_csi800_fbfitguard_42_fixedhof     ok -0.872011     -0.093562            NaN       NaN 0.364654                    7.739443       10
+ A3                pilot_csi800_fbfit_0     ok -0.341539     -0.087162      -0.041545 -0.326579 0.547682                    7.432325        3
+ A3       pilot_csi800_fbfit_0_fixedhof     ok -0.357617     -0.094423      -0.048805 -0.354266 0.557077                    5.368257       10
+ A3                pilot_csi800_fbfit_1     ok -0.392881     -0.104819      -0.059202 -0.423434 0.600008                    4.815480        9
+ A3       pilot_csi800_fbfit_1_fixedhof     ok -0.311346     -0.085590      -0.039973 -0.264365 0.582295                    4.375370       10
+ A3                pilot_csi800_fbfit_2     ok -0.461813     -0.118941      -0.073323 -0.623745 0.604601                    3.730792        6
+ A3       pilot_csi800_fbfit_2_fixedhof     ok -0.349072     -0.094061      -0.048444 -0.340822 0.585271                    4.583688       10
+ A3                pilot_csi800_fbfit_3     ok -0.307304     -0.082060      -0.036443 -0.268837 0.585195                    2.763771        2
+ A3       pilot_csi800_fbfit_3_fixedhof     ok -0.585815     -0.132582      -0.086965 -0.833246 0.585161                   21.664126       10
+ A3               pilot_csi800_fbfit_42     ok  0.663900      0.126830       0.172448  1.288161 0.279815                    5.237434        3
+ A3      pilot_csi800_fbfit_42_fixedhof     ok -0.378444     -0.075315      -0.029698 -0.350797 0.471403                    8.974394       10
+ A3          pilot_csi800_fbfitguard_42     ok -0.480236     -0.129118      -0.083500 -0.570969 0.616800                    7.954125       10
+ A3 pilot_csi800_fbfitguard_42_fixedhof     ok -0.390186     -0.102269      -0.056652 -0.411118 0.594521                    7.858598       10
+ A4                pilot_csi800_fbfit_0     ok -1.571681     -0.109689            NaN       NaN 0.372346                    6.501548        3
+ A4       pilot_csi800_fbfit_0_fixedhof     ok -1.482163     -0.109771            NaN       NaN 0.374093                    4.524265       10
+ A4                pilot_csi800_fbfit_1     ok -1.395862     -0.102979            NaN       NaN 0.354995                    4.046401        9
+ A4       pilot_csi800_fbfit_1_fixedhof     ok -1.389692     -0.102763            NaN       NaN 0.355532                    3.800155       10
+ A4                pilot_csi800_fbfit_2     ok -1.512432     -0.114357            NaN       NaN 0.393472                    4.142299        6
+ A4       pilot_csi800_fbfit_2_fixedhof     ok -1.333136     -0.100515            NaN       NaN 0.353007                    4.442183       10
+ A4                pilot_csi800_fbfit_3     ok -1.184838     -0.091026            NaN       NaN 0.343086                    2.836300        2
+ A4       pilot_csi800_fbfit_3_fixedhof     ok -2.670492     -0.158889            NaN       NaN 0.465539                   51.324033       10
+ A4               pilot_csi800_fbfit_42     ok  1.024104      0.077304            NaN       NaN 0.090406                    3.106927        3
+ A4      pilot_csi800_fbfit_42_fixedhof     ok -0.305828     -0.017005            NaN       NaN 0.146031                    6.341447       10
+ A4          pilot_csi800_fbfitguard_42     ok -1.524038     -0.117099            NaN       NaN 0.391950                    7.221594       10
+ A4 pilot_csi800_fbfitguard_42_fixedhof     ok -1.565746     -0.115948            NaN       NaN 0.388070                    6.989977       10
+[sweep] 48 rows → /gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/out/protocol_sweep/ws_b_e4 (4904s)
+E4_DONE rc=0

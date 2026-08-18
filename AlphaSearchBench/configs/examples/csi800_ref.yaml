@@ -1,0 +1,29 @@
+# [WS-A / A1] 기준선 — 우리 v0.1 계약 프로토콜 + **참고연구 정렬 split**.
+#
+# split 재정렬 근거: 기존 valid(2017–2019)는 마이닝 창(2010–2019) 안에 있어
+# miner에게 out-of-sample이 아니다. AlphaEval 벤치마크 논문(arXiv 2508.13174)의
+# A-share 분할과 동일하게 train=마이닝 창, valid=2020(마이닝 이후 첫 해),
+# test=2021–2024로 맞춘다. 재마이닝은 불필요(마이닝 창 불변).
+
+market: csi800
+
+splits:
+  train: ["2010-01-01", "2019-12-31"]   # = 마이닝 창 (train_sign·gate 유도용)
+  valid: ["2020-01-01", "2020-12-31"]   # 마이닝 이후 첫 해 — 오염 없는 OOS
+  test:  ["2021-01-01", "2024-12-31"]   # 참고연구 2편과 동일 test 창
+
+qd:
+  descriptor_scope: all_candidates
+  quality:
+    metric: IC
+    threshold: 0.02
+
+backtest:
+  mode: simple
+  execution: next_open_oo          # t+1 시가 진입 (실행 지연 1일)
+  selection: quantile              # 상·하위 20% 분위
+  top_fraction: 0.2
+  bottom_fraction: 0.2
+  rebalance_days: 1                # 매일 전량 리밸런스 (회전 상한 없음)
+  transaction_cost_rate: 0.0015
+  cost_turnover_definition: oneway

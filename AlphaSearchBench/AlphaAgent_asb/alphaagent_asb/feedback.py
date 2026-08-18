@@ -10,17 +10,37 @@ AnnRet은 원형이 반올림하지 않으므로 raw == prompt.
 """
 from __future__ import annotations
 
+import signal
+from contextlib import contextmanager
 from typing import Any, Dict
 
 from .vendored_alphaagent.backtester import FactorBacktester
+from .diagnostics import has_bare_field
+
+
+@contextmanager
+def step_timeout(seconds: int):
+    """후보별 하드 타임아웃 (D-11 — 원형엔 없음; qlib 교착/폭주 계산 방지).
+    메인 스레드 SIGALRM 기반 — Slurm/login 단일 프로세스 실행 전제."""
+    def _raise(signum, frame):
+        raise TimeoutError(f"step timeout after {seconds}s")
+    old = signal.signal(signal.SIGALRM, _raise)
+    signal.alarm(int(seconds))
+    try:
+        yield
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, old)
 
 
 class FeedbackEvaluator:
-    def __init__(self, start_date: str, end_date: str, instruments, freq: str = "day"):
+    def __init__(self, start_date: str, end_date: str, instruments, freq: str = "day",
+                 timeout_seconds: int = 600):
         self.start_date = start_date
         self.end_date = end_date
         self.instruments = instruments
         self.freq = freq
+        self.timeout_seconds = int(timeout_seconds)
         self._memo: Dict[str, Dict[str, Any]] = {}
 
     def evaluate(self, expr: str) -> Dict[str, Any]:
@@ -29,13 +49,16 @@ class FeedbackEvaluator:
         if expr in self._memo:
             return self._memo[expr]
         try:
+            if has_bare_field(expr):
+                raise ValueError("bare field name without $ (pre-rejected — D-11)")
             bt = FactorBacktester(factor_expr=expr,
                                   start_date=self.start_date,
                                   end_date=self.end_date,
                                   instruments=self.instruments,
                                   freq=self.freq)
-            bt.load_data()
-            perf = bt.calculate_performance().to_dict()
+            with step_timeout(self.timeout_seconds):
+                bt.load_data()
+                perf = bt.calculate_performance().to_dict()
             out = {
                 "ok": True,
                 "feedback_AnnRet_prompt": perf["AnnRet"]["total"],

@@ -1,0 +1,216 @@
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.5, pluggy-1.5.0 -- /home1/sku07891/miniconda3/envs/AlphaEval38/bin/python
+cachedir: .pytest_cache
+rootdir: /gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb
+collecting ... collected 45 items
+
+tests/regression/test_gen0_and_population.py::test_gen0_same_seed_identical_formulas PASSED [  2%]
+tests/regression/test_gen0_and_population.py::test_population_size_preserved_with_90pct_invalid FAILED [  4%]
+tests/regression/test_pathological_fixture.py::test_pathological_high_raw_ic_but_worst_effective PASSED [  6%]
+tests/regression/test_pathological_fixture.py::test_normal_formula_passes PASSED [  8%]
+tests/regression/test_pathological_fixture.py::test_eval_failure_is_hard_invalid_in_penalty_modes PASSED [ 11%]
+tests/smoke/test_smoke_modes.py::test_population_size_constant_all_modes PASSED [ 13%]
+tests/smoke/test_smoke_modes.py::test_trajectory_schema_and_fields PASSED [ 15%]
+tests/smoke/test_smoke_modes.py::test_gen0_identical_across_modes PASSED [ 17%]
+tests/smoke/test_smoke_modes.py::test_invalid_kept_with_worst_fitness PASSED [ 20%]
+tests/smoke/test_smoke_modes.py::test_generation_stats_complete PASSED   [ 22%]
+tests/smoke/test_smoke_modes.py::test_final_pool_asb_loadable PASSED     [ 24%]
+tests/unit/test_fitness_constraints.py::test_threshold_boundary_exact_pass PASSED [ 26%]
+tests/unit/test_fitness_constraints.py::test_threshold_below_fails_each PASSED [ 28%]
+tests/unit/test_fitness_constraints.py::test_threshold_nan_fails_and_null_skipped PASSED [ 31%]
+tests/unit/test_fitness_constraints.py::test_sentinel_below_all_valid PASSED [ 33%]
+tests/unit/test_fitness_constraints.py::test_hard_penalty_only_hard PASSED [ 35%]
+tests/unit/test_fitness_constraints.py::test_tournament_prefers_valid_despite_high_raw_ic PASSED [ 37%]
+tests/unit/test_fitness_constraints.py::test_off_mode_fallback_and_no_gating PASSED [ 40%]
+tests/unit/test_fitness_constraints.py::test_sentinel_separation_warning PASSED [ 42%]
+tests/unit/test_fitness_reliability.py::test_daily_ic_returns_std_handcalc PASSED [ 44%]
+tests/unit/test_fitness_reliability.py::test_ic_tstat_handcalc_and_guards PASSED [ 46%]
+tests/unit/test_fitness_reliability.py::test_ic_tstat_metric_effective_and_nan_worst PASSED [ 48%]
+tests/unit/test_fitness_reliability.py::test_min_traded_days_boundary PASSED [ 51%]
+tests/unit/test_fitness_reliability.py::test_min_abs_ic_boundary PASSED  [ 53%]
+tests/unit/test_fitness_reliability.py::test_conditions_ignore_hard_invalid PASSED [ 55%]
+tests/unit/test_fitness_reliability.py::test_fb_fitness_handcalc PASSED  [ 57%]
+tests/unit/test_fitness_reliability.py::test_fb_metric_wiring_and_nan_worst PASSED [ 60%]
+tests/unit/test_fitness_reliability.py::test_max_program_length_penalty_only PASSED [ 62%]
+tests/unit/test_fitness_reliability.py::test_static_stub_reason_passthrough PASSED [ 64%]
+tests/unit/test_fitness_reliability.py::test_close_raw_fitness_fallback_off_mode PASSED [ 66%]
+tests/unit/test_hof_fixed.py::test_dedup_and_correlated_removal PASSED   [ 68%]
+tests/unit/test_hof_fixed.py::test_degenerate_pairs_counted_and_lowest_eff_dropped PASSED [ 71%]
+tests/unit/test_hof_fixed.py::test_min_common_cells_degenerates PASSED   [ 73%]
+tests/unit/test_hof_fixed.py::test_daily_zscore_constant_day_nan PASSED  [ 75%]
+tests/unit/test_hof_fixed.py::test_pool_smaller_than_ncomp_kept PASSED   [ 77%]
+tests/unit/test_net_sharpe_fitness.py::test_net_sharpe_hand_calculation PASSED [ 80%]
+tests/unit/test_net_sharpe_fitness.py::test_net_sharpe_sign_flip_and_min_cross_section PASSED [ 82%]
+tests/unit/test_net_sharpe_fitness.py::test_apply_constraint_net_sharpe_paths PASSED [ 84%]
+tests/unit/test_static_check.py::test_constant_identities PASSED         [ 86%]
+tests/unit/test_static_check.py::test_constant_propagation_through_ops PASSED [ 88%]
+tests/unit/test_static_check.py::test_greater_less_are_identity_not_constant PASSED [ 91%]
+tests/unit/test_static_check.py::test_non_constant_pass PASSED           [ 93%]
+tests/unit/test_static_check.py::test_constant_subtree_flag_only PASSED  [ 95%]
+tests/unit/test_static_check.py::test_nonstd_window_flag_only PASSED     [ 97%]
+tests/unit/test_static_check.py::test_program_size PASSED                [100%]
+
+=================================== FAILURES ===================================
+______________ test_population_size_preserved_with_90pct_invalid _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-sku07891/pytest-0/test_population_size_preserved0')
+
+    def test_population_size_preserved_with_90pct_invalid(tmp_path):
+        """pop=100, invalid≈90% → 다음 세대도 정확히 100 + invalid가 population에 잔존."""
+        from alphasearchbench.inputs.trajectory import TrajectoryWriter, load_trajectory
+        from gplearn_asb.genetic import make_asb_parallel_evolve
+        from gplearn_asb.trajectory import GenStatsCollector
+        from gplearn_asb.vendored_gplearn.fitness import _fitness_map
+    
+        metric = _fitness_map["pearson"]
+        ev = FakeEvaluator(0.9)
+        gs = GenStatsCollector()
+        traj_path = str(tmp_path / "traj.jsonl")
+        params = {"tournament_size": 20, "function_set": list(functions_arity.keys()),
+                  "arities": _mk_arities(), "init_depth": (1, 4),
+                  "init_method": "half and half", "const_range": None,
+                  "_metric": metric, "_transformer": None,
+                  "parsimony_coefficient": 0.0,
+                  "method_probs": np.cumsum([0.9, 0.01, 0.01, 0.01]),
+                  "p_point_replace": 0.05, "max_samples": 1.0,
+                  "feature_names": FEATURE_LIST, "qlib_config": {"unused": True}}
+        X_shape = (1000, len(FEATURE_LIST))
+    
+        with TrajectoryWriter(traj_path, run_id="syn", method="gplearn_asb",
+                              seed=7) as tw:
+            evolve = make_asb_parallel_evolve(
+                ev, "hard_penalty", {}, -1.0, tw, gs, "hard_penalty",
+                VProgram, check_random_state)
+            rs = check_random_state(7)
+            seeds0 = rs.randint(MAX_INT, size=100)
+>           gen0 = evolve(100, None, X_shape, None, None, seeds0, params)
+
+tests/regression/test_gen0_and_population.py:123: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+n_programs = 100, parents = None, X_shape = (1000, 10), y = None
+sample_weight = None
+seeds = array([ 327741615,  976413892, 1202242073, 1369975286, 1882953283,
+       2053951699,  959775639, 1956722279, 20529493...21, 1798548603, 1773786398, 2088312505, 1745574629,
+       1260873545,  775033821, 1474484177, 1035597695, 1289946527])
+params = {'_metric': <gplearn_asb.vendored_gplearn.fitness._Fitness object at 0x7f739a294ac0>, '_transformer': None, 'arities':...Mul', 'Div', 'Power', 'Greater', ...], 4: ['Ref', 'Mean', 'Sum', 'Std', 'Var', 'Skew', ...]}, 'const_range': None, ...}
+
+    def asb_parallel_evolve(n_programs, parents, X_shape, y,
+                            sample_weight, seeds, params):
+        t0 = time.perf_counter()
+        n_samples, n_features = X_shape
+        tournament_size = params['tournament_size']
+        function_set = params['function_set']
+        arities = params['arities']
+        init_depth = params['init_depth']
+        init_method = params['init_method']
+        const_range = params['const_range']
+        metric = params['_metric']
+        transformer = params['_transformer']
+        parsimony_coefficient = params['parsimony_coefficient']
+        method_probs = params['method_probs']
+        p_point_replace = params['p_point_replace']
+        max_samples = params['max_samples']
+        feature_names = params['feature_names']
+        qlib_config = params['qlib_config']
+        max_samples = int(max_samples * n_samples)
+    
+        def _tournament(random_state):
+            contenders = random_state.randint(0, len(parents), tournament_size)
+            fitness = [parents[p].fitness_ for p in contenders]
+            if metric.greater_is_better:
+                parent_index = contenders[np.argmax(fitness)]
+            else:
+                parent_index = contenders[np.argmin(fitness)]
+            return parents[parent_index], parent_index
+    
+        programs, genomes = [], []
+        for i in range(n_programs):
+            random_state = check_random_state(seeds[i])
+            if parents is None:
+                program, genome = None, None
+            else:
+                method = random_state.uniform()
+                parent, parent_index = _tournament(random_state)
+                if method < method_probs[0]:
+                    donor, donor_index = _tournament(random_state)
+                    program, removed, remains = parent.crossover(donor.program, random_state)
+                    genome = {"operation": "Crossover", "parent_idx": int(parent_index),
+                              "donor_idx": int(donor_index)}
+                elif method < method_probs[1]:
+                    program, removed, _ = parent.subtree_mutation(random_state)
+                    genome = {"operation": "Subtree Mutation", "parent_idx": int(parent_index)}
+                elif method < method_probs[2]:
+                    program, removed = parent.hoist_mutation(random_state)
+                    genome = {"operation": "Hoist Mutation", "parent_idx": int(parent_index)}
+                elif method < method_probs[3]:
+                    program, mutated = parent.point_mutation(random_state)
+                    genome = {"operation": "Point Mutation", "parent_idx": int(parent_index)}
+                else:
+                    program = parent.reproduce()
+                    genome = {"operation": "Reproduction", "parent_idx": int(parent_index)}
+            prog = _Program(function_set=function_set, arities=arities,
+                            init_depth=init_depth, init_method=init_method,
+                            n_features=n_features, metric=metric,
+                            transformer=transformer, const_range=const_range,
+                            p_point_replace=p_point_replace,
+                            parsimony_coefficient=parsimony_coefficient,
+                            feature_names=feature_names, random_state=random_state,
+                            program=program, qlib_config=qlib_config)
+            prog.parents = None if genome is None else genome
+            prog.get_all_indices(n_samples, max_samples, random_state)  # RNG 소비 보존
+            programs.append(prog)
+            genomes.append(genome or {"operation": "Init"})
+    
+        # ---------------- phase-B: 진단 + constraint 적용 + 로깅 ----------------
+        exprs = [str(p) for p in programs]
+        memo_before = {f for f in exprs if f in evaluator.cache}
+        gen = gen_counter["gen"]
+        infos = []
+        for idx, (p, expr, genome) in enumerate(zip(programs, exprs, genomes)):
+            diag = evaluator.diagnose(expr)
+            info = apply_constraint(mode, diag, thresholds, worst_fitness,
+                                    evaluator.close_signed_ic,
+>                                   fitness_metric=evaluator.fitness_metric,
+                                    close_net_sharpe=getattr(evaluator, "close_net_sharpe", float("nan")),
+                                    fitness_opts=fitness_opts,
+                                    close_raw_fitness=getattr(evaluator, "close_raw_fitness", None))
+E           AttributeError: 'FakeEvaluator' object has no attribute 'fitness_metric'
+
+gplearn_asb/genetic.py:118: AttributeError
+=============================== warnings summary ===============================
+tests/smoke/test_smoke_modes.py: 18 warnings
+  /home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+    return func(x, start, end, min_periods, *numba_args)
+
+tests/smoke/test_smoke_modes.py: 1646 warnings
+  /home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/arraylike.py:402: RuntimeWarning: divide by zero encountered in log
+    result = getattr(ufunc, method)(*inputs, **kwargs)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/regression/test_gen0_and_population.py::test_population_size_preserved_with_90pct_invalid
+=========== 1 failed, 44 passed, 1664 warnings in 981.53s (0:16:21) ============
+PYTEST_DONE rc=1
+                   Power(Resi($high, 30), Slope($close, 12)) 0.013938        -0.013938           True
+Slope(Log(Power(Less($vwap, $vwap), Mul($low, $change))), 5) 0.013832         0.013832           True
+            Abs(Power(Mean($change, 64), Slope($close, 12))) 0.011363         0.011363           True
+[gplearn_asb] fit 55.7s  budget={'total_evaluations': 60, 'unique_evaluations': 50, 'memo_hits': 9, 'wall_clock_seconds': 55.712352165952325, 'panel_setup_seconds': 45.36683953553438, 'cache_stats_incl_postfit': {'unique_evaluations': 50, 'memo_hits': 15, 'total_lookups': 65}}
+[gplearn_asb] outputs → out/smoke_fixedhof_42
+SMOKE_DONE rc=0 rid=smoke_fixedhof_42
+Slope(Log(Power(Less($vwap, $vwap), Mul($low, $change))), 5) 2.526979         0.013832           True
+Slope(Log(Power(Less($vwap, $vwap), Mul($low, $change))), 5) 2.526979         0.013832           True
+Slope(Log(Power(Less($vwap, $vwap), Slope(Log(Power(Less(... 2.428589         0.014019           True
+[gplearn_asb] fit 54.4s  budget={'total_evaluations': 60, 'unique_evaluations': 49, 'memo_hits': 11, 'wall_clock_seconds': 54.426956221461296, 'panel_setup_seconds': 45.41710262186825, 'cache_stats_incl_postfit': {'unique_evaluations': 49, 'memo_hits': 16, 'total_lookups': 65}}
+[gplearn_asb] outputs → out/smoke_ictstat_42
+SMOKE_DONE rc=0 rid=smoke_ictstat_42
+Sum($factor, 12) 0.184299        -0.003862           True
+Sum($factor, 12) 0.184299        -0.003862           True
+Sum($factor, 12) 0.184299        -0.003862           True
+[gplearn_asb] fit 44.8s  budget={'total_evaluations': 60, 'unique_evaluations': 39, 'memo_hits': 18, 'wall_clock_seconds': 44.781079567968845, 'panel_setup_seconds': 45.465345630422235, 'cache_stats_incl_postfit': {'unique_evaluations': 39, 'memo_hits': 26, 'total_lookups': 65}}
+[gplearn_asb] outputs → out/smoke_fbfit_42
+SMOKE_DONE rc=0 rid=smoke_fbfit_42
+FIXEDHOF_POOL_OK unique= 5 cols_ok
+ICTSTAT_TRAJ_OK n_valid= 53
+FBFIT_TRAJ_OK
+VERIFY_ALL_DONE rc=0
