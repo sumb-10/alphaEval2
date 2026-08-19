@@ -1,0 +1,22 @@
+{
+  "columns": [
+    "horizon",
+    "volatility_response",
+    "market_direction_response",
+    "liquidity_response",
+    "activation_breadth",
+    "rre_qd"
+  ],
+  "n_components": 2,
+  "n_reference_rows": 1313,
+  "explained_variance_ratio": [
+    0.293009856892483,
+    0.2106605344676654
+  ],
+  "reference_split": "valid",
+  "reference_runs": [
+    "gplearn_asb_fbfit:3"
+  ],
+  "reference_basis": "final_pool+all_candidates_fallback",
+  "sklearn_version": "1.3.2"
+}

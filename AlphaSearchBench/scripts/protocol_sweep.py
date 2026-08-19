@@ -85,12 +85,25 @@ def main() -> int:
 
     arms = []
     for spec in args.arms:
-        assert "=" in spec, f"--arms는 NAME=config.yaml 형식이어야 합니다: {spec!r}"
-        name, cfg_path = spec.split("=", 1)
-        arms.append((name, _abs(cfg_path)))
+        assert "=" in spec, f"--arms는 NAME=config.yaml[#key=val,...] 형식: {spec!r}"
+        name, rest = spec.split("=", 1)
+        overrides = {}
+        if "#" in rest:
+            rest, ov = rest.split("#", 1)
+            for kv in ov.split(","):
+                k, v = kv.split("=", 1)
+                cur = overrides
+                keys = k.split(".")
+                for kk in keys[:-1]:
+                    cur = cur.setdefault(kk, {})
+                try:
+                    cur[keys[-1]] = float(v) if "." in v or v.isdigit() else v
+                except ValueError:
+                    cur[keys[-1]] = v
+        arms.append((name, _abs(rest), overrides))
     pools = discover_pools(args.pools)
     assert pools, f"pool CSV를 찾지 못했습니다: {args.pools}"
-    print(f"[sweep] arms={[a for a, _ in arms]} pools={len(pools)} split={args.split}")
+    print(f"[sweep] arms={[a[0] for a in arms]} pools={len(pools)} split={args.split}")
 
     out_root = args.out or os.path.join(_ASB_ROOT, "out", "protocol_sweep", args.tag)
     writer = OutputWriter(out_root)
@@ -98,8 +111,11 @@ def main() -> int:
     t_all = time.perf_counter()
     qlib_ready = False
 
-    for arm_name, cfg_path in arms:
+    for arm_name, cfg_path, overrides in arms:
         cfg = Config.load(cfg_path)
+        if overrides:
+            cfg = Config(Config._deep_merge(cfg.to_dict()
+                         if hasattr(cfg, "to_dict") else cfg._data, overrides))
         if not qlib_ready:
             bootstrap_qlib(cfg["dataset.provider_uri"], cfg["dataset.region"],
                            cfg["dataset.qlib_kernels"])
@@ -151,6 +167,9 @@ def main() -> int:
                       f"({time.perf_counter()-t0:.0f}s)")
 
         arm_meta.append({"arm": arm_name, "config": cfg_path,
+                         "overrides": overrides,
+                         "protocol_version": cfg.get("protocol.version"),
+                         "combiner": cfg.get("backtest.combiner", "raw_equal"),
                          "backtest": cfg.get("backtest"),
                          "splits": cfg.get("splits"), "market": cfg.get("market"),
                          "validity_thresholds": {
@@ -164,7 +183,10 @@ def main() -> int:
     if factor_rows:
         writer.write_table(pd.concat(factor_rows, ignore_index=True),
                            "protocol_sweep_factor")
-    manifest = {"tag": args.tag, "split": args.split, "arms": arm_meta,
+    manifest = {"tag": args.tag, "split": args.split,
+                "protocol_version": (arm_meta[0].get("protocol_version")
+                                     if arm_meta else None),
+                "arms": arm_meta,
                 "pools": pools, "n_rows": int(len(pool_df)),
                 "wall_seconds": time.perf_counter() - t_all}
     with open(writer.manifest_path(f"sweep_{args.tag}.json"), "w") as fh:

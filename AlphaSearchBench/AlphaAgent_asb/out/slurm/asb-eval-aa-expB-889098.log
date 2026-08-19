@@ -1,0 +1,7 @@
+[3338461:MainThread](2026-08-19 07:30:33,646) INFO - qlib.Initialization - [config.py:415] - default_conf: client.
+[3338461:MainThread](2026-08-19 07:30:34,605) INFO - qlib.Initialization - [__init__.py:74] - qlib successfully initialized based on client settings.
+[3338461:MainThread](2026-08-19 07:30:34,605) INFO - qlib.Initialization - [__init__.py:76] - data_path={'__DEFAULT_FREQ': PosixPath('/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data')}
+[alphasearchbench] qd_desc: AlphaAgent_asb/out/alphaagent_asb_expB_csi800/asb_eval_ref/metrics/qd_factor_descriptors.parquet
+[alphasearchbench] qd_pool: AlphaAgent_asb/out/alphaagent_asb_expB_csi800/asb_eval_ref/metrics/qd_pool_metrics.parquet
+[alphasearchbench] manifest: AlphaAgent_asb/out/alphaagent_asb_expB_csi800/asb_eval_ref/manifests/run_alphaagent_asb_42.json
+EVAL_ONE_DONE rc=0 rid=alphaagent_asb_expB_csi800

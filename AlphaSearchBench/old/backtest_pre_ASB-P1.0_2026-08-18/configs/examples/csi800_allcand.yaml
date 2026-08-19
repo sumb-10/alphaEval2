@@ -1,0 +1,18 @@
+# csi800_example + attempted 후보 전체 descriptor 덤프 (search-QD niche 분석용)
+market: csi800
+
+splits:
+  train: ["2010-01-01", "2016-12-31"]
+  valid: ["2017-01-01", "2019-12-31"]
+  test:  ["2021-01-01", "2024-12-31"]
+
+qd:
+  descriptor_scope: all_candidates
+  quality:
+    metric: IC
+    threshold: 0.02
+
+backtest:
+  mode: simple
+  execution: next_open_oo
+  transaction_cost_rate: 0.0015

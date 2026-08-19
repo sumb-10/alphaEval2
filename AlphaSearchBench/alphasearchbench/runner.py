@@ -7,6 +7,7 @@ timestamp는 manifest에만 기록한다.
 """
 from __future__ import annotations
 
+import math
 import os
 from typing import Dict, List, Optional, Tuple
 
@@ -61,6 +62,16 @@ class EvaluationRun:
                         ([1.0 / len(self.formulas)] * len(self.formulas)
                          if self.formulas else []))
         self.weights_source = "input" if weights_path else "equal_default"
+        # [ASB-P1.0 §3] combiner 정책: raw_equal(기본, label-free) |
+        # train_signed_equal(1-bit 지도 보정 — w_i = sign(train IC_i)/n).
+        # 방향은 train 창 IC 부호에서만 유도(§3.2), |IC| <= τ_sign 이거나 판정
+        # 불가면 '방향 없음'으로 결합에서 제외하고 사유·개수를 기록한다.
+        self.combiner = str(cfg.get("backtest.combiner", "raw_equal"))
+        if self.combiner not in ("raw_equal", "train_signed_equal"):
+            raise ValueError(f"backtest.combiner must be raw_equal|train_signed_equal,"
+                             f" got {self.combiner!r}")
+        self.sign_threshold = float(cfg.get("backtest.sign_threshold", 0.0))
+        self._no_direction: List[str] = []
         self.trajectory = load_trajectory(trajectory_path) if trajectory_path else None
         root = out_root or cfg.get("output.root") or os.path.join(_ASB_ROOT, "out")
         self.writer = OutputWriter(root)
@@ -69,6 +80,34 @@ class EvaluationRun:
         self.ctx = ctx if ctx is not None else SignalContext(cfg)
         self.gate = ValidityGate(cfg)
         self._sign_cache: Dict[str, Tuple[float, int, bool]] = {}
+
+    # ------------------------------------------------------------ pool 가중
+    def pool_weights(self, gated: List[str]) -> Tuple[List[str], List[float], str]:
+        """combiner 정책에 따른 (결합 대상, 가중, weights_source 라벨).
+
+        raw_equal: 입력 가중(기본 1/n) 그대로 — label-free.
+        train_signed_equal: w_i = sign(train IC_i)/n' (방향 있는 factor만,
+          n' = 방향 있는 factor 수). 제외분은 no_direction으로 기록.
+        """
+        base = {f: w for f, w in zip(self.formulas, self.weights)}
+        if self.combiner == "raw_equal":
+            return gated, [base[f] for f in gated], self.weights_source
+        kept: List[str] = []
+        signs: List[float] = []
+        self._no_direction = []
+        for f in gated:
+            sic, sign, _ = self.train_sign(f)
+            ok = (sic is not None and not (isinstance(sic, float) and math.isnan(sic))
+                  and abs(float(sic)) > self.sign_threshold)
+            if ok:
+                kept.append(f)
+                signs.append(float(sign))
+            else:
+                self._no_direction.append(f)
+        if not kept:
+            return [], [], "train_signed_equal"
+        w = [sg / len(kept) for sg in signs]
+        return kept, w, "train_signed_equal"
 
     # ------------------------------------------------------------ train sign
     def train_sign(self, formula: str) -> Tuple[float, int, bool]:
@@ -136,13 +175,14 @@ class EvaluationRun:
 
         pool_rows = []
         gated = [f for f in self.formulas if reports[f].passes_gate]
-        gated_w = [w for f, w in zip(self.formulas, self.weights)
-                   if reports[f].passes_gate]
-        if len(gated) >= 1:
-            res = ev.evaluate_pool(gated, gated_w, split,
+        pool_f, pool_w, wsrc = self.pool_weights(gated)
+        if len(pool_f) >= 1:
+            res = ev.evaluate_pool(pool_f, pool_w, split,
                                    pool_id=f"{self.method}:{self.seed_id}")
             res.row.update({"method": self.method, "seed": self.seed_id,
-                            "weights_source": self.weights_source,
+                            "weights_source": wsrc,
+                            "combiner": self.combiner,
+                            "n_no_direction": len(self._no_direction),
                             "n_factors_dropped_by_gate": len(self.formulas) - len(gated)})
             pool_rows.append(res.row)
             dailies.append(res.daily)
@@ -425,14 +465,14 @@ class EvaluationRun:
         factor_df = pd.DataFrame(rows)
 
         gated = [f for f in self.formulas if reports[f].passes_gate]
-        gated_w = [w for f, w in zip(self.formulas, self.weights)
-                   if reports[f].passes_gate]
+        pool_f, pool_w, wsrc = self.pool_weights(gated)
         pool_rows = []
-        if gated:
-            m, d = bt.evaluate_pool(gated, gated_w, split,
+        if pool_f:
+            m, d = bt.evaluate_pool(pool_f, pool_w, split,
                                     pool_id=f"{self.method}:{self.seed_id}")
             m.update({"method": self.method, "seed": self.seed_id,
-                      "weights_source": self.weights_source})
+                      "weights_source": wsrc, "combiner": self.combiner,
+                      "n_no_direction": len(self._no_direction)})
             pool_rows.append(m)
             dailies.append(d)
         pool_df = pd.DataFrame(pool_rows)

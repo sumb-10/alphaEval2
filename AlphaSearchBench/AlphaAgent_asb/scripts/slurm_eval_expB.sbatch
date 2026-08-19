@@ -10,10 +10,12 @@
 set -uo pipefail
 cd /gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench
 RID=alphaagent_asb_expB_csi800
+CFG=${1:-configs/examples/csi800_allcand.yaml}
+OUTSUB=${2:-asb_eval}
 /home1/sku07891/miniconda3/envs/AlphaEval38/bin/python -m alphasearchbench evaluate \
-    --config configs/examples/csi800_allcand.yaml \
+    --config $CFG \
     --input AlphaAgent_asb/out/$RID/metrics/final_pool_$RID.csv \
     --trajectory AlphaAgent_asb/out/$RID/trajectory/$RID.jsonl \
     --method alphaagent_asb --seed-id 42 \
-    --out AlphaAgent_asb/out/$RID/asb_eval 2>&1 | tail -6
+    --out AlphaAgent_asb/out/$RID/$OUTSUB 2>&1 | tail -6
 echo "EVAL_ONE_DONE rc=${PIPESTATUS[0]} rid=$RID"

@@ -1,0 +1,35 @@
+# [WS-A / A3] 논문형 — AlphaAgent(KDD'25, arXiv 2502.16789) 백테스트 프로토콜.
+#
+# 논문 §4.1.2 실측: qlib TopkDropoutStrategy로 "예측 상위 50종목 보유, 최하위
+# 5종목 제외"(long-only), 거래비용은 CSI500에서 매수 0.0005 / 매도 0.0015,
+# 성과는 **지수 대비 초과** 연수익(AR)과 IR로 보고. 우리 universe가 csi800이라
+# benchmark는 SH000906(중증800)을 쓴다 — 논문의 CSI500(SH000905)과 다른 지수임을
+# 편차로 명시한다.
+#
+# 남은 편차(이번 사이클 범위 밖): 논문은 4개 base alpha + 채굴 alpha를
+# LightGBM(depth 4)으로 결합한 뒤 그 예측을 신호로 쓴다. 우리는 equal-weight
+# z-score 합을 신호로 쓴다(결합층 교란변수 제거 — 사용자 결정).
+
+market: csi800
+
+splits:
+  train: ["2010-01-01", "2019-12-31"]
+  valid: ["2020-01-01", "2020-12-31"]
+  test:  ["2021-01-01", "2024-12-31"]
+
+qd:
+  descriptor_scope: all_candidates
+  quality:
+    metric: IC
+    threshold: 0.02
+
+backtest:
+  mode: qlib                       # ★ long-only TopkDropout (runner가 배선)
+  qlib:
+    topk: 50                       # 논문 §4.1.2
+    n_drop: 5                      # 논문 §4.1.2 — 일 회전 상한 ~10%
+    deal_price: open               # 신호 t → t+1 시가 체결 (Phase 8 audit)
+    open_cost: 0.0005              # 논문: 매수 5bps
+    close_cost: 0.0015             # 논문: 매도 15bps
+    min_cost: 5
+    limit_threshold: 0.095

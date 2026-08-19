@@ -1,0 +1,4 @@
+[alphasearchbench] bt_factor: gplearn_asb/out/pilot_csi800_netsharpe_2/asb_eval_ref/metrics/backtest_factor_metrics.parquet
+[alphasearchbench] bt_pool: gplearn_asb/out/pilot_csi800_netsharpe_2/asb_eval_ref/metrics/backtest_pool_metrics.parquet
+[alphasearchbench] manifest: gplearn_asb/out/pilot_csi800_netsharpe_2/asb_eval_ref/manifests/run_gplearn_asb_netsharpe_2.json
+EVAL_ONE_DONE rc=0 rid=pilot_csi800_netsharpe_2

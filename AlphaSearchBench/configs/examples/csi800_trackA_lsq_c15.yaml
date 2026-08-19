@@ -1,0 +1,23 @@
+# [ASB-P1.0 Track A] LSQ × c15 — Common Deployment Suite 구성.
+# combiner 축(raw_equal|train_signed_equal)은 스윕에서 오버라이드한다.
+# 명세: docs/research_docs/backtest_design.md §2.1
+
+protocol:
+  version: ASB-P1.0-draft
+
+market: csi800
+
+splits:
+  train: ["2010-01-01", "2019-12-31"]
+  valid: ["2020-01-01", "2020-12-31"]
+  test:  ["2021-01-01", "2024-12-31"]
+
+backtest:
+  mode: simple
+  execution: next_open_oo
+  selection: quantile
+  top_fraction: 0.2
+  bottom_fraction: 0.2
+  rebalance_days: 1
+  transaction_cost_rate: 0.0015
+  cost_turnover_definition: oneway

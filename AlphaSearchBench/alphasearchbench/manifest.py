@@ -37,6 +37,8 @@ def build_manifest(cfg, ctx, run_info: Dict) -> Dict:
                        f"|{eng.dates[0].date()}..{eng.dates[-1].date()}")
     manifest = {
         "alphasearchbench_version": __import__("alphasearchbench").__version__,
+        # [ASB-P1.0 §13] 배치 프로토콜 버전 — 구성 변경은 버전 증가를 동반한다
+        "protocol_version": cfg.get("protocol.version", "unversioned"),
         "git_commit": _git_commit(os.path.dirname(os.path.abspath(__file__))),
         "versions": _versions(),
         "dataset": {

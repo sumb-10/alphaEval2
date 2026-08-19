@@ -97,8 +97,13 @@ pfs:
   seed: 20260814
   student_t_dof: 3
 
+protocol:
+  version: null            # 배치 프로토콜 버전 (예: ASB-P1.0) — manifest에 스탬프
+
 backtest:
   mode: simple            # simple | qlib(optional integration)
+  combiner: raw_equal     # raw_equal(label-free) | train_signed_equal(1-bit 지도 보정)
+  sign_threshold: 0.0     # train_signed_equal의 τ_sign — |train IC| <= τ 는 방향 없음(결합 제외)
   execution: next_open_oo # same_close(legacy/optimistic) | next_open_oo | next_open_oc | delayed_close_cc
   top_fraction: 0.2
   bottom_fraction: 0.2
