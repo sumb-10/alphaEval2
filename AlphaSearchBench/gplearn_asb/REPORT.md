@@ -212,3 +212,31 @@ search-QD 3 round(coverage ≤0.025 — GP off-arm 대비 크게 좁은 탐색 �
   **신호 부재**. 본 GP 계열은 "참고연구 GP 베이스라인 재현"으로 최종
   포지셔닝하며, 다음 사이클 의제는 miner 개선(결합층·다양성 압력·기간/universe)
   이다.
+
+## 11. Clean Vanilla GP v2 도입 — Phase B 마감 (2026-08-19)
+
+**선언**: §1–10의 전 결과(v1 + 기존 기간)는 legacy/development evidence로
+격하되었다. 공식 실험은 Clean Vanilla GP v2 + 새 temporal split
+(train 2015–2021 / validation 2022–2023 / test 2024-01-21~2026-06-30,
+Primary Full OOS + Strict Untouched Subset 병기)에서 재시작한다.
+명세·설계: `docs/research_docs/{Vanilla_GP_v2.md, GP_asb_design_v2.md}`.
+
+**v2에서 제거·수정된 v1 결함**: buggy point mutation(정수 유입) → typed
+mutation, vendored HOF anti-selection → fixed HOF 유일 경로 + execute 더미
+패치(qlib 재조회 0), $close silent fallback·mode 분기 → 단일 admissibility,
+metric 의존 early stopping → 예산 소진만, label 경계 1일 누출 → label tail
+exclusion. canonical fitness = fb_fitness (pathological 가드: 내부 상수
+turnover 하한 0.01(구조 하한 126/T 아래 — 도달 불가 증명) + min traded
+days 252(포지션 보유일, 비구속 실측)).
+
+**검증 (Slurm 889597, green)**: 전체 스위트 76 passed — legacy 45본 무수정
+무회귀 + v2 신규(typed mutation 6, 스키마 3, fb 가드 3, label tail 3,
+regression 7: manifest 계약/예산 소진/pool 격리 sentinel/패치 무해성/결정성
+fixture/legacy 흔적 부재/전역 복원). v2 smoke: vendored HOF qlib 재조회
+0행, pool unique 5/5, manifest 계약 통과. 검증 과정에서 잡은 실결함 3건:
+cli 진입점 순서(NameError), HOF 폭>population(ValueError),
+execute 패치의 예외 노출 구간(전역 오염 — try/finally 확장으로 봉쇄).
+
+**상태**: profile `vanilla_v2-draft` (freeze 조건 잔여 = L/D 값, C-2).
+다음: C-2(L/D 확정) → C-1(budget 배분, valid fb primary·3+ seeds) →
+C-3(freeze + 2015–2023 refit 공식 mining) → Phase D(ASB 통합·test 평가).

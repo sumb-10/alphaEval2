@@ -1,0 +1,19 @@
+# v2 smoke — 기능 검증 전용 (csi300, 소예산)
+profile: vanilla_v2-draft
+market: csi300
+search: {start_date: "2018-01-01", end_date: "2019-06-30"}
+label: {horizon: 1}
+budget: {candidates: 60}       # 30 × 2세대
+gp: {population_size: 30, max_program_length: null, max_program_depth: null}
+pool: {size: 5}
+fitness:
+  metric: fb_fitness
+  transaction_cost_rate: 0.0015
+  long_short_quantile: 0.2
+  net_sharpe_min_traded_days: 252   # 최소 포지션 보유/수익률 관측일(≈1거래년).
+                                    # 매매 발생일 아님 — 비구속 안전장치 (Vanilla_GP_v2 §2.5)
+validity:
+  min_mean_daily_coverage_ratio: 0.05
+  min_median_daily_n_valid: 30
+  min_valid_day_ratio: 0.90
+seed: 42

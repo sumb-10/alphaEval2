@@ -130,6 +130,48 @@ def test_fb_metric_wiring_and_nan_worst():
     assert info2["invalid_reason"] == "fitness_undefined:fb_fitness_nan"
 
 
+def test_fb_turnover_floor_param_mechanism():
+    """[③] min_annual_turnover 파라미터: 기본 0.0 = legacy 의미론 불변,
+    명시 floor 아래 연회전 → NaN. (canonical 값 자체는 별도 승인 사항 —
+    여기서는 메커니즘만 고정.)"""
+    # ann_turn = 0.005 (일평균 0.005/252): 기본값에서는 유한 (legacy 불변)
+    tiny = 0.005 / 252.0
+    v_legacy = fb_fitness_value(1.0, 0.1, tiny)
+    assert math.isfinite(v_legacy)
+    # 동일 입력 + floor 0.01 → NaN (floor 미달)
+    assert math.isnan(fb_fitness_value(1.0, 0.1, tiny, min_annual_turnover=0.01))
+    # floor 바로 위(ann 0.011)는 유한
+    assert math.isfinite(fb_fitness_value(1.0, 0.1, 0.011 / 252.0,
+                                          min_annual_turnover=0.01))
+    # 경계값: ann_turn == floor → 통과 (value >= threshold 규약과 일관)
+    assert math.isfinite(fb_fitness_value(1.0, 0.1, 0.01 / 252.0,
+                                          min_annual_turnover=0.01))
+
+
+def test_fb_finite_guarantee():
+    """[③] 반환값 finite 보장 — 구성값이 유한해도 곱이 overflow하면 NaN."""
+    v = fb_fitness_value(1e308, 1e308, 1e-9)
+    assert math.isnan(v)                      # inf로 새지 않음
+    # 정상 범위에서는 물론 유한
+    assert math.isfinite(fb_fitness_value(2.0, 0.126, 0.001))
+
+
+def test_fb_floor_wiring_in_apply_constraint():
+    """[③] fitness_opts.fb_min_annual_turnover 배선: floor 미달 → worst +
+    사유 기록. opts 미지정 시 동일 diag가 유한 raw (legacy 경로 불변)."""
+    d = _ns_diag(300)
+    d["mean_daily_turnover_oneway"] = 0.005 / 252.0     # ann 0.005
+    base = apply_constraint("strict_penalty", d, TH, -1e6, 0.03,
+                            fitness_metric="fb_fitness")
+    assert math.isfinite(base["raw_fitness"])           # 기본 = floor 없음
+    info = apply_constraint("strict_penalty", dict(d), TH, -1e6, 0.03,
+                            fitness_metric="fb_fitness",
+                            fitness_opts={"fb_min_annual_turnover": 0.01})
+    assert math.isnan(info["raw_fitness"])
+    assert info["effective_fitness"] == -1e6
+    assert info["invalid_reason"] == "fitness_undefined:fb_fitness_nan"
+
+
 # ---------------------------------------------------------------- P2-3/스텁
 def test_max_program_length_penalty_only():
     d = _diag(program_size=6)

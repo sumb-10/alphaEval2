@@ -30,6 +30,69 @@ def normalize_mode(v: Any) -> str:
     return v
 
 
+# [v2] public 스키마 화이트리스트 — Vanilla_GP_v2.md §4.
+# 결과를 바꾸는 값 + 명시-고정 spec만 허용. legacy 키(constraint.*, gp.hof_mode,
+# gp.stopping_criteria, gp.fitness_metric, gp.generations 등)는 존재 자체가 에러.
+V2_SCHEMA = {
+    "profile": None,
+    "market": None,
+    "search": {"start_date", "end_date"},
+    "label": {"horizon"},
+    "budget": {"candidates"},
+    "gp": {"population_size", "max_program_length", "max_program_depth"},
+    "pool": {"size"},
+    "fitness": {"metric", "transaction_cost_rate", "long_short_quantile",
+                "net_sharpe_min_traded_days", "net_sharpe_min_abs_ic"},
+    "validity": {"min_mean_daily_coverage_ratio", "min_median_daily_n_valid",
+                 "min_valid_day_ratio"},
+    "seed": None,
+    "run_id": None,
+    "output": {"root"},
+    "dataset": {"provider_uri", "region", "qlib_kernels", "warmup_start",
+                "right_buffer_days"},
+}
+V2_FITNESS_METRICS = ("fb_fitness", "abs_ic", "ic_tstat", "net_sharpe")
+
+
+def validate_v2_schema(data: Dict[str, Any], source: str = "config") -> None:
+    """v2 실험 파일(dict, merge 전)의 화이트리스트 검증. 위반 시 ConfigError."""
+    errors = []
+    for top, val in data.items():
+        if top not in V2_SCHEMA:
+            errors.append(f"금지/미지원 최상위 키: {top!r}")
+            continue
+        allowed = V2_SCHEMA[top]
+        if allowed is None:
+            continue
+        if not isinstance(val, dict):
+            errors.append(f"{top}: 블록(dict)이어야 합니다")
+            continue
+        for sub in val:
+            if sub not in allowed:
+                errors.append(f"금지/미지원 키: {top}.{sub}")
+    metric = (data.get("fitness") or {}).get("metric")
+    if metric is not None and metric not in V2_FITNESS_METRICS:
+        errors.append(f"fitness.metric은 {V2_FITNESS_METRICS} 중 하나: {metric!r}")
+    if errors:
+        raise ConfigError(
+            "[vanilla_v2] config 스키마 위반 — legacy 키는 v2에서 사용할 수 없습니다 "
+            "(configs/LEGACY_INDEX.md 참조):\n  " + "\n  ".join(errors)
+            + f"\n  (파일: {source})")
+
+
+def derive_v2_generations(candidates: int, population_size: int) -> int:
+    """generations = budget // population. 나머지는 명시적 에러 (예산 왜곡 금지)."""
+    candidates, population_size = int(candidates), int(population_size)
+    if population_size <= 0 or candidates <= 0:
+        raise ConfigError("budget.candidates와 gp.population_size는 양수여야 합니다")
+    if candidates % population_size != 0:
+        raise ConfigError(
+            f"budget.candidates({candidates})가 population_size({population_size})로 "
+            f"나누어떨어지지 않습니다 — generations 파생 불가 (나머지 "
+            f"{candidates % population_size}). 예산 또는 population을 조정하세요.")
+    return candidates // population_size
+
+
 def load_config(path: Optional[str] = None,
                 overrides: Optional[Dict[str, Any]] = None) -> Config:
     with open(DEFAULT_CONFIG_PATH) as f:

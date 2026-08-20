@@ -1,0 +1,60 @@
+........................................................................ [ 96%]
+...                                                                      [100%]
+=============================== warnings summary ===============================
+tests/regression/test_v2_correctness.py: 18 warnings
+tests/smoke/test_smoke_modes.py: 18 warnings
+  /home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+    return func(x, start, end, min_periods, *numba_args)
+
+tests/regression/test_v2_correctness.py::test_manifest_contract
+tests/regression/test_v2_correctness.py::test_execute_patch_harmless
+tests/regression/test_v2_correctness.py::test_determinism_fixture
+  /gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/gplearn_asb/hof.py:31: RuntimeWarning: Mean of empty slice
+    m = np.nanmean(v, axis=1, keepdims=True)
+
+tests/regression/test_v2_correctness.py::test_manifest_contract
+tests/regression/test_v2_correctness.py::test_execute_patch_harmless
+tests/regression/test_v2_correctness.py::test_determinism_fixture
+  /home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1872: RuntimeWarning: Degrees of freedom <= 0 for slice.
+    var = nanvar(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+
+tests/smoke/test_smoke_modes.py: 1646 warnings
+  /home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/arraylike.py:402: RuntimeWarning: divide by zero encountered in log
+    result = getattr(ufunc, method)(*inputs, **kwargs)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+75 passed, 1688 warnings in 2283.87s (0:38:03)
+PYTEST_DONE rc=0
+[vanilla_v2] panel ready 48.6s (universe_hash=3f84d42a0dfce972)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+  return func(x, start, end, min_periods, *numba_args)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+  return func(x, start, end, min_periods, *numba_args)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+  return func(x, start, end, min_periods, *numba_args)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+  return func(x, start, end, min_periods, *numba_args)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+  return func(x, start, end, min_periods, *numba_args)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+  return func(x, start, end, min_periods, *numba_args)
+/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/gplearn_asb/hof.py:31: RuntimeWarning: Mean of empty slice
+  m = np.nanmean(v, axis=1, keepdims=True)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1872: RuntimeWarning: Degrees of freedom <= 0 for slice.
+  var = nanvar(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+Generation 0 starts.
+final:  [-0.0044942231419325615, -0.010235572450318047, -0.1273597109049011, 0.02495712152509708, -0.24953081142762343, -1000000.0, -0.09422838533531523, -0.0849660859894872, 0.14709691789838739, -1000000.0, -1000000.0, 0.05380231916217616, -0.18589323182119669, -0.19990942142585058, -0.014578696686711785, -0.014947677948287016, -0.015172716468523969, -0.03321069317542624, -0.023798553774510362, 3.0311998914236156e-06, -0.014719921960555816, 0.012473599695494634, -0.026141081161449045, -0.005965423246219987, -0.005498620413945117, -0.1132879792852543, -0.14359151237436413, -0.019269464400688205, -0.011526131293293598, -0.018367257341330084]
+Generation 1 starts.
+final:  [0.006994875547849288, 0.14709691789838739, 0.14709691789838739, -0.018158783067332814, 0.012473599695494634, 0.14709691789838739, 0.08139053928836858, -0.004510526872526261, -0.12282397368610913, 0.14709691789838739, 0.02495712152509708, 0.02495712152509708, -0.018158783067332814, 0.14709691789838739, 0.01715835937059833, 0.14709691789838739, 0.14709691789838739, -0.12282397368610913, 0.14709691789838739, 0.14709691789838739, 0.016018301237508803, 0.14709691789838739, 0.012473599695494634, 0.14709691789838739, 0.0006298636019176806, 0.14709691789838739, 0.14709691789838739, 0.14709691789838739, 0.02331430370323685, 0.016018301237508803]
+[vanilla_v2] fixed HOF: {'hof_mode': 'fixed', 'n_input': 30, 'n_dedup_removed': 18, 'n_unique': 12, 'n_top': 12, 'n_signal_failed': 0, 'decorr_degenerate_pairs': 0, 'n_decorr_removed': 7, 'decorr_max_abs_corr_final': 0.043568651764152165}
+                                                     formula  raw_fitness  validity_pass
+                                            Sum($factor, 12)     0.147097           True
+Delta(Slope(Delta(Min(Less($volume, $adjclose), 64), 30),...     0.081391           True
+                                 Delta(Sum($amount, 64), 64)     0.024957           True
+                   Slope(Delta(IdxMax($change, 64), 30), 30)     0.023314           True
+             Slope(Delta(Min(Sum($factor, 12), 64), 30), 30)     0.016018           True
+[vanilla_v2] fit 36.7s budget={'candidates_budget': 60, 'total_evaluations': 60, 'unique_evaluations': 39, 'memo_hits': 18, 'wall_clock_seconds': 36.71437350846827, 'panel_setup_seconds': 48.620324302464724}
+[vanilla_v2] outputs → out/v2_smoke_verify
+V2_SMOKE_DONE rc=0 executing_lines=0
+V2_CONTRACT_OK profile= vanilla_v2-draft gens= 2 pool_unique= 5 / 5
+V2_VERIFY_ALL_DONE rc=0

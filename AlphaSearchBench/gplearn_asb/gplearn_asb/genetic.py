@@ -24,6 +24,57 @@ from .fitness import apply_constraint
 from .trajectory import GenStatsCollector, generation_row
 
 
+def flat_program_depth(program, name_arity) -> int:
+    """flattened prefix tree의 깊이 (terminal=1 — static_check._tree_depth와
+    동일 규약). rolling(arity 마커 4)은 실효 자식 2개(입력, window)."""
+    maxd, stack = 1, []
+    for node in program:
+        d = len(stack) + 1
+        if d > maxd:
+            maxd = d
+        if isinstance(node, str) and node in name_arity:
+            ar = name_arity[node]
+            stack.append(2 if ar == 4 else ar)
+        else:
+            while stack:
+                stack[-1] -= 1
+                if stack[-1] == 0:
+                    stack.pop()
+                else:
+                    break
+    return maxd
+
+
+def lexi_select(contender_fitness, contender_programs, greater_is_better,
+                worst_fitness, epsilon, name_arity) -> int:
+    """[C-2a.3] ε-lexicographic tournament 선택 — tournament 내 인덱스 반환.
+
+    계약(사전 등록): fitness 차이 > ε → fitness 우선(현행과 동일 승자).
+    near-tie(admissible ∧ |f_best − f| ≤ ε) 안에서는 결정적으로
+    ① 최소 program length ② 최소 depth ③ 최소 tournament 내 인덱스.
+    전원 worst sentinel이면 tie-break 미적용(현행 argmax/argmin semantics —
+    np.argmax와 동일하게 첫 최댓값 인덱스). 추가 RNG 소비 없음(순수 함수).
+    """
+    import numpy as _np
+    f = list(contender_fitness)
+    if greater_is_better:
+        best = max(f)
+        if best <= worst_fitness:                 # 전원 sentinel
+            return int(_np.argmax(f))
+        cand = [j for j, v in enumerate(f)
+                if v > worst_fitness and (best - v) <= epsilon]
+    else:
+        best = min(f)
+        if best >= abs(worst_fitness):            # 전원 sentinel (lesser 방향)
+            return int(_np.argmin(f))
+        cand = [j for j, v in enumerate(f)
+                if v < abs(worst_fitness) and (v - best) <= epsilon]
+    return min(cand, key=lambda j: (len(contender_programs[j]),
+                                    flat_program_depth(contender_programs[j],
+                                                       name_arity),
+                                    j))
+
+
 def make_asb_parallel_evolve(evaluator: MiningEvaluator,
                              mode: str,
                              thresholds: Dict[str, Optional[float]],
@@ -33,8 +84,15 @@ def make_asb_parallel_evolve(evaluator: MiningEvaluator,
                              constraint_mode_field: str,
                              vendored_program_cls,
                              vendored_check_random_state,
-                             fitness_opts: Optional[Dict[str, Any]] = None):
-    """vendored gplearn genetic._parallel_evolve 대체 함수 생성."""
+                             fitness_opts: Optional[Dict[str, Any]] = None,
+                             point_mutation_fn=None,
+                            lexi_epsilon=None):
+    """vendored gplearn genetic._parallel_evolve 대체 함수 생성.
+
+    point_mutation_fn: None이면 vendored(legacy, 결함 보존) point mutation.
+    v2는 mutation.typed_point_mutation을 주입한다 — (parent_program,
+    random_state, p_point_replace, feature_names, arities) 시그니처.
+    """
     _Program = vendored_program_cls
     check_random_state = vendored_check_random_state
     gen_counter = {"gen": 0}
@@ -59,10 +117,24 @@ def make_asb_parallel_evolve(evaluator: MiningEvaluator,
         qlib_config = params['qlib_config']
         max_samples = int(max_samples * n_samples)
 
+        # [C-2a.3] name→arity 역인덱스 (lexi tie-break의 depth 계산용)
+        name_arity = {}
+        for _ar, _fs in arities.items():
+            for _fn in _fs:
+                name_arity[_fn if isinstance(_fn, str)
+                           else getattr(_fn, "name", _fn)] = _ar
+
         def _tournament(random_state):
             contenders = random_state.randint(0, len(parents), tournament_size)
             fitness = [parents[p].fitness_ for p in contenders]
-            if metric.greater_is_better:
+            if lexi_epsilon is not None:
+                # ε-lexicographic (실험 profile 전용) — RNG 추가 소비 없음
+                j = lexi_select(fitness,
+                                [parents[p].program for p in contenders],
+                                metric.greater_is_better, worst_fitness,
+                                lexi_epsilon, name_arity)
+                parent_index = contenders[j]
+            elif metric.greater_is_better:
                 parent_index = contenders[np.argmax(fitness)]
             else:
                 parent_index = contenders[np.argmin(fitness)]
@@ -88,7 +160,12 @@ def make_asb_parallel_evolve(evaluator: MiningEvaluator,
                     program, removed = parent.hoist_mutation(random_state)
                     genome = {"operation": "Hoist Mutation", "parent_idx": int(parent_index)}
                 elif method < method_probs[3]:
-                    program, mutated = parent.point_mutation(random_state)
+                    if point_mutation_fn is None:
+                        program, mutated = parent.point_mutation(random_state)
+                    else:
+                        program, mutated = point_mutation_fn(
+                            parent.program, random_state, p_point_replace,
+                            feature_names, arities)
                     genome = {"operation": "Point Mutation", "parent_idx": int(parent_index)}
                 else:
                     program = parent.reproduce()

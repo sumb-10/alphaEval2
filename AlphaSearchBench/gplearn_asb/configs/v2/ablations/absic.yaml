@@ -1,0 +1,18 @@
+# v2 ablation — fitness=abs_ic (canonical fb_fitness 대비 축 1개만 변경)
+profile: vanilla_v2-draft
+market: csi800
+search: {start_date: "2015-01-01", end_date: "2021-12-31"}  # C-0 확정 창
+label: {horizon: 1}
+budget: {candidates: 5000}
+gp: {population_size: 1000, max_program_length: null, max_program_depth: null}
+pool: {size: 10}
+fitness:
+  metric: abs_ic
+  transaction_cost_rate: 0.0015
+  long_short_quantile: 0.2
+
+validity:
+  min_mean_daily_coverage_ratio: 0.05
+  min_median_daily_n_valid: 30
+  min_valid_day_ratio: 0.90
+seed: 42

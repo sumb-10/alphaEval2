@@ -1,0 +1,32 @@
+# [C-2a] train-only 구조 파일럿 — v2 자연 complexity dynamics 실측 (성능 비교 아님)
+# 목적: 세대수 증가에 따른 bloat tail 확인 → C-2b(L/D 확정) evidence.
+# L/D bound = null (자연분포 관측). validation/test 미접촉 — leakage 없음.
+# 계약: docs/experiments/2026-08-19_C2_LD_evidence.md §C-2a
+profile: vanilla_v2-draft
+market: csi800
+search:
+  start_date: '2015-01-01'
+  end_date: '2021-12-31'
+label:
+  horizon: 1
+budget:
+  candidates: 5000
+gp:
+  population_size: 1000
+  max_program_length: null
+  max_program_depth: null
+pool:
+  size: 10
+fitness:
+  metric: fb_fitness
+  transaction_cost_rate: 0.0015
+  long_short_quantile: 0.2
+  net_sharpe_min_traded_days: 252
+validity:
+  min_mean_daily_coverage_ratio: 0.05
+  min_median_daily_n_valid: 30
+  min_valid_day_ratio: 0.9
+seed: 0
+run_id: v2_csi800_fbfit_c2a_1000x5_s0
+output:
+  root: null

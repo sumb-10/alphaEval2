@@ -36,6 +36,19 @@ HARD_INVALID_REASONS = ("formula_eval_failed", "all_nonfinite",
                         "no_correlatable_day", "zero_ic_observations")
 
 
+def apply_label_tail_exclusion(label, k: int) -> int:
+    """[v2] 창 마지막 k행의 label을 NaN 마스크 (in-place).
+
+    train 마지막 horizon 거래일의 forward label이 경계 밖(validation 첫
+    거래일) 가격을 쓰는 1일 누출을 차단 — train-only 계약의 기본 처리
+    (Vanilla_GP_v2.md §6 caveat 4). purge/embargo(P-4)와 별개.
+    반환 = 실제 제외 일수 (k≤0 또는 창이 k 이하이면 0 — no-op)."""
+    if k <= 0 or label.shape[0] <= k:
+        return 0
+    label[-k:] = np.nan
+    return k
+
+
 class MiningEvaluator:
     def __init__(self, cfg):
         market = cfg.require("market")
@@ -71,6 +84,11 @@ class MiningEvaluator:
         with np.errstate(all="ignore"):
             fwd_full = (lead / full_close - 1).astype(np.float32)
         self.label = fwd_full[s:e]
+        # [v2 전용, legacy 기본 off — 동결 불변] label tail exclusion
+        self.label_tail_excluded = 0
+        if bool(cfg.get("label.tail_exclusion", False)):
+            self.label = self.label.copy()
+            self.label_tail_excluded = apply_label_tail_exclusion(self.label, k)
         self._close_window = full_close[s:e]
 
         cache_ctx = {
@@ -80,6 +98,8 @@ class MiningEvaluator:
             "label_horizon": k,
             "semantics_version": SEMANTICS_VERSION,
         }
+        if self.label_tail_excluded:
+            cache_ctx["label_tail_exclusion"] = self.label_tail_excluded
         # static gate가 켜진 run은 static-invalid의 진단이 데이터-프리 스텁이라
         # 게이트 없는 run(off/parity)과 캐시를 공유하면 안 됨 — 네임스페이스 분리.
         # (기본 off/기존 run의 fingerprint는 불변 — 키를 조건부로만 추가)
@@ -158,8 +178,13 @@ class MiningEvaluator:
         return (0.0 if not np.isfinite(ic) else ic), n_finite, daily_std
 
     # ------------------------------------------------------------ net Sharpe
-    def _net_sharpe(self, F: np.ndarray, sign: int) -> Tuple[float, Dict[str, float]]:
+    def _net_sharpe(self, F: np.ndarray, sign: int,
+                    return_weights: bool = False) -> Tuple[float, Dict[str, float]]:
         """oriented 신호의 일별 20/20 long-short net Sharpe (search window).
+
+        return_weights=True(기본 False — 동작 불변): stats에 일별 가중치
+        행렬 W("weights")와 일별 net 수익 시계열("net_daily")을 추가.
+        C-1 scorer의 n=1 equivalence regression 관측 전용 kwarg.
 
         의미론 = ASB simple backtest와 동일 수학 (weights 명시형, gross 1 =
         long 0.5 + short 0.5, turnover_oneway = l1/2, 첫날 건립 비용 부과,
@@ -191,6 +216,9 @@ class MiningEvaluator:
         stats = {"net_ann_ret_arith": float(net.mean() * 252),
                  "mean_daily_turnover_oneway": float((turn_l1 / 2).mean()),
                  "n_traded_days": int(traded.sum())}
+        if return_weights:
+            stats["weights"] = W
+            stats["net_daily"] = net
         sd = float(np.std(net, ddof=1)) if len(net) > 1 else float("nan")
         if not np.isfinite(sd) or sd == 0:
             return float("nan"), stats
@@ -222,7 +250,8 @@ class MiningEvaluator:
         # [P2] 정적 검사 (파스 실패는 아래 engine.compute가 정식 사유로 분류)
         sc = {"static_invalid_reason": None,
               "static_flag_constant_subtree": False,
-              "static_flag_nonstd_window": False, "program_size": None}
+              "static_flag_nonstd_window": False,
+              "program_size": None, "program_depth": None}
         try:
             sc = static_check(parse_expression(formula))
         except Exception:

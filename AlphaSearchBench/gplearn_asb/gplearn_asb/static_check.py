@@ -90,6 +90,13 @@ def _tree_size(node) -> int:
     return 1 + sum(_tree_size(a) for a in node[2])
 
 
+def _tree_depth(node) -> int:
+    """트리 깊이 (터미널=1). formula-결정적 — 캐시 안전."""
+    if node[0] != "call":
+        return 1
+    return 1 + max(_tree_depth(a) for a in node[2])
+
+
 def static_check(tree) -> Dict:
     """파스 트리 정적 검사 (formula-결정적 — 캐시 안전). 반환:
        static_invalid_reason: None | 'static_invalid:constant_expression'
@@ -104,4 +111,5 @@ def static_check(tree) -> Dict:
     return {"static_invalid_reason": reason,
             "static_flag_constant_subtree": _has_const_subtree(tree),
             "static_flag_nonstd_window": _nonstd_window(tree),
-            "program_size": _tree_size(tree)}
+            "program_size": _tree_size(tree),
+            "program_depth": _tree_depth(tree)}

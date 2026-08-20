@@ -1,0 +1,27 @@
+[2449231:MainThread](2026-08-20 15:57:33,506) INFO - qlib.Initialization - [config.py:415] - default_conf: client.
+[2449231:MainThread](2026-08-20 15:57:34,803) INFO - qlib.Initialization - [__init__.py:74] - qlib successfully initialized based on client settings.
+[2449231:MainThread](2026-08-20 15:57:34,803) INFO - qlib.Initialization - [__init__.py:76] - data_path={'__DEFAULT_FREQ': PosixPath('/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data')}
+[ctx] valid rows 731, cols 4264, liq/vol pct finite ratio 0.183/0.177
+[formulas] 11368 unique ({'GP': 11317, 'LLM': 51})
+  ... 25/11368
+  ... 50/11368
+  ... 75/11368
+  ... 100/11368
+  ... 125/11368
+  ... 150/11368
+  ... 175/11368
+  ... 200/11368
+  ... 225/11368
+  ... 250/11368
+  ... 275/11368
+  ... 300/11368
+  ... 325/11368
+  ... 350/11368
+  ... 375/11368
+  ... 400/11368
+  ... 425/11368
+  ... 450/11368
+  ... 475/11368
+  ... 500/11368
+  ... 525/11368
+slurmstepd-n049: error: *** JOB 890492 ON n049 CANCELLED AT 2026-08-20T16:25:46 ***

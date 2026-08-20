@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "scripts/qd_descriptor_pilot.py", line 206, in <module>
+    main()
+  File "scripts/qd_descriptor_pilot.py", line 119, in main
+    ctx = build_ctx()
+  File "scripts/qd_descriptor_pilot.py", line 49, in build_ctx
+    return SignalContext(cfg)
+  File "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/alphasearchbench/data/signal_context.py", line 86, in __init__
+    bootstrap_qlib(cfg["dataset.provider_uri"], cfg["dataset.region"],
+  File "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/alphasearchbench/config.py", line 43, in __getitem__
+    raise ConfigError(f"config key not found: {dotted!r}")
+alphasearchbench.config.ConfigError: config key not found: 'dataset.region'
+QD_PILOT_DONE rc=1

@@ -1,0 +1,7 @@
+C2A_CONFIG=configs/v2/c2a/p250_s2_r2.yaml
+[2296742:MainThread](2026-08-20 09:01:35,074) INFO - qlib.Initialization - [config.py:415] - default_conf: client.
+[2296742:MainThread](2026-08-20 09:01:36,324) INFO - qlib.Initialization - [__init__.py:74] - qlib successfully initialized based on client settings.
+[2296742:MainThread](2026-08-20 09:01:36,325) INFO - qlib.Initialization - [__init__.py:76] - data_path={'__DEFAULT_FREQ': PosixPath('/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data')}
+[vanilla_v2] market=csi800 window=2015-01-01..2021-12-31 budget=5000 pop=250 gens=20 fitness=fb_fitness seed=2
+[vanilla_v2] panel ready 69.5s (universe_hash=132b21e88e0f7027)
+slurmstepd-n049: error: *** JOB 890129 ON n049 CANCELLED AT 2026-08-20T09:25:54 ***

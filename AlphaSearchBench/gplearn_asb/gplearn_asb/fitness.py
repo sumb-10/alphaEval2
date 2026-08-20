@@ -26,19 +26,29 @@ FITNESS_METRICS = ("abs_ic", "net_sharpe", "ic_tstat", "fb_fitness")
 
 
 def fb_fitness_value(net_sharpe: float, net_ann_ret_arith: float,
-                     mean_daily_turnover_oneway: float) -> float:
+                     mean_daily_turnover_oneway: float,
+                     min_annual_turnover: float = 0.0) -> float:
     """[B3] fb_fitness = net_sharpe × √(|net_ann_ret_arith| / annualized_turnover).
 
     원본 backtester의 미사용 Fitness(Sharpe×√(|AnnRet|/turnover))의 **ASB 의미론
     재정의** — 원본은 카운트 기반 turnover·기하 AnnRet, 여기는 oneway L1
     turnover(일평균×252)·산술 AnnRet라 수치가 다르다 (NOTES 명기).
-    구성값 NaN 또는 turnover ≤ 0 → NaN (fitness.py가 worst로 강등).
+
+    pathological 가드 (canonical v2 contract):
+      * 구성값 NaN/비유한 또는 turnover ≤ 0 → NaN (worst로 강등)
+      * ann_turn < min_annual_turnover → NaN — turnover→0⁺에서 √(|AnnRet|/turn)
+        폭발로 '거의 안 거래하는' 퇴화 수식이 selection을 지배하는 것을 차단.
+        기본 0.0 = legacy 의미론 보존(v1 재현 불변); v2 canonical은 0.01 주입.
+      * 반환값 finite 보장 (비유한 결과 → NaN)
     """
     ann_turn = mean_daily_turnover_oneway * 252.0
     vals = (net_sharpe, net_ann_ret_arith, ann_turn)
     if any(v is None or not math.isfinite(float(v)) for v in vals) or ann_turn <= 0:
         return float("nan")
-    return float(net_sharpe) * math.sqrt(abs(float(net_ann_ret_arith)) / ann_turn)
+    if ann_turn < float(min_annual_turnover):
+        return float("nan")
+    out = float(net_sharpe) * math.sqrt(abs(float(net_ann_ret_arith)) / ann_turn)
+    return out if math.isfinite(out) else float("nan")
 
 
 def research_failures(diag: Dict[str, Any],
@@ -108,7 +118,9 @@ def apply_constraint(mode: str, diag: Dict[str, Any],
         if fitness_metric == "fb_fitness":
             return fb_fitness_value(_num(d, "net_sharpe"),
                                     _num(d, "net_ann_ret_arith"),
-                                    _num(d, "mean_daily_turnover_oneway"))
+                                    _num(d, "mean_daily_turnover_oneway"),
+                                    min_annual_turnover=float(
+                                        opts.get("fb_min_annual_turnover") or 0.0))
         return float(d["abs_train_IC"])
 
     raw = _raw_of(diag)
@@ -136,13 +148,18 @@ def apply_constraint(mode: str, diag: Dict[str, Any],
             if math.isnan(signed) or abs(signed) < float(mai):
                 cond_fail = "fitness_undefined:ic_below_floor"
 
-    # [P2-3] 길이 상한 — penalty 모드 전용 (static invalid ⊂ hard invalid 취급)
+    # [P2-3] 길이·깊이 상한 — penalty 모드 전용 (static invalid ⊂ hard invalid 취급)
     static_long = False
     if mode != "off" and opts.get("max_program_length") is not None:
         ps = diag.get("program_size")
         if ps is not None and int(ps) > int(opts["max_program_length"]):
             static_long = True
-    hard_eff = hard or static_long
+    static_deep = False
+    if mode != "off" and opts.get("max_program_depth") is not None:
+        pdp = diag.get("program_depth")
+        if pdp is not None and int(pdp) > int(opts["max_program_depth"]):
+            static_deep = True
+    hard_eff = hard or static_long or static_deep
 
     if mode == "off":
         if diag["eval_failed"]:
@@ -173,6 +190,8 @@ def apply_constraint(mode: str, diag: Dict[str, Any],
         reason = f"fitness_undefined:{fitness_metric}_nan"
     if static_long and reason is None:
         reason = "static_invalid:too_long"
+    if static_deep and reason is None:
+        reason = "static_invalid:too_deep"
     if cond_fail is not None and reason is None:
         reason = cond_fail
 

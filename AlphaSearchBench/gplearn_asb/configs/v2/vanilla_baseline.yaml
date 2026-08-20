@@ -1,0 +1,41 @@
+# Clean Vanilla GP v2 — canonical baseline (draft)
+# 명세: docs/research_docs/Vanilla_GP_v2.md · 설계: GP_asb_design_v2.md
+# profile freeze 조건: ① L/D(max_program_length/depth) 확정 — ②(새 split)는 2026-08-19 확정 완료.
+# 그 전까지 이 config의 run은 correctness 검증용이며 공식 결과가 아니다.
+
+profile: vanilla_v2-draft
+
+market: csi800
+
+search:                        # [C-0 확정 2026-08-19] train/search 창.
+  start_date: "2015-01-01"     # validation 2022–23, test 2024-01-21~2026-06-30은
+  end_date: "2021-12-31"       # 평가 단계 소관 (Vanilla_GP_v2.md §6).
+
+label:
+  horizon: 1
+
+budget:
+  candidates: 5000             # 최상위 예산. generations = candidates // population
+gp:
+  population_size: 1000
+  max_program_length: null     # [결정 대기 — freeze 조건 ①] hard bound (L)
+  max_program_depth: null      # [결정 대기 — freeze 조건 ①] hard bound (D)
+pool:
+  size: 10
+
+# ---- benchmark specification (고정 — 튜닝 금지) ----
+fitness:
+  metric: fb_fitness           # canonical = net_sharpe×√(|AnnRet|/연회전).
+  transaction_cost_rate: 0.0015  # fb 정의의 일부 (v1 실측·ASB 규약과 동일 값)
+  long_short_quantile: 0.2
+  net_sharpe_min_traded_days: 252   # 최소 포지션 보유/수익률 관측일(≈1거래년).
+                                    # 매매 발생일 아님 — 비구속 안전장치 (Vanilla_GP_v2 §2.5)
+validity:                      # 유도 출처: v1 파일럿 검증 V5 재도출 —
+  min_mean_daily_coverage_ratio: 0.05   # artifact coverage ≤0.011 vs 정상 ≥0.477
+  min_median_daily_n_valid: 30          # gap의 하단. 규약: value >= threshold → pass
+  min_valid_day_ratio: 0.90
+
+seed: 42
+run_id: null                   # null → v2_<market>_<fitness>_<seed>
+output:
+  root: null

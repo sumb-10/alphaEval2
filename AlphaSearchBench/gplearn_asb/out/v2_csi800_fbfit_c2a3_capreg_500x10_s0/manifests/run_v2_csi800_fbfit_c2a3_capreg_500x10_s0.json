@@ -1,0 +1,133 @@
+{
+  "gplearn_asb_version": "0.1.0",
+  "semantics_version": "1",
+  "gp_profile": "v2_bloat_cap",
+  "bloat_experiment": {
+    "treatment": "v2_bloat_cap",
+    "lexi_epsilon": null
+  },
+  "run_id": "v2_csi800_fbfit_c2a3_capreg_500x10_s0",
+  "method": "gplearn_asb_v2",
+  "fitness_metric": "fb_fitness",
+  "fitness_opts": {
+    "net_sharpe_min_traded_days": 252,
+    "net_sharpe_min_abs_ic": null,
+    "max_program_length": 100,
+    "max_program_depth": 20,
+    "fb_min_annual_turnover": 0.01
+  },
+  "canonical_profile": {
+    "init_method": "half and half",
+    "init_depth": [
+      1,
+      4
+    ],
+    "tournament_size": 20,
+    "p_crossover": 0.9,
+    "p_subtree_mutation": 0.01,
+    "p_hoist_mutation": 0.01,
+    "p_point_mutation": 0.01,
+    "p_point_replace": 0.05,
+    "parsimony_coefficient": 0.0,
+    "max_samples": 1.0,
+    "metric": "pearson",
+    "hall_of_fame": 50,
+    "fb_min_annual_turnover": 0.01,
+    "stopping_criteria": "inf (early stop \uae08\uc9c0)",
+    "worst_fitness": -1000000.0,
+    "admissibility": "always-on (hard+threshold\u2192worst)",
+    "hof": "select_pool_fixed (\uc720\uc77c \uacbd\ub85c)",
+    "point_mutation": "typed"
+  },
+  "generations_derived_from_budget": true,
+  "seed": 0,
+  "thresholds": {
+    "min_mean_daily_coverage_ratio": 0.05,
+    "min_median_daily_n_valid": 30,
+    "min_valid_day_ratio": 0.9
+  },
+  "market": "csi800",
+  "search_window": [
+    "2015-01-01",
+    "2021-12-31"
+  ],
+  "label_horizon": 1,
+  "label_tail_exclusion": 1,
+  "universe_hash": "132b21e88e0f7027",
+  "gp_params": {
+    "population_size": 500,
+    "generations": 10,
+    "hall_of_fame": 50,
+    "n_components": 10,
+    "max_program_length": 100,
+    "max_program_depth": 20
+  },
+  "budget": {
+    "candidates_budget": 5000,
+    "total_evaluations": 5000,
+    "unique_evaluations": 2170,
+    "memo_hits": 2453,
+    "wall_clock_seconds": 14132.195111392066,
+    "panel_setup_seconds": 71.03297792747617
+  },
+  "cache_context": {
+    "market": "csi800",
+    "universe_hash": "132b21e88e0f7027",
+    "search_start": "2015-01-01",
+    "search_end": "2021-12-31",
+    "dataset_uri": "/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data",
+    "label_horizon": 1,
+    "semantics_version": "1",
+    "label_tail_exclusion": 1,
+    "static_gate": true
+  },
+  "outputs": {
+    "final_pool_csv": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/v2_csi800_fbfit_c2a3_capreg_500x10_s0/metrics/final_pool_v2_csi800_fbfit_c2a3_capreg_500x10_s0.csv",
+    "trajectory": "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/out/v2_csi800_fbfit_c2a3_capreg_500x10_s0/trajectory/v2_csi800_fbfit_c2a3_capreg_500x10_s0.jsonl"
+  },
+  "config_echo": {
+    "dataset": {
+      "provider_uri": "/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data",
+      "region": "cn",
+      "qlib_kernels": 8,
+      "warmup_start": null,
+      "right_buffer_days": 20
+    },
+    "profile": "v2_bloat_cap",
+    "market": "csi800",
+    "search": {
+      "start_date": "2015-01-01",
+      "end_date": "2021-12-31"
+    },
+    "label": {
+      "horizon": 1
+    },
+    "budget": {
+      "candidates": 5000
+    },
+    "gp": {
+      "population_size": 500,
+      "max_program_length": 100,
+      "max_program_depth": 20
+    },
+    "pool": {
+      "size": 10
+    },
+    "fitness": {
+      "metric": "fb_fitness",
+      "transaction_cost_rate": 0.0015,
+      "long_short_quantile": 0.2,
+      "net_sharpe_min_traded_days": 252
+    },
+    "validity": {
+      "min_mean_daily_coverage_ratio": 0.05,
+      "min_median_daily_n_valid": 30,
+      "min_valid_day_ratio": 0.9
+    },
+    "seed": 0,
+    "run_id": "v2_csi800_fbfit_c2a3_capreg_500x10_s0",
+    "output": {
+      "root": null
+    }
+  }
+}

@@ -1,0 +1,17 @@
+[2466634:MainThread](2026-08-20 16:40:34,853) INFO - qlib.Initialization - [config.py:415] - default_conf: client.
+[2466634:MainThread](2026-08-20 16:40:36,046) INFO - qlib.Initialization - [__init__.py:74] - qlib successfully initialized based on client settings.
+[2466634:MainThread](2026-08-20 16:40:36,046) INFO - qlib.Initialization - [__init__.py:76] - data_path={'__DEFAULT_FREQ': PosixPath('/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data')}
+[ctx] valid rows 731, universe 평균 800종목; q finite ratio L10:0.182 L20:0.177 V20:0.177 V60:0.169 V120:0.158
+[formulas] 183 unique ({'GP': 132, 'LLM': 51})
+[warn] Q tie-asymmetry L10_Q WMA(IdxMin($low,30),5): Δ=2.71e-03
+[warn] Q tie-asymmetry L20_Q WMA(IdxMin($low,30),5): Δ=3.20e-03
+[warn] Q tie-asymmetry V20_Q WMA(IdxMin($low,30),5): Δ=1.14e-04
+[warn] Q tie-asymmetry V60_Q WMA(IdxMin($low,30),5): Δ=1.86e-03
+[warn] Q tie-asymmetry V120_Q WMA(IdxMin($low,30),5): Δ=1.55e-03
+[2466634:MainThread](2026-08-20 16:42:28,012) ERROR - qlib.workflow - [utils.py:41] - An exception has been raised[AssertionError: signed 반전 위반: L20_Q_signed WMA(IdxMin($low,30),5)].
+  File "scripts/qd_descriptor_pilot.py", line 374, in <module>
+    main()
+  File "scripts/qd_descriptor_pilot.py", line 299, in main
+    assert abs(row[k] + neg[k]) < 1e-10, \
+AssertionError: signed 반전 위반: L20_Q_signed WMA(IdxMin($low,30),5)
+QD_PILOT_DONE rc=1

@@ -1,163 +1,399 @@
-## 실행 순서 (실험 단위)
+네. 다시 normative spec 관점에서 수식·경계조건·split semantics까지 검토해보니, 앞서 말씀드린 수정사항 외에도 확실히 닫아야 할 필수 항목이 5건 더 있습니다. Core 자체를 다시 바꿀 문제는 아닙니다. 현재 문서는 E
+t
+	​
 
-의존: **E0 → (E1‖E2‖E3) → E4 → E5 → E6**. E1·E2는 마이닝(CPU 점유),
-E3는 평가(짧음)라 동시 제출한다. 예상 시간은 실측 기반(fbfit_42 마이닝 1h55m,
-nsguard 2h45m, allcand evaluate 1.5~7h, repool 8 run 29m, 노트북 실행 25m).
+, T의 pair, A^Q의 overlap 처리 등을 정의하고 있지만 아래 edge contract가 아직 완전히 닫혀 있지 않습니다.
 
-| # | 실험 이름 | 세팅 | 목적 | 예상 시간 |
-|---|---|---|---|---|
-| **E0** | 프로토콜 코드 정렬 + 회귀 | `runner.py` qlib dispatch 배선, `qlib_native.evaluate_pool`, 초과수익 지표(AnnRet_excess/IR/MDD_excess), `simple.py` `selection:topk`·`rebalance_days`, config 4종, `protocol_sweep.py` | 4-arm 실행 가능 상태 확보 + **A1 기본값 불변**(기존 수치 재현) 확인 | 구현 2~3h, 단위·스모크·회귀(ASB 80 + gplearn 45) 40m |
-| **E1** | fb_fitness seed sweep | `ablation_fbfit.yaml`, strict_penalty, csi800, pop 1000×5gen, **seed 0/1/2/3** | 유일한 test 흑자(Sharpe +0.95, seed 42)가 재현되는지 판정 | 4 job 병렬 **~3h** |
-| **E2** | fb_fitness + IC-floor | E1 세팅 + `net_sharpe_min_abs_ic: 0.01`, seed 42 | fb가 여전히 허용하는 저IC(0.006) 승자를 가드가 걸러 개선되는지 | 1 job **~2h** (E1과 동시) |
-| **E3** | 프로토콜 4-arm 스윕 | 기존 29 pool × {A1 현행, A2 저회전 LS(top50+5일), A3 논문형(qlib top50/drop5 long-only, 5/15bps, 초과 AR·IR), A4 repo 원형(same_close+l1)}, **새 split**(train 2010–19/valid 2020/test 2021–24), backtest-only | **결정 게이트**: 격차가 프로토콜인가 신호인가 | 패널 적재 10m + 29×4 arm **~1.5h** (E1·E2와 동시) |
-| **E4** | E1·E2 산출물 편입 | `repool_fixed_hof.py`로 5 run의 fixedhof pool 생성 → E3 스윕에 5 pool(×2 HOF 모드) 추가 실행 | fb 재현성 판정을 정렬된 프로토콜 위에서 수행 | repool 20m + 스윕 40m |
-| **E5** | 승격 프로토콜 공식 재평가 | 게이트 승자 프로토콜 + 새 split, 34 run(기존 29 + 신규 5), **allcand 포함** 전체 4축 | 노트북·REPORT용 정식 산출물 갱신(ΔIC·retention을 오염 없는 valid=2020 기준으로) | 34 job 병렬 **~7h** |
-| **E6** | 노트북·보고 갱신 | v2 registry 확장(fbfit sweep), gross/net·회전 분해 패널 상설화, HOF anti-selection 정정, 대표 지표 fixedhof 전환 | 최종 분석·보고 | 실행 30m + 작성 1~2h |
+추가 필수 수정	문제	권장 확정
+1. E
+t
+	​
 
-누적 wall-clock 예상: **약 1일**(E0 반나절 + E1~E4 3h + E5 7h + E6 2h).
-E5는 게이트 결과가 "신호 문제"로 나오면 범위를 축소(승자 프로토콜 1개만)한다.
+의 집계 domain 명시	모든 descriptor가 E
+t
+	​
 
-## 실험 보고 계획 (`AlphaSearchBench/docs/experiments/`)
+[⋅]라고만 되어 있어 어떤 날짜를 평균하는지 불완전	해당 evaluation split 내부의 eligible trading dates만 단순 산술평균, 제외일을 0으로 채우지 않음
+2. T
+common
+	​
 
-각 실험(E1~E6)이 끝나는 **즉시** 개별 보고서를 작성한다 — 배치가 끝난 뒤 몰아
-쓰지 않는다(사후 합리화 방지). 파일명 `YYYY-MM-DD_<E번호>_<슬러그>.md`
-(예: `2026-08-18_E3_protocol_4arm_sweep.md`). E0은 코드 작업이라 보고서 대신
-`REPORT.md`·`IMPLEMENTATION_NOTES.md` 항목으로 남긴다.
+ split-boundary 규약	full panel을 적재하므로 valid 첫날과 train 마지막 날을 pair로 만들 여지가 있음	T pair는 양쪽 날짜 모두 동일 evaluation split에 속하는 연속 거래일일 때만 사용. split 경계 pair 금지
+3. A^Q overlap 후 leg 크기 진단	J
+t
+	​
 
-**보고서 양식** (상단 요약 → 본문 상세):
+≥30이어도 tie overlap 제거 후 top/bottom이 1~2종목까지 작아질 수 있음	n_top, n_bottom, n_overlap_removed 필수 저장. production 규약이 backtest parity라면 non-empty만 요구한다는 사실도 명시
+4. §8의 A^Q null-variance 설명 수정	파일럿은 fixed-k였지만 production은 inclusive quantile-threshold. “null variance는 0.2N leg size에만 의존”은 production 정의에 일반적으로 성립하지 않음	fixed-k pilot에 대한 관찰이라고 한정하고, production threshold 정의는 §11의 null-coupling acceptance test로 재검증한다고 명시
+5. ILLIQ의 obs 집합을 수식으로 정의	현재 amount≤0/결측만 적혀 있고 numerator return의 nonfinite 처리와 min_obs count가 완전히 정의되지 않음	D
+i,t
+	​
 
-```
-# <실험 이름>
+={d:t−19≤d≤t, r
+i,d
+	​
 
-| 항목 | 내용 |
-|---|---|
-| 실험 이름 | E3 프로토콜 4-arm 스윕 |
-| 실험 세팅 | 29 pool × 4 프로토콜, csi800, train 2010–19/valid 2020/test 2021–24 |
-| 목적 | 수익 격차가 포트폴리오 프로토콜에서 오는지 신호에서 오는지 판별 |
-| 소모 시간 | 1h 42m (job 8874xx, cpu1) |
-| 결과 요약 | 3줄 이내 — 판정 + 핵심 수치 + 다음 행동 |
+ finite,Amount
+i,d
+	​
 
-## 1. Context — 이 실험을 계획한 이유
-직전 어떤 실험의 어떤 결과가 이 질문을 만들었는지(수치와 산출물 경로 인용).
+ finite,Amount
+i,d
+	​
 
-## 2. 밝히고자 하는 목적과 사전 고정 판독 규칙
-가설과 "무엇이 나오면 무슨 결론"인지를 **결과보다 먼저** 기술.
+>0}, (
+1. 특히 E
+t
+	​
 
-## 3. 실험 세팅 (재현 정보)
-config 경로, 코드 버전/commit, seed, Slurm job id, 데이터 창·universe,
-프로토콜 파라미터 표. 참고연구 대비 편차는 별도 목록으로.
+와 split boundary는 반드시 추가해야 합니다
 
-## 4. 결과 요약 (수치)
-표 중심. 각 수치는 산출 파일 경로와 함께.
+현재 B, T, A
+L
+Q
+	​
 
-## 5. 결과의 정성적 해석
-왜 그런 수치가 나왔는지의 메커니즘. 참고연구 수치와의 대조.
+,A
+V
+Q
+	​
 
-## 6. 한계·교란변수
-통제하지 못한 것, 표본 수(seed 수)에 따른 주장 강도 제한.
+ 모두 기간 평균을 E
+t
+	​
 
-## 7. 다음 실험으로의 연결
-이 결과가 만든 파생 질문과 우선순위.
-```
+로 표기하지만, eligible day를 제외한 날을 NaN으로 버리는지 0으로 포함하는지가 명문화되어 있지 않습니다.
 
-**규칙**: ① 음성·실패 결과도 동일 양식으로 기록(E1에서 fb가 재현되지 않는
-경우가 오히려 중요한 결과), ② 소표본(n<3 seed) 구간에서는 기술통계만 쓰고
-inferential 주장 금지(v2 노트북 §10 계층 규칙과 동일), ③ 보고서 완료 시
-`gplearn_asb/REPORT.md`의 해당 절과 `07. Research Progress & Roadmap`
-체크박스를 함께 갱신, ④ 마지막에 WS-A/WS-B를 합친
-`YYYY-MM-DD_WS-A-B_summary.md`로 결정 게이트 판정과 다음 사이클 권고를 정리.
+공통 계약으로 다음 한 줄을 넣는 것이 좋습니다.
 
-전체 설명 보고서 — 지금 무슨 일이 벌어졌는가
-0. 30초 요약
-우리가 만든 알파(수식) 중 돈을 번 게 하나뿐이었는데, 그게 진짜인지 우리 채점 방식이 이상한 건지 몰랐습니다. 그래서 같은 알파를 다른 채점 방식으로 다시 채점했더니 두 가지가 동시에 드러났습니다. (1) 채점 방식(=프로토콜)을 참고 논문과 같게 맞추자 그 알파는 논문급 성과(초과수익 +17.2%, IR 1.29)를 냈습니다. (2) 반면 전통적 GP가 찾은 알파들은 채점 방식을 아무리 유리하게 바꿔도 여전히 손실이었습니다 — 그건 채점 문제가 아니라 신호 자체가 없다는 뜻입니다.
+E
+t
+	​
 
-1. 배경: 이 연구의 구조 (모르는 사람용)
-알파(alpha) 는 주가·거래량 데이터로 만든 수식입니다. 예: EMA($close, 12) / $vwap — "12일 지수이동평균 종가를 거래량가중평균가로 나눈 값". 이 수식이 내일 수익률이 높을 종목에 큰 값을 주면 좋은 알파입니다.
+[g
+t
+	​
 
-알파 마이닝(alpha mining) 은 그런 수식을 자동으로 찾는 일이고, 우리는 두 방식을 비교합니다.
+]:=
+∣T
+g
+	​
 
-gplearn_asb: 유전 프로그래밍(GP). 수식 1,000개 집단을 만들어 좋은 것끼리 교차·변이시키며 5세대 진화 → 최종 10개를 pool로 제출.
-AlphaAgent_asb: LLM이 가설을 세우고 수식을 작성 → 백테스트 피드백을 보고 개선.
-AlphaSearchBench(ASB) 는 그 결과물을 채점하는 심판입니다. 마이닝은 하지 않고, 제출된 pool을 동일한 데이터·기간·규칙으로 4축(타당성 / 예측력 IC / 다양성 / 포트폴리오 수익)에서 평가합니다.
+∣
+1
+	​
 
-기간 구조가 중요합니다: 알파는 2010~2019년 데이터로 탐색하고, 채점은 2021~2024년(한 번도 안 본 미래) 에서 합니다. 즉 "과거로 만든 수식이 미래에도 통하나"를 봅니다.
+t∈T
+g
+	​
 
-2. 질문 1 — 결정 게이트란 무엇인가
-결정 게이트(decision gate) = 실험을 돌리기 전에 못 박아 두는 판독 규칙입니다. "결과가 X면 A라고 결론 내고 B를 한다, Y면 C라고 결론 내고 D를 한다"를 미리 써 둡니다.
+∑
+	​
 
-왜 필요한가: 결과를 본 뒤에 해석을 정하면 사람은 무의식적으로 자기에게 유리한 이야기를 만듭니다(사후 합리화). 특히 "손실이 났는데 사실 이건 좋은 신호였다" 같은 서사를 만들기 쉽습니다. 미리 규칙을 정하면 그게 불가능해집니다.
+g
+t
+	​
 
-이번(WS-A) 게이트는 이렇게 사전 고정했습니다:
 
-조건	결론	다음 행동
-A3(논문 프로토콜)에서 초과수익 ≥ +4% 인 pool이 존재	격차는 프로토콜 문제	A3를 ASB 기본 보고 프로토콜로 승격, 비용 인지 fitness 노선 확정
-회전율을 눌러도(A2) net 음수 + A3 초과수익도 음수	격차는 신호 문제	다음 사이클을 마이너 개선으로 전환, 우리 GP는 "참고연구 GP 베이스라인 재현"으로 포지셔닝
-+4%라는 숫자는 제가 고른 게 아니라 AlphaAgent 논문 자체의 기준입니다. 논문은 "라운드당 연 4% 초과수익을 넘는 알파 비율"을 hit ratio로 정의합니다(CSI500 기준). 남의 논문이 스스로 정한 합격선을 우리 합격선으로 빌려 온 것입니다.
+여기서 T
+g
+	​
 
-기존에 썼던 결정 게이트들 (이 연구에서 계속 쓰던 방식입니다):
+는 해당 evaluation split 안에서 descriptor 정의를 만족하는 eligible trading dates입니다. 제외일은 0이 아니라 집계 대상에서 제외합니다.
 
-GP 3-arm 파일럿(H1~H4): "validity 게이트가 탐색 다양성을 바꾸는가(H1), 병리적 수식 발견을 차단하는가(H2), 엔트로피가 달라지는가(H4)" → 결과: H1은 "집단 다양성"이 아니라 "상위 20위 점령(elite capture)"으로 재서술, H2는 발견 시 100% 차단 확인, H4는 기각.
-WS-B fb 재현성 게이트(지금 돌고 있음): 5개 seed 중 3개 이상에서 초과수익 > 0 → "재현됨", 1~2개 → "seed 의존", 0개 → "seed 42의 우연".
-3. 질문 2·3 — 두 실험 이름 해부
-실험 이름은 압축된 설정 기록입니다. pilot_csi800_fbfit_42를 풀면:
+특히 T는:
 
-조각	뜻
-pilot	파일럿 실험
-csi800	중국 A주 대형·중형 800종목 유니버스
-fbfit	fitness = fb_fitness (이게 이 실험의 핵심 축)
-42	난수 seed 42
-fbfit_42 = "비용 대비 효율을 목표로 삼은 GP"
-fb_fitness는 GP가 최대화하는 목표함수로, net Sharpe × √(|연수익| / 연회전율) 입니다. 뒤의 나눗셈이 핵심입니다 — 많이 거래해야 수익이 나는 수식에 벌점을 줍니다. 이 공식은 원래 AlphaEval 저장소의 백테스터 코드에 정의만 되어 있고 한 번도 쓰이지 않은 함수였는데(WorldQuant BRAIN의 fitness 관행), 우리가 ASB 의미론으로 되살려 GP의 목표로 넣었습니다.
+(t−1,t)∈P
+split
+	​
 
-결과로 나온 수식들은 거래대금($amount) 변동성 계열입니다. 예: Sub(EMA(Kurt(Var($amount,30),12),30), EMA(Var($amount,30),30)). 천천히 움직이는 지표라 포지션을 자주 바꿀 필요가 없어 연회전율 3.1배(하루에 포트폴리오의 1.2%만 교체)입니다. 이게 유일하게 비용 차감 후 흑자였던 pool입니다.
 
-strict_42_fixedhof = "교과서적 GP를 가장 공정하게 만든 pool"
-두 조각이 붙어 있습니다.
+이고 두 날짜 모두 같은 split 안에 있어야 한다고 못박아야 합니다. ILLIQ/VOL은 과거 데이터를 warm-up으로 사용하는 것이 의도된 반면, T는 split 밖의 signal behavior를 첫 pair에 섞을 이유가 없습니다.
 
-strict: 마이닝 중 validity 게이트를 강하게 켠 모드입니다. GP는 방치하면 "전체 종목 중 1%에만 값이 있는" 병리적 수식으로 |IC|를 부풀립니다(관측일 23일에 IC=0.565 같은 허수). strict는 그런 후보에 최악 점수를 줘 승격을 막습니다. 목표함수는 원조 AlphaEval GP와 같은 |IC|(일별 단면 상관계수의 평균 절댓값)입니다.
-_fixedhof: pool을 다시 뽑았다는 표시입니다. 원본 gplearn의 최종 선발 코드(hall of fame)에 버그가 있었습니다. 상관행렬이 전부 NaN이 되어 argmax가 매번 같은 자리를 지목한 탓에, 최종 pool이 {최고 1개} ∪ {상위 50위의 꼬리 9개}가 됩니다. 즉 일부러 나쁜 것을 뽑는(anti-selected) pool이었습니다. 우리 데이터로 확인한 실측: pool 10개 중 9개의 fitness가 0.0492로 동일한 꼬리 클러스터, 최고값(0.0677)은 1개뿐. fixedhof는 중복 제거 + NaN-안전 상관 제거로 상위 fitness 중 서로 다른 10개를 다시 뽑은 것입니다.
-정리하면 strict_42_fixedhof는 "전통적 |IC| 최대화 GP에게 최대한 유리하게 만들어 준 pool" 입니다. 여기서도 안 되면 변명거리가 없습니다.
+2. min_cross_section_n=30만으로 A^Q leg 안정성이 보장되지 않습니다
 
-4. 질문 4 — 프로토콜과 격차
-프로토콜(protocol) = 예측 신호를 실제 포트폴리오로 바꿔 성과를 재는 규칙 전체입니다. 같은 알파라도 이 규칙에 따라 수익이 완전히 달라집니다. 구성 요소는 종목 선택 규칙, 롱온리 vs 롱숏, 리밸런스 빈도, 체결 타이밍, 거래비용 모형, 절대수익 vs 지수 대비 초과수익, 지표 정의입니다.
+현재 규약은 J
+t
+	​
 
-격차(gap) = 우리 보고 숫자(전부 손실)와 참고 논문 숫자(AlphaAgent CSI500: IC 0.0212 / 초과 AR 11.0% / IR 1.49)의 차이입니다. 이 격차의 정체가 "우리 알파가 나빠서"인지 "우리 채점이 가혹해서"인지 몰랐던 게 이번 실험의 출발점입니다.
+≥30을 요구한 뒤 20/80 quantile threshold를 만들고 overlap을 제거합니다.
 
-두 프로토콜의 차이는 이렇습니다.
+예를 들어 30개 종목 중:
 
-A1 (우리 현행)	A3 (논문형)
-종목 선택	신호 상위 20% 매수 + 하위 20% 공매도	상위 50종목만 보유, 매일 최하위 5종목만 교체
-포지션	롱숏(시장중립)	롱온리(시장 노출 있음)
-리밸런스	매일 전량 재구성	하루 최대 10%(5/50)만 교체
-비용	편도 15bps	매수 5bps / 매도 15bps (논문 값)
-성과 기준	절대수익	지수 대비 초과수익 + IR
-가장 결정적인 건 회전율 상한의 유무입니다. A1은 상한이 없어 |IC| 알파가 연 96~193배 회전합니다(하루에 포트폴리오의 40~75%가 바뀜). 15bps씩 물면 연 14~29%포인트가 비용으로 사라집니다. A3의 "최하위 5종목만 교체" 구조는 회전을 연 ~25배로 물리적으로 묶습니다. 같은 알파에 같은 비용률인데 비용 총액이 6배 차이 납니다.
+28개 signal = 0
+1개 = −1
+1개 = +1
 
-여기에 기준선 차이도 있습니다. 2021~2024년 CSI800 지수는 하락했습니다(우리 실측 연 −4.6%). 논문의 AR과 우리 A3의 초과수익은 모두 "지수보다 얼마나 잘했나"를 재므로, 지수가 빠지는 구간에서는 롱온리 포트폴리오가 조금만 잘해도 초과수익이 크게 잡힙니다. A3 fbfit의 절대수익 +12.7%와 초과수익 +17.2%의 차이(4.6%p)가 바로 지수 하락분입니다.
+이면 Q
+0.2
+	​
 
-5. 질문 5 — "회전을 눌러도 −15.7%"가 무슨 뜻인가
-두 단계 추론입니다.
+=Q
+0.8
+	​
 
-1단계 (앞선 gross 분해). 포트폴리오 수익을 비용 전(gross)과 후(net)로 쪼갰습니다. |IC| pool들의 결과는 gross 연 −3.5%+0.2%, 비용 −14−29%p였습니다. 해석: 손실의 대부분은 비용 탓이지만, 비용을 0으로 만들어도 남는 수익이 ~0입니다. 즉 "비용에 먹힌 알짜 수익"이 애초에 없었습니다.
+=0이 될 수 있습니다. inclusive threshold 후 28개 zero가 overlap으로 제거되면:
 
-2단계 (A3 실험이 그 가설을 검정). gross 분해는 계산상의 분해라 "실제로 저회전 프로토콜로 굴리면 다를 수도" 있습니다. 그래서 논문 프로토콜로 진짜 굴려 봤습니다. drop-5 규칙이 strict_fixedhof의 회전을 144배 → 23배로 눌렀고(비용도 약 6분의 1로), 만약 문제가 비용뿐이었다면 수익이 플러스로 뒤집혀야 했습니다. 뒤집히지 않았습니다 — 초과수익 −15.7%, IR −1.19.
+n
+top
+	​
 
-결론: |IC| 알파의 문제는 비용이 아니라(비용도 문제였지만 그것만이 아니라) 2021~2024년에 초과수익을 만들 신호가 없다는 것입니다. IC 0.012는 0은 아니지만, 약한 순위 상관이 상위 50종목 롱온리 초과수익으로 번역되지는 않습니다. 그리고 이건 우리만의 실패가 아닙니다 — AlphaAgent 논문 자신의 GP 베이스라인도 test 구간에서 IC 0.022 → 거의 0으로 붕괴하고(논문 Fig 4), AlphaEval 벤치마크 논문의 GP 점수도 0.017입니다. 우리 GP는 문헌의 GP 베이스라인을 정확히 재현한 셈입니다.
+=1,n
+bottom
+	​
 
-6. 그래서 종합 결론과 유보사항
-동시에 참인 두 결론:
+=1
 
-프로토콜이 실제로 중요했다 — 저회전 알파(fb)는 우리 가혹한 프로토콜에서 연 +7.7%였는데, 논문 프로토콜에서는 초과 +17.2% / IR 1.29로 논문의 CSI500 참고 수치(AR 11.0% / IR 1.49) 대역에 들어갑니다.
-그러나 프로토콜이 신호 부재를 구제하지는 못한다 — |IC| 알파는 유리한 프로토콜에서도 −15.7%. 다음 사이클은 마이너(신호) 개선이 맞습니다.
-정직하게 붙여야 하는 유보사항 넷:
+이 됩니다.
 
-fb의 흑자는 seed 42 단 하나입니다. 지금 seed 0~3을 돌려 재현성을 확인 중이며, 5개 중 3개 이상이어야 "재현"으로 인정하기로 사전 합의했습니다.
-A3의 초과수익 17.2% 중 4.6%p는 지수 하락분입니다(롱온리라 지수가 빠지면 초과가 커짐). 논문 AR도 초과 기준이라 종류는 같지만, 시장·지수가 달라 직접 비교는 조심해야 합니다.
-A3는 롱온리라 시장 위험을 그대로 짊어집니다 — MDD가 9%(A1 롱숏) → 28%(A3)로 악화됩니다. 수익만 보면 안 됩니다.
-fb pool은 유효 수식이 3개뿐이고 한 계열(거래대금 변동성)에 몰려 있습니다. 다양화(fixedhof로 10개로 늘림)하면 Sharpe가 0.95 → −0.21로 꺾였습니다. 소수 수식 의존입니다.
-7. 지금 돌고 있는 것
-실험	내용	상태
-E1	fb_fitness seed 0·1·2·3 마이닝 (재현성 판정)	4 job 실행 중 32분 경과
-E2	fb_fitness + IC 하한 가드 (저IC 승자 차단 효과)	실행 중
-E3	29개 pool × 4 프로토콜 전체 스윕	실행 중 10분 경과
-위 스모크는 E3의 2개 pool 예비 결과였고, 29개 전부에 대한 정식 판독은 E3가 끝난 뒤 하겠습니다. 계획대로 각 실험이 끝나는 즉시 docs/experiments/에 보고서(사전 고정 판독 규칙 → 마이닝 세팅 → ASB 평가 세팅 → 결과 → 해석 → 한계)를 작성합니다.
+즉 min_cross_section_n=30은 spread의 실제 leg가 6개 이상이라는 뜻이 아닙니다.
+
+여기서 지금 새로운 min_leg_n을 도입하면 frozen definition이 바뀌므로 저는 권하지 않습니다. 대신 production 계약을 그대로 유지하면서 반드시:
+
+n_top
+n_bottom
+n_overlap_removed
+min_leg_n_observed
+
+를 저장하십시오.
+
+그리고 문서에:
+
+min_cross_section_n=30은 threshold 계산 전 단면 크기 조건이며, overlap 제거 후 leg 크기의 하한을 보장하지 않는다. Frozen v2는 backtest-parity를 위해 non-empty leg만 요구하며 leg-size diagnostics를 필수 저장한다.
+
+라고 적는 것이 정확합니다.
+
+3. §8의 “A^Q null variance가 0.2N에만 의존”은 반드시 수정해야 합니다
+
+이건 새로 발견한 가장 명확한 수학적 문구 오류입니다.
+
+현재 §8은:
+
+A^Q의 null 분산이 leg 크기(0.2N)에만 의존하고 B와 무관
+
+이라고 설명합니다. 그런데 이 결과는 파일럿에서 사용한 fixed-k argsort 정의에 대한 것입니다. Production 정의는 inclusive 20/80 percentile threshold라 ties에 따라 leg 크기가 변합니다.
+
+따라서 다음처럼 바꾸는 것이 정확합니다.
+
+파일럿 v3의 fixed-k 근사에서는 A^Q null coupling이 관측되지 않았다. Frozen production 정의는 inclusive percentile-threshold membership이므로 tie-heavy signal에서 leg size가 가변적일 수 있다. 따라서 production implementation acceptance에서 permutation-null B-coupling을 별도로 재검증한다.
+
+Core 선택을 다시 열 필요는 없습니다. 다만 pilot estimator와 frozen estimator가 완전히 같은 수식인 것처럼 쓰면 안 됩니다.
+
+4. ILLIQ의 observation set도 수학적으로 닫아야 합니다
+
+현재:
+
+ILLIQ20=mean
+obs
+	​
+
+DollarVolume
+∣r∣
+	​
+
+
+인데 obs가 정확히 무엇인지 완전히 정의되지 않았습니다.
+
+다음이 가장 정확합니다.
+
+D
+i,t
+	​
+
+={d∈[t−19,t]:r
+i,d
+	​
+
+∈R,Amount
+i,d
+	​
+
+∈R,Amount
+i,d
+	​
+
+>0}
+ILLIQ20
+i,t
+	​
+
+=
+⎩
+⎨
+⎧
+	​
+
+∣D
+i,t
+	​
+
+∣
+1
+	​
+
+d∈D
+i,t
+	​
+
+∑
+	​
+
+Amount
+i,d
+	​
+
+∣r
+i,d
+	​
+
+∣
+	​
+
+,
+NaN,
+	​
+
+∣D
+i,t
+	​
+
+∣≥10
+otherwise
+	​
+
+
+그러면 min_obs=10이 정확히 무엇을 세는지가 명백해집니다.
+
+5. T의 상한은 “근사적”이 아니라 정확합니다
+
+현재 문서에는:
+
+0≤T≤1 (근사적으로 상한 1)
+
+이라고 되어 있습니다.
+
+하지만 두 날짜 모두:
+
+∥
+w
+~
+t
+	​
+
+∥
+1
+	​
+
+=∥
+w
+~
+t−1
+	​
+
+∥
+1
+	​
+
+=1
+
+이므로 삼각부등식으로
+
+∥
+w
+~
+t
+	​
+
+−
+w
+~
+t−1
+	​
+
+∥
+1
+	​
+
+≤∥
+w
+~
+t
+	​
+
+∥
+1
+	​
+
++∥
+w
+~
+t−1
+	​
+
+∥
+1
+	​
+
+=2
+
+따라서
+
+0≤T
+t
+	​
+
+≤1
+	​
+
+
+은 정확한 bound입니다.
+
+“근사적으로”를 삭제하세요. 작은 표현 차이지만 frozen 수학 명세에서는 수정해야 합니다.
+
+추가로 한 건은 repo에서 반드시 확인해야 합니다
+
+이것은 아직 제가 문서만으로 확정 오류라고 단정하지는 않지만, 구현 전에 반드시 확인해야 합니다.
+
+현재 descriptor의 J
+t
+	​
+
+는 finite(S)인 zero-valued signal도 포함합니다. 반면 최신 ASB 설계 문서는 simple backtest 쪽에서 isfinite(combo) & |combo|>0으로 signal cell을 더 좁힌다고 기록합니다.
+
+따라서 §6의
+
+“ASB backtest quantile 계약과 동일”
+
+이라는 주장이 실제 simple.py에서 zero signal을 quantile population에서 제외하는지 직접 확인되어야 합니다.
+
+만약 backtest가 zero를 제외한다면 둘 중 하나를 명확히 결정해야 합니다.
+
+Spread도 zero를 제외해 완전한 backtest parity를 유지하거나,
+Spread는 finite-zero를 포함하되 selection rule만 동일하다고 표현을 낮추기.
+
+binary/sparse formula가 실제 존재하므로 이 차이는 숫자에 영향을 줄 수 있습니다. 이 부분은 read-only repo 확인이 필요합니다.
+
+최종 판정
+
+앞서 제시한 수정사항에 추가로 확실히 필요한 것은 위 5건입니다.
+
+그중 중요도는:
+
+필수 A급
+
+E
+t
+	​
+
+ eligible-day aggregation + T split boundary
+A^Q post-overlap leg diagnostics
+fixed-k pilot과 production threshold의 null-variance 서술 분리
+ILLIQ obs 정확한 정의
+
+수학 정밀화지만 반드시 수정
+
+T의 [0,1] exact bound
+
+그리고 backtest의 zero-signal eligibility 한 건만 repo 원문과 마지막으로 대조하십시오.
+
+이것까지 닫히면 저는 더 이상 descriptor 정의 자체에서 freeze를 막을 만한 실질적인 specification hole은 없다고 판단하겠습니다.

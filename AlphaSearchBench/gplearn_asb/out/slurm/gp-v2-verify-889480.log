@@ -1,0 +1,110 @@
+.....EEEEEE............................................................. [100%]
+==================================== ERRORS ====================================
+___________________ ERROR at setup of test_manifest_contract ___________________
+tests/regression/test_v2_correctness.py:39: in v2_run
+    return _run_v2(root, "v2_test_a")
+tests/regression/test_v2_correctness.py:26: in _run_v2
+    rc = run_mine_v2(V2_SMOKE, run_id=run_id, out=root,
+gplearn_asb/cli.py:530: in run_mine_v2
+    transformer.fit()
+gplearn_asb/vendored_gplearn/genetic.py:314: in fit
+    raise ValueError('hall_of_fame (%d) must be less than or equal to '
+E   ValueError: hall_of_fame (50) must be less than or equal to population_size (30).
+---------------------------- Captured stdout setup -----------------------------
+[vanilla_v2] market=csi300 window=2018-01-01..2019-06-30 budget=60 pop=30 gens=2 fitness=fb_fitness seed=42
+[vanilla_v2] panel ready 102.1s (universe_hash=3f84d42a0dfce972)
+____________ ERROR at setup of test_budget_exhausted_no_early_stop _____________
+tests/regression/test_v2_correctness.py:39: in v2_run
+    return _run_v2(root, "v2_test_a")
+tests/regression/test_v2_correctness.py:26: in _run_v2
+    rc = run_mine_v2(V2_SMOKE, run_id=run_id, out=root,
+gplearn_asb/cli.py:530: in run_mine_v2
+    transformer.fit()
+gplearn_asb/vendored_gplearn/genetic.py:314: in fit
+    raise ValueError('hall_of_fame (%d) must be less than or equal to '
+E   ValueError: hall_of_fame (50) must be less than or equal to population_size (30).
+________________ ERROR at setup of test_pool_is_fixed_hof_only _________________
+tests/regression/test_v2_correctness.py:39: in v2_run
+    return _run_v2(root, "v2_test_a")
+tests/regression/test_v2_correctness.py:26: in _run_v2
+    rc = run_mine_v2(V2_SMOKE, run_id=run_id, out=root,
+gplearn_asb/cli.py:530: in run_mine_v2
+    transformer.fit()
+gplearn_asb/vendored_gplearn/genetic.py:314: in fit
+    raise ValueError('hall_of_fame (%d) must be less than or equal to '
+E   ValueError: hall_of_fame (50) must be less than or equal to population_size (30).
+________________ ERROR at setup of test_execute_patch_harmless _________________
+tests/regression/test_v2_correctness.py:39: in v2_run
+    return _run_v2(root, "v2_test_a")
+tests/regression/test_v2_correctness.py:26: in _run_v2
+    rc = run_mine_v2(V2_SMOKE, run_id=run_id, out=root,
+gplearn_asb/cli.py:530: in run_mine_v2
+    transformer.fit()
+gplearn_asb/vendored_gplearn/genetic.py:314: in fit
+    raise ValueError('hall_of_fame (%d) must be less than or equal to '
+E   ValueError: hall_of_fame (50) must be less than or equal to population_size (30).
+__________________ ERROR at setup of test_determinism_fixture __________________
+tests/regression/test_v2_correctness.py:39: in v2_run
+    return _run_v2(root, "v2_test_a")
+tests/regression/test_v2_correctness.py:26: in _run_v2
+    rc = run_mine_v2(V2_SMOKE, run_id=run_id, out=root,
+gplearn_asb/cli.py:530: in run_mine_v2
+    transformer.fit()
+gplearn_asb/vendored_gplearn/genetic.py:314: in fit
+    raise ValueError('hall_of_fame (%d) must be less than or equal to '
+E   ValueError: hall_of_fame (50) must be less than or equal to population_size (30).
+_______________ ERROR at setup of test_no_legacy_semantics_in_v2 _______________
+tests/regression/test_v2_correctness.py:39: in v2_run
+    return _run_v2(root, "v2_test_a")
+tests/regression/test_v2_correctness.py:26: in _run_v2
+    rc = run_mine_v2(V2_SMOKE, run_id=run_id, out=root,
+gplearn_asb/cli.py:530: in run_mine_v2
+    transformer.fit()
+gplearn_asb/vendored_gplearn/genetic.py:314: in fit
+    raise ValueError('hall_of_fame (%d) must be less than or equal to '
+E   ValueError: hall_of_fame (50) must be less than or equal to population_size (30).
+=============================== warnings summary ===============================
+tests/smoke/test_smoke_modes.py: 18 warnings
+  /home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+    return func(x, start, end, min_periods, *numba_args)
+
+tests/smoke/test_smoke_modes.py: 1646 warnings
+  /home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/arraylike.py:402: RuntimeWarning: divide by zero encountered in log
+    result = getattr(ufunc, method)(*inputs, **kwargs)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/regression/test_v2_correctness.py::test_manifest_contract - Value...
+ERROR tests/regression/test_v2_correctness.py::test_budget_exhausted_no_early_stop
+ERROR tests/regression/test_v2_correctness.py::test_pool_is_fixed_hof_only - ...
+ERROR tests/regression/test_v2_correctness.py::test_execute_patch_harmless - ...
+ERROR tests/regression/test_v2_correctness.py::test_determinism_fixture - Val...
+ERROR tests/regression/test_v2_correctness.py::test_no_legacy_semantics_in_v2
+66 passed, 1664 warnings, 6 errors in 770.55s (0:12:50)
+PYTEST_DONE rc=1
+[792885:MainThread](2026-08-19 15:44:24,291) INFO - qlib.Initialization - [config.py:415] - default_conf: client.
+[792885:MainThread](2026-08-19 15:44:24,820) INFO - qlib.Initialization - [__init__.py:74] - qlib successfully initialized based on client settings.
+[792885:MainThread](2026-08-19 15:44:24,821) INFO - qlib.Initialization - [__init__.py:76] - data_path={'__DEFAULT_FREQ': PosixPath('/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data')}
+[vanilla_v2] market=csi300 window=2018-01-01..2019-06-30 budget=60 pop=30 gens=2 fitness=fb_fitness seed=42
+[vanilla_v2] panel ready 45.6s (universe_hash=3f84d42a0dfce972)
+[792885:MainThread](2026-08-19 15:45:11,135) ERROR - qlib.workflow - [utils.py:41] - An exception has been raised[ValueError: hall_of_fame (50) must be less than or equal to population_size (30).].
+  File "/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/runpy.py", line 194, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/gplearn_asb/cli.py", line 630, in <module>
+    sys.exit(main())
+  File "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/gplearn_asb/cli.py", line 335, in main
+    return cmd_mine(args)
+  File "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/gplearn_asb/cli.py", line 61, in cmd_mine
+    return run_mine_v2(args.config, raw=_raw, seed=args.seed,
+  File "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/gplearn_asb/cli.py", line 530, in run_mine_v2
+    transformer.fit()
+  File "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/gplearn_asb/vendored_gplearn/genetic.py", line 314, in fit
+    raise ValueError('hall_of_fame (%d) must be less than or equal to '
+ValueError: hall_of_fame (50) must be less than or equal to population_size (30).
+V2_SMOKE_DONE rc=1 executing_lines=0
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+IndexError: list index out of range
+V2_VERIFY_ALL_DONE rc=1

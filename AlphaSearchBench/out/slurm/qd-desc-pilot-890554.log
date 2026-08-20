@@ -1,0 +1,118 @@
+[1255559:MainThread](2026-08-20 16:44:35,415) INFO - qlib.Initialization - [config.py:415] - default_conf: client.
+[1255559:MainThread](2026-08-20 16:44:44,448) INFO - qlib.Initialization - [__init__.py:74] - qlib successfully initialized based on client settings.
+[1255559:MainThread](2026-08-20 16:44:44,448) INFO - qlib.Initialization - [__init__.py:76] - data_path={'__DEFAULT_FREQ': PosixPath('/gpfs/home1/sku07891/00.hojin/QuantaAlpha/data/qlib/cn_data')}
+[ctx] valid rows 731, universe 평균 800종목; q finite ratio L10:0.182 L20:0.177 V20:0.177 V60:0.169 V120:0.158
+[formulas] 183 unique ({'GP': 132, 'LLM': 51})
+[warn] Q tie-asymmetry L10_Q WMA(IdxMin($low,30),5): Δ=2.71e-03
+[warn] Q tie-asymmetry L20_Q WMA(IdxMin($low,30),5): Δ=3.20e-03
+[warn] Q tie-asymmetry V20_Q WMA(IdxMin($low,30),5): Δ=1.14e-04
+[warn] Q tie-asymmetry V60_Q WMA(IdxMin($low,30),5): Δ=1.86e-03
+[warn] Q tie-asymmetry V120_Q WMA(IdxMin($low,30),5): Δ=1.55e-03
+[warn] Q_signed tie-asymmetry WMA(IdxMin($low,30),5): Δ=1.70e-03
+[warn] Q tie-asymmetry L10_Q (IdxMin($low,60)-IdxMax($high,60))/60: Δ=1.19e-03
+[warn] Q tie-asymmetry L20_Q (IdxMin($low,60)-IdxMax($high,60))/60: Δ=8.52e-04
+[warn] Q tie-asymmetry V20_Q (IdxMin($low,60)-IdxMax($high,60))/60: Δ=4.42e-05
+[warn] Q tie-asymmetry V60_Q (IdxMin($low,60)-IdxMax($high,60))/60: Δ=1.45e-04
+[warn] Q tie-asymmetry V120_Q (IdxMin($low,60)-IdxMax($high,60))/60: Δ=1.05e-05
+[warn] Q_signed tie-asymmetry (IdxMin($low,60)-IdxMax($high,60))/60: Δ=8.03e-04
+  ... 25/183 (부분 저장)
+scripts/qd_descriptor_pilot.py:269: RuntimeWarning: Mean of empty slice
+  row[f"null_{ch}_{k}"] = float(np.nanmean(v))
+  ... 50/183 (부분 저장)
+  ... 75/183 (부분 저장)
+  ... 100/183 (부분 저장)
+  ... 125/183 (부분 저장)
+  ... 150/183 (부분 저장)
+  ... 175/183 (부분 저장)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+  return func(x, start, end, min_periods, *numba_args)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+  return func(x, start, end, min_periods, *numba_args)
+/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/alphasearchbench/data/signal_context.py:41: RuntimeWarning: Mean of empty slice
+  mu = np.nanmean(v, axis=1, keepdims=True)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1872: RuntimeWarning: Degrees of freedom <= 0 for slice.
+  var = nanvar(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+scripts/qd_descriptor_pilot.py:269: RuntimeWarning: Mean of empty slice
+  row[f"null_{ch}_{k}"] = float(np.nanmean(v))
+scripts/qd_descriptor_pilot.py:269: RuntimeWarning: Mean of empty slice
+  row[f"null_{ch}_{k}"] = float(np.nanmean(v))
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+  return func(x, start, end, min_periods, *numba_args)
+scripts/qd_descriptor_pilot.py:269: RuntimeWarning: Mean of empty slice
+  row[f"null_{ch}_{k}"] = float(np.nanmean(v))
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/pandas/core/window/rolling.py:655: RuntimeWarning: All-NaN slice encountered
+  return func(x, start, end, min_periods, *numba_args)
+/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/alphasearchbench/data/signal_context.py:41: RuntimeWarning: Mean of empty slice
+  mu = np.nanmean(v, axis=1, keepdims=True)
+/home1/sku07891/miniconda3/envs/AlphaEval38/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1872: RuntimeWarning: Degrees of freedom <= 0 for slice.
+  var = nanvar(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+scripts/qd_descriptor_pilot.py:269: RuntimeWarning: Mean of empty slice
+  row[f"null_{ch}_{k}"] = float(np.nanmean(v))
+[saved] /gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/out/qd_design_pilot/qd_descriptor_pilot_v3_valid.parquet
+[integrity] expB B 재계산 vs 저장값: n=24, max|Δ|=0.00e+00
+
+[n] usable 156 ({'GP': 132, 'LLM': 24})
+
+===== [핵심] B–tilt null coupling (Spearman) =====
+L20 {"Corr(B, null_W)": -0.82, "Corr(B, real_W)": -0.48, "null_mean_W": 0.0481, "real_mean_W": 0.2837, "Corr(B, null_Q)": 0.07, "Corr(B, real_Q)": -0.39, "null_mean_Q": 0.0296, "real_mean_Q": 0.3082, "Corr(B, null_rho)": 0.11, "Corr(B, real_rho)": -0.41, "null_mean_rho": 0.0326, "real_mean_rho": 0.3881}
+V20 {"Corr(B, null_W)": -0.81, "Corr(B, real_W)": -0.28, "null_mean_W": 0.0497, "real_mean_W": 0.1741, "Corr(B, null_Q)": 0.17, "Corr(B, real_Q)": -0.25, "null_mean_Q": 0.0295, "real_mean_Q": 0.1978, "Corr(B, null_rho)": 0.11, "Corr(B, real_rho)": -0.27, "null_mean_rho": 0.0321, "real_mean_rho": 0.2434}
+
+== per-group stats (후보별, L20/V20) ==
+     L20_W                       L20_Q                      L20_rho                       V20_W                       V20_Q                      V20_rho                     
+      mean    std    min    max   mean    std    min    max    mean    std    min    max   mean    std    min    max   mean    std    min    max    mean    std    min    max
+grp                                                                                                                                                                          
+GP   0.313  0.193  0.061  0.658  0.342  0.253  0.047  0.706   0.431  0.306  0.049  0.878  0.179  0.101  0.050  0.604  0.206  0.123  0.032  0.426   0.253  0.151  0.033  0.508
+LLM  0.138  0.102  0.057  0.536  0.142  0.118  0.064  0.652   0.177  0.145  0.079  0.808  0.152  0.076  0.064  0.342  0.157  0.081  0.076  0.397   0.196  0.098  0.091  0.486
+
+== A_L ↔ A_V 중복성 (후보별 Spearman) ==
+  W: 0.53
+  Q: 0.60
+  rho: 0.58
+
+== A_V window stability (Spearman) ==
+  후보 W:
+        V20_W  V60_W  V120_W
+V20_W   1.000  0.961   0.909
+V60_W   0.961  1.000   0.966
+V120_W  0.909  0.966   1.000
+  후보 Q:
+        V20_Q  V60_Q  V120_Q
+V20_Q   1.000  0.902   0.868
+V60_Q   0.902  1.000   0.975
+V120_Q  0.868  0.975   1.000
+
+== ILLIQ min_periods 10 vs 20 ==
+  W: Spearman 0.996
+  Q: Spearman 0.997
+  rho: Spearman 0.996
+
+== 4x4 core 시나리오 (Spearman) ==
+-- tilt 후보 = Q --
+             B  T_common  L20_Q  V20_Q
+B         1.00      0.29  -0.39  -0.25
+T_common  0.29      1.00  -0.55  -0.58
+L20_Q    -0.39     -0.55   1.00   0.60
+V20_Q    -0.25     -0.58   0.60   1.00
+-- tilt 후보 = W --
+             B  T_common  L20_W  V20_W
+B         1.00      0.29  -0.48  -0.28
+T_common  0.29      1.00  -0.59  -0.46
+L20_W    -0.48     -0.59   1.00   0.53
+V20_W    -0.28     -0.46   0.53   1.00
+
+== turnover 변형 대조 (Spearman) ==
+             T_common  T_common_l1  T_union  coverage     B
+T_common         1.00         1.00     0.97     -0.71  0.29
+T_common_l1      1.00         1.00     0.97     -0.72  0.29
+T_union          0.97         0.97     1.00     -0.74  0.21
+coverage        -0.71        -0.72    -0.74      1.00 -0.18
+B                0.29         0.29     0.21     -0.18  1.00
+
+== exclusion 진단 (L20 기준, 총 731일) ==
+  n<2: 평균 6.4일
+  n<10: 평균 9.9일
+  n<30: 평균 14.0일
+  days_used 평균 642, mass_covered 평균 0.924
+
+[failures] eval_error 26건
+QD_PILOT_DONE rc=0

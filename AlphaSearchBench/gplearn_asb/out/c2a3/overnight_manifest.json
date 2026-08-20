@@ -1,0 +1,110 @@
+{
+ "experiment": "C-2a.3 bloat-control (overnight, 2026-08-19)",
+ "authorization": "사용자 지시 — canonical/C-2b/C-1/C-3 자동 확정 금지, 게이트 중단",
+ "constraints": {
+  "max_concurrent_jobs": 10,
+  "data": "train 2015-2021 only",
+  "test_access": "forbidden (>=2024-01-21)",
+  "asb_policy": "미사용"
+ },
+ "stages": {
+  "prep_implementation": "done (lexi_select+dispatch, cli profiles, unit 70 passed)",
+  "wait_s2": "cancelled (사용자 개정 2026-08-20 — deviations[0] 참조)",
+  "preregistration": "done (out/c2a3/prereg_FINAL_4c_plus_s2partial.json — eps_p10=4.764e-4, cap=100/20)",
+  "screening": "in_progress (890162 lexi_500x10 / 890164 lexicap_500x10 COMPLETED ~1h; 890161 capreg / 890163 lexi_250x20 / 890165 lexicap_250x20 RUNNING; 감시자 인수: 홈 창 종료로 원 감시자 사망 → 2026-08-20 11:00 현 세션 Monitor bptbv3mgq 재장착)",
+  "confirmation": "pending (시간 허용 시 <=8 jobs)",
+  "report": "pending"
+ },
+ "controls": {
+  "1000x5_s0": "889685 COMPLETED",
+  "500x10_s0": "889686 COMPLETED",
+  "250x20_s0": "889687 COMPLETED",
+  "250x20_s1": "889688 COMPLETED",
+  "250x20_s2": "889689 TIMEOUT(12h, 3915/5000 rows) → retry 890129 사용자 결정으로 취소 — partial gens 0-14(3,750 rows)를 out/c2a3/s2_partial_g0_14로 편입"
+ },
+ "preregistration": {
+  "file": "out/c2a3/prereg_FINAL_4c_plus_s2partial.json",
+  "epsilon_p10": 0.0004764455216271779,
+  "epsilon_source": "4 완주 control + s2 partial(gens 0-14) pooled gaps n=63,123, mc_seed 20260819, tournament 20, 2000 MC/gen",
+  "epsilon_sensitivity_4run_only": 0.0002877831442513061,
+  "cap": {
+   "L": 100,
+   "D": 20
+  },
+  "cap_rationale": "정상 4-run envelope max L77/D17 — 80/18은 마진 L+3/D+1로 극박, 100/20은 분리 여유 확보. 두 후보 모두 정상 run exceedance 0%·pool winner 초과 0. s2 partial은 80/18에서 7.41%, 100/20에서 4.59% 차단 — catastrophic case에 대한 의도된 차단(cap = loose safety ceiling 철학).",
+  "completeness_gate": "s2는 명시적 partial-control 플래그로 편입(불완전 gen 15 165 rows 제외) — 침묵 우회 아님"
+ },
+ "jobs": [
+  {
+   "id": "890161",
+   "config": "configs/v2/c2a3/capreg_500x10_s0.yaml",
+   "profile": "v2_bloat_cap",
+   "alloc": "500x10",
+   "seed": 0,
+   "role": "cap-only harness regression — control 889686과 bit-identical 기대 (cap 100/20 > 관측 max 77/17). 불일치 시 wiring defect로 중단.",
+   "status": "submitted"
+  },
+  {
+   "id": "890162",
+   "config": "configs/v2/c2a3/lexi_500x10_s0.yaml",
+   "profile": "v2_bloat_lexi",
+   "alloc": "500x10",
+   "seed": 0,
+   "role": "screening treatment",
+   "status": "submitted"
+  },
+  {
+   "id": "890163",
+   "config": "configs/v2/c2a3/lexi_250x20_s0.yaml",
+   "profile": "v2_bloat_lexi",
+   "alloc": "250x20",
+   "seed": 0,
+   "role": "screening treatment",
+   "status": "submitted"
+  },
+  {
+   "id": "890164",
+   "config": "configs/v2/c2a3/lexicap_500x10_s0.yaml",
+   "profile": "v2_bloat_lexi_cap",
+   "alloc": "500x10",
+   "seed": 0,
+   "role": "screening treatment",
+   "status": "submitted"
+  },
+  {
+   "id": "890165",
+   "config": "configs/v2/c2a3/lexicap_250x20_s0.yaml",
+   "profile": "v2_bloat_lexi_cap",
+   "alloc": "250x20",
+   "seed": 0,
+   "role": "screening treatment",
+   "status": "submitted"
+  }
+ ],
+ "retries": [
+  {
+   "job": "890129",
+   "prior_failed_job": "889689",
+   "reason": "operational: 12h wall-limit TIMEOUT — bloat-driven slow evaluation (부분 trajectory 실측: D 30까지 단조 증가, exceed 41.5%). 동일 config·동일 seed, run_id만 _r2 (원본 부분 산출물 보존), walltime 24h.",
+   "resumed_by": "peer session 인수 (2026-08-20 오전, 사용자 확인 후)",
+   "outcome": "사용자 결정으로 scancel (2026-08-20) — deviations[0]"
+  }
+ ],
+ "deviations": [
+  {
+   "date": "2026-08-20",
+   "what": "s2 완주 취소 — retry 890129 scancel, 원 지시 'A. s2 fallback 불허'를 사용자가 직접 개정 (\"s2를 끝까지 완주할 필요가 없다고 봅니다\")",
+   "substitute": "s2 partial gens 0-14(완전 세대 250명씩, 3,750 rows)를 ε MC와 cap 대조에 편입 (out/c2a3/s2_partial_g0_14). ε 정본 = s2 포함값 4.764e-4, 4-run 민감도값 2.878e-4 병기.",
+   "integrity": "treatment 실행 전 개정이므로 preregistration integrity 유지 — treatment 결과를 보고 ε/cap을 바꾼 것이 아님"
+  }
+ ],
+ "early_findings": {
+  "screening_500x10_s0": {
+   "capreg_partial_bit_identical": "first 2,834 rows == control 889686 (mismatch 0) — cap 100/20 wiring 무해 확인 (완주 후 전량 재검)",
+   "lexi_eq_lexicap": "lexi_500x10 == lexicap_500x10 완전 동일 trajectory (cap 미구속 — 기대대로)",
+   "diversity_collapse": "lexi: last gen unique 11/500 (top1 'Max(Std($volume,64),30)' x245); unique formulas 912 vs control 2170; gen-by-gen Lmax 20->7 (init보다 축소)",
+   "fitness_cost": "run-best 0.2242 vs control 0.2760 (-18.8%); control last-gen median 0.2350이 lexi best보다 높음",
+   "hypothesis": "ε=p10(4.764e-4)에서 shrinkage ratchet: exact-tie(gap=0) 채널이 prereg 측정(strictly-positive gaps)에 미반영 + 세대당 ~1000회 selection에서 flip 복리 → premature convergence. 결론은 250x20 완주 후 정식 판독에서"
+  }
+ }
+}

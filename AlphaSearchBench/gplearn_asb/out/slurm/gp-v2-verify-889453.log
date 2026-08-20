@@ -1,0 +1,15 @@
+ERROR tests/regression/test_v2_correctness.py::test_pool_is_fixed_hof_only - ...
+ERROR tests/regression/test_v2_correctness.py::test_execute_patch_harmless - ...
+ERROR tests/regression/test_v2_correctness.py::test_determinism_fixture - Val...
+ERROR tests/regression/test_v2_correctness.py::test_no_legacy_semantics_in_v2
+63 passed, 1664 warnings, 6 errors in 747.32s (0:12:27)
+PYTEST_DONE rc=1
+    return cmd_mine(args)
+  File "/gpfs/home1/sku07891/00.hojin/AlphaEval/AlphaSearchBench/gplearn_asb/gplearn_asb/cli.py", line 56, in cmd_mine
+    return run_mine_v2(args.config, raw=_raw, seed=args.seed,
+NameError: name 'run_mine_v2' is not defined
+V2_SMOKE_DONE rc=1 executing_lines=0
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+IndexError: list index out of range
+V2_VERIFY_ALL_DONE rc=1

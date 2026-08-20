@@ -1,0 +1,31 @@
+# [C-2a.3] bloat-control screening — epsilon-lexicographic parent selection 실험.
+# prereg: out/c2a3/prereg_FINAL_4c_plus_s2partial.json (eps=4.764e-4, cap 100/20).
+# control 대비 유일 차이 = profile(+cap arm의 L/D). 성능 freeze 아님 — C-2b 재료.
+profile: v2_bloat_lexi
+market: csi800
+search:
+  start_date: '2015-01-01'
+  end_date: '2021-12-31'
+label:
+  horizon: 1
+budget:
+  candidates: 5000
+gp:
+  population_size: 250
+  max_program_length: null
+  max_program_depth: null
+pool:
+  size: 10
+fitness:
+  metric: fb_fitness
+  transaction_cost_rate: 0.0015
+  long_short_quantile: 0.2
+  net_sharpe_min_traded_days: 252
+validity:
+  min_mean_daily_coverage_ratio: 0.05
+  min_median_daily_n_valid: 30
+  min_valid_day_ratio: 0.9
+seed: 0
+run_id: v2_csi800_fbfit_c2a3_lexi_250x20_s0
+output:
+  root: null
