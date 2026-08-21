@@ -1,9 +1,19 @@
-# ASB Backtest Design (ASB-P1.0-RC3)
+# ASB Backtest Design (ASB-P1.0-spec)
 
-상태: **pre-freeze release candidate** (개정 3차) — 본 명세는 §13의 freeze
-선행 조건을 충족한 뒤 **ASB-P1.0으로 동결**한다. 현재는 동결 상태가
-아니다. · 관련 문서: `docs/BACKTEST.md`(엔진 구현 계약),
+상태: **계약 명세 동결 (`ASB-P1.0-spec`, 2026-08-21).** 규범 문구·사전등록
+값·exact schema가 고정됐다. 버전 사다리는 `ASB_design_v2.md` 헤더 —
+`ASB-P1.0-spec` → `ASB-P1.0-rc1`(구현·VALID calibration·freeze blocker 통과
+후 TEST 직전 hash 고정) → `ASB-P1.0`(rc1과 동일 hash로 TEST 1회 실행 시
+승격). **`ASB-P1.0` 명칭을 지금 사용하지 않는다.** 이전 상태
+`ASB-P1.0-RC3`는 개정 이력이다. · 관련 문서: `docs/BACKTEST.md`(엔진 구현 계약),
 `docs/METRICS.md`, `docs/experiments/`(근거 실험 기록), 연구 개요 Q1–Q4
+· framework-level 통합 문서: `ASB_design_v2.md`(축 공통 계약 owner)
+
+> **표기 교정 (2026-08-20, RC3 내 정합화)**: ① §6.3의 bare `next_open`을
+> §2.1의 canonical enum `next_open_oo`로 교정(§2.1이 금지한 표기였음),
+> ② §12의 quality-selected subset 선택 지표를 `pool-level Mean IC` →
+> **factor-level Mean IC**로 교정(§5의 "개별-지표 기준 선택"과 충돌).
+> 규범 내용의 변경이 아니라 문서 내부 불일치의 해소다.
 
 ---
 
@@ -115,7 +125,10 @@ A 정의상 변주할 수 없다. 즉 "요인설계"라는 명칭이 배치 전�
 | 포트폴리오 규칙 | LS-Q: 분위 20/20 long-short, 매일 리밸런스 / LS-K: top-50 long-short, 5일 보유 | 회전 상한이 구조에 내재된 규칙과 아닌 규칙의 대비 — 비용 민감도를 규칙 차원에서 분리 |
 | 비용 | 0bps / 15bps(편도 L1 기준) | 비용률 논쟁을 스윕으로 흡수. 0bps 구성이 gross/net 분해를 내장 |
 
-**전 구성 공통(고정 명세)**: universe·PIT 멤버십 마스크, label(1일 forward),
+**전 구성 공통(고정 명세)**: universe·PIT 멤버십 마스크,
+**execution return accrual = 1일 open-to-open**(아래 `next_open_oo` —
+**OOS의 close-to-close forward label과는 별개다**: Track A의 PnL target은
+`open_{t+2}/open_{t+1} − 1`이고 `close_{t+1}/close_t`가 아니다),
 실행 시맨틱 **`next_open_oo`**(canonical enum — t 종가 신호 → **t+1 시가
 진입, t+2 시가 청산**: `open_{t+2}/open_{t+1} − 1`. `next_open`은 청산
 시점을 규정하지 않아 `next_open_oc`와 혼동되므로 규범 문서에서 쓰지
@@ -145,6 +158,12 @@ net_t             = gross_t − cost_t
   직전 weight를 그대로 유지**한다(그날 회전 0) — **overlapping cohort
   방식이 아니다**. valid 종목이 2K 미만이면 `K ← floor(n_valid/2)`로
   축소하고, 그래도 0이면 무포지션(동수는 안정 정렬로 결정론적).
+
+**cadence는 공통 고정이 아니라 규칙별 좌표다 (계약)**: 공통인 것은
+**execution return accrual(1일 open-to-open)** 이고, **rebalance cadence는
+LS-Q 1거래일 / LS-K 5거래일**로 다르다. 따라서 "전 구성 공통 1거래일
+보유·리밸런스 cadence"라고 서술하면 LS-K와 모순된다. `rebalance_days`는
+**`deployment_config_id`의 구성요소**다(`ASB_design_v2.md` §3.1.1).
 
 **Long-short의 지위**: A-share에서 임의 종목의 공매도 가능성을 가정하지
 않는다. Track A의 LS 포트폴리오는 실배치 전략이 아니라 **신호 품질 진단
@@ -197,8 +216,9 @@ seed 고정처럼 결과 분포를 바꾸지 않는 패치와, 반복 횟수 정
 **`train_signed_equal`** — wᵢ = sign(train-IC ᵢ) / **|kept|**, 여기서
 kept = §3.2의 부호 판정을 통과한 **directional component 집합**이다
 (방향 없는 factor는 결합에서 제외되고 분모에서도 차감된다 — 전체 factor
-수 n이 아니다). 이는 `oos_test_design.md` §6의 pool combiner 계약과 동일
-정의이며 **L1-normalized directional equal weighting**이다(Σ|wᵢ| = 1,
+수 n이 아니다). 이는 **`ASB_design_v2.md` §3.6의 공통 pool 계약**과 동일
+정의이며(OOS 축 적용은 `oos_test_design.md` §6) **L1-normalized
+directional equal weighting**이다(Σ|wᵢ| = 1,
 일반적으로 Σwᵢ ≠ 1). 이는 무학습이 아니라
 **1-bit 지도 보정(one-bit supervised orientation)**이다: label 정보를
 방향 1비트만큼 사용한다. 답하는 질문: "방향만 보정해 주면 결합 가능한가?"
@@ -236,8 +256,8 @@ combiner 경로**의 것이다. ASB의 **개별 factor orientation은 `sign = +1
 sic ≥ 0 else −1`(0 → +1)** 이고(`oos_test_design.md` §5.1,
 `validity_gate_design.md` §6), pool의 `train_signed_equal`은 τ_sign=0에서
 **sic = 0을 방향 없음으로 제외**한다 — 두 경로의 0 처리가 다른 것은
-**의도된 이중 규약**이며(`oos_test_design.md` §6에 명문화, 구현
-`runner.py:100-107`의 `|sic| > τ`) "방향 증거가 없는 factor를 pool 방향
+**의도된 이중 규약**이며(`ASB_design_v2.md` §4.4의 의도된 비대칭 목록 +
+`oos_test_design.md` §6, 구현 `runner.py:100-107`의 `|sic| > τ`) "방향 증거가 없는 factor를 pool 방향
 결정에 쓰지 않는다"는 취지다. 따라서 τ_sign=0을 "필터 없음 = 개별
 orientation과 동치"로 해석해서는 안 된다.
 
@@ -295,8 +315,36 @@ calibration 창 부호의 일치율. **명칭 주의**: 이는
 
 ## 5. Pool 크기 정규화
 
+**Pool identity 2층 (계약 — `ASB_design_v2.md` §3.1 ②③·§3.6)**: Track A는
+같은 제출 factor 집합에 combiner 2종을 적용하므로 하나의
+**`factor_set_id`**(제출 집합, combiner 무관) 아래 **`pool_id`가 2개**
+생긴다 — combiner가 Track A의 실험 축이므로 설계된 동작이다. 따라서:
+
+```
+factor_set_id         → as-submitted provenance, 크기 정규화(§5),
+                        Final-Pool QD와의 연결, **Q4 join key**(§10)
+pool_id               → combiner construction identity (Track A에서 2개)
+                        pool_scope = full_factor_set | rarefaction_draw
+deployment_config_id  → 규칙·비용·실행·gross 등 배치 좌표 (Track A에서 4개)
+→ Track A의 8 cell = pool_id × deployment_config_id
+```
+
+**`pool_id` payload (참조)**: `factor_set_id` + `pool_scope` + combiner +
+`combiner_params` + `weight_source` + **`ordered_resolved_weights`** +
+`active_components`. resolved weights가 payload에 있어야 **같은 active
+집합에 서로 다른 external weight를 적용한 두 pool이 구분**된다 — exact
+schema는 `ASB_design_v2.md` 부록 A.4가 정본이다.
+
+**`pool_id`는 "8 cell의 identity"가 아니다**: combiner만 반영하므로 규칙
+(LS-Q/LS-K)과 비용(0/15bps)을 식별하지 못한다. 8 cell은
+`pool_id × deployment_config_id`로 식별되며, `deployment_config_id`에
+combiner를 넣지 않는 이유도 이 분리다(`ASB_design_v2.md` §3.1.1).
+
+Q4에서 QD 지표와 Track A 성과를 연결할 때의 join key는 `pool_id`가 아니라
+**`factor_set_id`**다(§10).
+
 **Canonical dedup 규약 (채택)** — Track A의 pool 평가는
-`oos_test_design.md` §6의 계약을 그대로 소비한다: **stable
+`ASB_design_v2.md` §3.6의 공통 pool pipeline을 소비한다: **stable
 `formula_id` 기준으로 dedup한 canonical 집합 위에서 결합**하며, raw
 multiplicity가 가중으로 작용하도록 두지 않는다. 근거는 §1.2의 식별
 문제다 — 방법별 중복 발생률 차이가 결합 가중에 유입되면 "pool 품질"과
@@ -310,14 +358,51 @@ pool 크기는 방법의 산출물이므로 **기본 보고는 제출된 그대�
 `oos_pool_metrics`). 크기 효과의 분석은 다음 두 실험으로 분리한다:
 
 * **1차 — rarefaction(무작위 부분표본)**: 각 pool에서 크기 k의 무작위
-  부분집합을 R회 추출(k ∈ {10, 20, …}, R=100, seed 고정)해 Performance@k·
-  Coverage@k·DE@k의 평균·분산 곡선을 얻는다. 품질 선택이 개입하지 않는
-  순수 크기 통제이며, QD coverage에 이미 쓰는 rarefaction과 동일한 방법론을
-  backtest로 확장한 것이다.
+  부분집합을 R회 추출해 Performance@k·Coverage@k·DE@k의 평균·분산 곡선을
+  얻는다. 품질 선택이 개입하지 않는 순수 크기 통제다. **\(k\) 격자·\(R\)·
+  `draw_seed`는 Deferred parameter**이며(`ASB_design_v2.md` §13.1) 이전 판의
+  예시값 `k ∈ {10,20,…}, R=100`은 **사전등록 값이 아니라 예시**였으므로
+  규범으로 읽지 않는다 — \(k\) 격자는 제출물의 `n_unique_factors` 분포에서,
+  \(R\)은 Monte-Carlo 표준오차 안정화 기준에서 정한다.
+  **Estimand 2종과 `k`의 의미 (계약 — `ASB_design_v2.md` §7.3)**:
+  **selected-k estimand**를 채택한다.
+
+  | estimand | analysis frame | 지위 |
+  |---|---|---|
+  | **Q4 matched** (`q4_matched`) | `TEST gate-pass ∩ QD behavior-eligible` | **Q4 primary estimand — 확정**(`ASB_design_v2.md` §3.7: `q4_estimand_status = selected_k`) |
+  | **Deployment sensitivity** | `gate-pass factor set` | 배포 관점 민감도. matched 비교용 아님 |
+
+  **확정 (2026-08-21)**: `selection_mechanism =
+  random_without_replacement` — 동일 frame에서 크기 \(k^*\)의 **무작위
+  부분집합**이며 quality top-k가 아니다(그것은 §5 2차 ablation).
+  \(k^*\)·\(R\) 결정 규칙과 shortfall 정책은 v2 §7.3이 정본이다.
+  **U_primary = registry의 planned slot 전원**이며(성공 unit 목록이 아니다)
+  모든 slot이 `resolved_unit`이 아니면 Q4 primary는
+  **`q4_primary_not_evaluable_incomplete_registry`**로 판정하고 성공 unit만
+  쓴 분석은 supplementary로만 보고한다. operational 실패의 재실행은 **동일
+  seed·config·data hash·resource profile**로 최대 3회이며 **next-seed 대체는
+  금지**다.
+  **draw별 profile 산출물**(`backtest_rarefaction_profile_metrics`, §10.5)이
+  Q4 primary join의 Backtest 측이며, **R draw는 evaluation unit 내부에서
+  먼저 집계**된다(draw를 독립 표본으로 세지 않는다).
+
+  `n_selected = k`이며 **`n_active`는 combiner별로 다를 수 있다**(허용) —
+  `train_signed_equal`에서 no_direction factor가 빠지면 `active < k`가 된다.
+  따라서 이를 **active-k 비교로 주장하지 않는다**. 병기 의무:
+  `n_selected`·`n_gate_pass`·`n_behavior_eligible`·`n_active`.
+
+  **공통 draw**: k 격자·R·`draw_seed`는 공통 `pool_rarefaction`
+  namespace에서 freeze하고 **QD와 Backtest가 동일 `draw_id`의 selected
+  membership을 소비**한다(payload는 v2 부록 A.8). "QD와 동일한 방법론"으로는
+  부족하다 — 동일 subsample이어야 연결이 성립한다. matched frame이 window
+  의존이므로 Full과 Strict는 서로 다른 draw를 가지며 **window 간 곡선 직접
+  비교는 금지**한다. rarefaction pool은 `pool_scope = rarefaction_draw`이며
+  `*_pool_metrics`가 아니라 **rarefaction 전용 테이블**에 기록한다.
 * **2차 — quality-selected subset ablation(별도 실험)**: 캘리브레이션 창
-  기준 상위 k 선택 후 평가. 이는 크기 통제가 아니라 "선택 규칙의 효과"
-  측정이며, 개별-지표 기준 선택이 결합-시너지형 pool에 갖는 구조적 불리함을
-  명세에 기재한다.
+  기준 상위 k 선택 후 평가. 선택 지표는 **factor-level Mean IC**이며 동점
+  처리·사전등록 규칙은 §12의 세부 계산 규약 표에 고정한다. 이는 크기
+  통제가 아니라 "선택 규칙의 효과" 측정이며, 개별-지표 기준 선택이
+  결합-시너지형 pool에 갖는 구조적 불리함을 명세에 기재한다.
 
 ---
 
@@ -325,9 +410,12 @@ pool 크기는 방법의 산출물이므로 **기본 보고는 제출된 그대�
 
 ### 6.1 분할의 역할 정의
 
-**확정 split 채택 (C-0, 사용자 결정 2026-08-19)** — 본 문서는 프로젝트
-공통 temporal split을 소비한다(정의 원본: `Vanilla_GP_v2.md` §6 ·
-`GP_asb_design_v2.md`). 역할 매핑:
+**확정 split 채택 (C-0, 사용자 결정 2026-08-19)** — ASB 평가에 대한
+normative 선언은 **`ASB_design_v2.md` §3.3.1**이 보유하고, 본 문서는 그
+소비자다. 프로젝트 공통 결정의 기록 원본은 `Vanilla_GP_v2.md` §6 ·
+`GP_asb_design_v2.md`이며, **두 문서의 날짜가 일치해야 한다는 assertion**을
+acceptance 항목으로 둔다(단일 진리원 유지 — 날짜를 두 곳에서 각자 normative로
+선언하면 갈라진다). 역할 매핑:
 
 ```
 2015-01-01 ~ 2021-12-31   Mining window (= train)
@@ -359,13 +447,61 @@ pool 크기는 방법의 산출물이므로 **기본 보고는 제출된 그대�
 **Performance-Response supplementary**의 multi-horizon 반응 — QD
 Behavioral Core v2는 label-free이므로 core 4축은 해당되지 않는다,
 `QD_Descriptors_v2.md` §9)를 계산할 때 **각 분할의 마지막 h 거래일은 다음
-분할을 참조하지 않도록 절단(purge)**한다. 분할 간 embargo는 파이프라인이
-산출하는 최대 horizon(현행 `qd.horizons` 최대값 = 20거래일)으로 설정한다. 적용 여부와 절단 일수는 manifest에
-기록한다.
+분할을 참조하지 않도록 절단(purge)**한다.
+
+**경계별 규약 (공통 계약 — `ASB_design_v2.md` §3.3.2)**:
+
+| 경계 | 규약 |
+|---|---|
+| TRAIN → VALID | purge. (mining label tail exclusion은 miner 소관 — GP v2에서 구현 완료) |
+| VALID → TEST | **purge 필수** — VALID 말미 h일의 label이 TEST 가격을 참조하면 그 label로 freeze한 QD \(\tau_q\)·grid가 TEST를 간접 소비한다 |
+| TEST → 데이터 끝 | post-end 가격 참조 허용(**terminal TEST extension 전용**) — 보호할 후속 구간이 없다. `label_uses_post_end_price`로 기록 |
+
+**`max_lookahead` (단일 정의 — `ASB_design_v2.md` §3.3.2)**:
+
+```
+max_lookahead     = manifest에 등록된 모든 future_reference_offset의 최댓값
+max_lookahead_cap = 20 trading days      ← 사전등록 확정 (2026-08-21)
+max_lookahead > cap 인 config 는 거부. 연장은 protocol version bump.
+```
+
+**cap을 곧바로 전 run의 purge 폭으로 쓰지 않는다** — 실제 purge와 terminal
+buffer는 **각 config의 realization date를 거래일 캘린더로 계산**해 정한다.
+
+label horizon·QD Performance-Response horizon·execution lag을 직접
+열거하지 않는다 — 새 label consumer가 추가돼도 누락되지 않게 하기 위함이다.
+**embargo 폭은 이 값으로 고정된 프로토콜 상수**이며(실행마다 산출 지표에
+따라 경계가 움직이면 같은 split 이름이 다른 구간을 뜻한다) 현행 파이프라인
+기준 최댓값은 `qd.horizons` 최대 = **20거래일**이다. ⚠ `oos.horizons`는
+상한 없는 양의 정수를 허용하므로(`oos_test_design.md` §4.1) `[60]` 같은
+설정은 cap에서 거부되어야 한다.
+
+**purge 판정은 거래 캘린더 기준**이다 — "각 split의 마지막 h행 절단"이 아니라
+**signal date의 target realization date가 다음 protected split에 진입하는지**를
+판정한다. calibration 단계의 backtest outcome을 선택에 사용한다면 execution
+lag에도 동일 판정을 적용한다.
+
+> **C-0에서의 실제 여유**: VALID 종료(2023-12-31) ↔ TEST 시작(2024-01-21)
+> 사이 자연 gap은 거래일 기준 **약 14거래일**(2024-01-02~01-19)이므로
+> **primary label h=1은 충분하지만 20거래일 embargo는 충족되지 않는다** —
+> VALID에서 horizon-20 supplementary를 산출한다면 VALID 측 purge가 여전히
+> 필요하다.
+
+**Right buffer (계약)**: buffer는 **거래일 기준**이며(현행 구현은
+`pd.Timedelta(days=…)` = 캘린더 일수 — 결함) **`buffer ≥ max_lookahead`**
+여야 한다. **`next_open_oo`는 t 신호에 t+2 시가를 요구**하므로 execution
+lag이 `max_lookahead`에 등록된다 — label horizon만으로 buffer를 잡으면 TEST
+말미의 execution return이 조용히 NaN이 되어 `n_missing_returns`로만 남고
+손익 0으로 흡수된다.
+
+적용 여부, purge 거래일 수, buffer 거래일 수, 실제 참조한 마지막 날짜는
+manifest에 기록한다.
 
 ### 6.3 실행 시맨틱 표준화
 
-Common 트랙의 체결은 `next_open`(t 신호 → t+1 시가)으로 통일한다. 이는
+Common 트랙의 체결은 **`next_open_oo`**(§2.1의 canonical enum — t 종가
+신호 → t+1 시가 진입, t+2 시가 청산)으로 통일한다. 청산 시점을 규정하지
+않는 bare `next_open` 표기는 §2.1에 따라 본 문서에서 쓰지 않는다. 이는
 선견 편향 차단과 방법 간 비교 가능성을 위한 **의도적 표준화이며, 각 수식의
 native 실행 시맨틱(예: delay-0 수식의 당일 체결 전제)을 덮어쓴다.** native
 의도 타이밍은 메타데이터로만 보존한다.
@@ -392,15 +528,38 @@ Phase C (confirmation)  — freeze 이후 처음 평가되는 대상에서 얻�
 | 등급 | 정의 | 비고 |
 |---|---|---|
 | **protocol-held-out confirmation** | freeze 후 처음 평가하는 method / seed / universe | 같은 test 구간을 설계 과정에서 반복 관찰했다면 **시간 홀드아웃 수준의 독립성은 아니다** |
-| **temporal confirmation** (더 강함) | freeze 시점까지 전혀 관찰할 수 없었던 **새로운 시간 holdout** | §6.1의 Strict Untouched Subset이 여기 해당 |
+| **temporal confirmation** (더 강함) | protocol이 **해당 데이터 생성 이전에** 동결됨 | ⚠ **C-0의 Strict는 해당하지 않는다** — 아래 참조 |
 
 confirmation evidence의 원천: freeze 이후의 신규 방법(예: Alpha101,
 AlphaGen, AlphaQCM, QuantaAlpha), 신규 seed, 다른 universe(→
-protocol-held-out), 그리고
-**§6.1의 Strict Untouched Subset(2025-01-21~2026-06-30)**(→ temporal) —
-이 구간은
-번들 구성상 development 단계에서 계산 자체가 불가능했으므로 "새로운 시간
-holdout"의 요건을 충족한다. 반대로 Primary Full OOS의 전반부
+protocol-held-out), 그리고 **§6.1의 Strict Untouched
+Subset(2025-01-21~2026-06-30)**(→ temporal **후보**).
+
+**Temporal 등급은 audit으로만 부여된다 (계약 — `ASB_design_v2.md` §3.8.1)**:
+"번들 구성상 계산 불가능했다"는 서술만으로는 등급을 단정할 수 없다 —
+freeze 시점과 평가 시점의 bundle을 **각각** 기록하고 다음을 **전부** 충족해야
+`temporal_confirmation`이다.
+
+```
+protocol_frozen_at < strict_start          ← 결정적 조건
+AND protocol_frozen_at < first_strict_evaluation_at
+AND evaluation_bundle_max_date >= strict_end
+AND 두 bundle provenance 검증 가능(content hash)
+AND freeze 이전 strict 결과 접근 기록 없음
+```
+
+**C-0의 Strict는 `temporal_confirmation`이 아니다 (하향 — 2026-08-21)**:
+Strict 구간은 2025-01-21~2026-06-30이고 ASB-P1.0은 아직 동결되지 않았으므로
+**freeze가 데이터 생성 이후**에 일어난다. `freeze_bundle_max_date <
+strict_start`(로컬 번들이 2025-01-20 종료)는 **우리에게 관측 기회가 없었다**는
+증거일 뿐 **데이터가 존재하지 않았다**는 증거가 아니다. 따라서:
+
+* Strict 결과를 아직 열지 않았다면 → **`protocol_held_out`**
+* 이미 열었다면 → **`retrospective_subset`**
+
+진정한 temporal confirmation은 **아직 존재하지 않는 미래 구간**을 대상으로
+지금 protocol을 동결해야 얻어진다. 논문 서술에서 C-0 Strict를 "더 강한
+시간 홀드아웃"으로 제시하지 않는다. 반대로 Primary Full OOS의 전반부
 (2024-01-21~2025-01-20)는 부분 오염 구간이므로 그 구간만의 결과는
 development evidence 취급을 벗어나지 못한다. 논문 서술에서 두 evidence class를 구분 표기하는 것을
 의무로 한다. 이 구분은 약점의 고백이 아니라 벤치마크 신뢰성의 근거다.
@@ -442,19 +601,56 @@ Track A가 제출 가중을 쓰면 "모든 pool에 **동일한** 표준 배치"(
 `weights_source = "input"`), Track A 실행 시 이 입력을 **무시하도록
 강제**해야 한다(§13 체크리스트).
 
-**제외의 층위 (계약 — §11.7과 정합)**: "제외"는 factor 단위와 run 단위가
-다르다.
+**제외의 층위 (계약 — §11.7과 정합)**: "제외"는 **owner 4층**(factor /
+submission / pool / track)으로 갈린다(`ASB_design_v2.md` §3.5.3).
 
 ```
-미해석 수식 / gate 탈락 factor  → pool 결합에서 제외 (사유·개수 기록)
-gate 이후 빈 pool (run 단위)    → run 자체를 결과표에서 제거하지 않는다
-                                 metrics = NaN
-                                 evaluable = false
-                                 reason    = "empty_pool_after_gate"
+owner=factor  identity 부여 실패(canonicalize 불가)
+                 → 결합에서 제외, reason = "identity_canonicalization_failed"
+              미해석 수식 / gate 탈락 factor
+                 → pool 결합에서 제외 (사유·개수 기록)
+
+owner=submission  n_unique_factors == 0
+                 → submission_evaluation_status 1행
+                   reason = "empty_factor_set_after_identity", pool 행 없음
+
+owner=pool    빈 pool → **행을 결과표에서 제거하지 않는다**
+                 metrics        = NaN
+                 valid          = false          ← canonical 필드명
+                 invalid_reason ∈ { "empty_pool_after_gate",   # gate-pass 0
+                                    "no_active_components" }   # Active = ∅
+
+owner=track   malformed_external_weights
+                 → **hard error. metrics 행을 만들지 않는다**
+                   (invalid_reason enum에 포함되지 않는다)
+                   failed_run_audit_manifest 기록 + non-zero exit
 ```
 
-즉 factor는 제외하되 **run 행은 남긴다** — §11.6(음성 결과 동등 보고)·
+즉 factor는 제외하되 **pool 행은 남긴다** — §11.6(음성 결과 동등 보고)·
 §11.7(조용한 유실 금지)의 요구다.
+
+**`malformed_external_weights`는 placeholder reason이 아니다 (계약)**:
+hard error는 행을 만들지 않으므로 **`invalid_reason` enum에 넣을 수 없다**.
+대신 **`failed_run_audit_manifest`** 에 기록해 "조용한 유실 금지"를
+충족한다. **기록·종료 순서**: manifest를 **먼저 기록·fsync한 뒤**
+non-zero exit한다(기록 실패가 곧 유실이다).
+
+**Hard-error scope = consumer-scoped (계약)**: external weights를 **소비하는
+track만 중단**한다 — Track A는 제출 weights를 쓰지 않으므로(아래 소비 규칙)
+Track C의 weight 오류로 **Track A를 중단하지 않는다**.
+
+| 오류 | 중단 범위 |
+|---|---|
+| `malformed_external_weights` | 해당 **track**만 |
+| `empty_factor_set_after_identity` | 해당 **submission**의 pool 평가 |
+| config·context 오류 | **batch** 전체 |
+
+**필드명·어휘 통일 (계약 — `ASB_design_v2.md` §3.5.3)**: canonical은
+`valid`(bool) + `invalid_reason` + `failure_owner` + `failure_stage`이며
+이전 판의 `evaluable`/`reason`은 **deprecated alias**다. pool reason 2값은
+**실패 단계가 달라 상호배타**이며, 특히 `empty_pool_after_gate`(상류
+validity 결과)와 `no_active_components`(combiner 정책 결과)를 하나로 접지
+않는다 — `n_factors_dropped_by_gate`와 `n_no_direction`이 각각 대응한다.
 
 **엔진 등가성 요건**: 복수 신호 엔진(자체 엔진 + qlib fallback)을 운용하는
 한, 동일 연산자명이 상이한 시맨틱(순위 tie 처리, rolling 창 경계, ddof,
@@ -516,15 +712,67 @@ Gap은 복합 차이이므로 "이 방법의 가치는 결합기에 있다"는 �
 
 ## 10. Q4 통계 분석 계획
 
-**분석 단위는 pool(run)이다.** 배치 구성은 pool의 반복 조건이므로 표본
-수를 늘리지 않는다 — 10 pool × 8구성은 n=80이 아니라 n=10이며, 프로파일
-(§4)은 pool 하나를 요약하는 특징 벡터다.
+**분석 단위 (계약)**: 관측 단위는 **`submission_id × evaluation_context_id
+× report_window_id × factor_set_id` observation**이며 이는 profile 층(§4)의
+grain과 일치한다(`ASB_design_v2.md` §3.7). 배치 cell은 반복 조건이므로 표본
+수를 늘리지 않는다 — 10 제출물 × 8 cell은 n=80이 아니라 **n=10**이고,
+프로파일은 그 observation 하나를 요약하는 특징 벡터다. `pool`·`run`은
+중의적이라 규범 서술에서 쓰지 않는다(v2 §1.5) — 하나의 `factor_set_id`가
+`pool_id` 2개를 낳으므로 "pool 단위"는 관측 단위가 아니다.
 
 **Track 범위 (계약)**: **primary Q4 분석은 Track A만** 사용한다(공식
 순위와 동일 — §0·§2.3). Track B(Anchor) 기반 연관 분석은 **supplementary
 robustness / external-alignment 분석**으로만 보고하며 primary 결론을
 번복하지 않는다 — 엔진·성과량이 다르므로(§2.2·§4) Track A 결과와 하나의
 분포·하나의 결론으로 합치지 않는다.
+
+**Q4 estimand와 join (계약 — `ASB_design_v2.md` §3.7이 정본)**.
+**확정: `q4_estimand_status = selected_k`** (2026-08-21). Q4 primary는
+`qd_rarefaction_metrics` ⨝ `backtest_rarefaction_profile_metrics` ON
+`draw_id`(+ D1·D5·D6·`factor_set_id`)이며 prefilter 후 **draw 단위 1:1**,
+이어서 **evaluation unit 내부에서 R개 draw를 평균**해 \((X_u, Y_u)\) 한
+쌍을 만든다. 아래 **full-pool join은 supplementary robustness**이며
+confirmatory primary와 같은 표에 병기하지 않는다. 사전등록 selector는
+`B × T_common` / `coverage` / **`median_sharpe`**. QD 축의 **보고 단위**와
+Q4의 **가설 단위**를 분리하는 원칙은 무조건 적용된다:
+
+| 층 | 규약 |
+|---|---|
+| QD 자체 보고 | Primary Full의 **6 pairwise grids = co-primary view**(QD 축 서술 단위, **Q4 가설이 아니다**) |
+| **Q4 confirmatory** | 사전등록된 **단일 triple `(grid_id, qd_metric_id, profile_metric_id)`** → **1:1 join** |
+| 대안(택할 경우 명시) | 6개 Q4 가설 유지 시 **6개 별도 검정 + multiplicity correction** 사전등록 |
+
+**종속변수는 profile 층이다** — cell 층을 쓰면 QD 1행에 8행이 붙는다.
+`profile_metric_id`(median_sharpe | pdr | worst_sharpe |
+median_net_annret)도 **사전등록 대상**이다.
+
+```
+JOIN qd_grid_summary ⨝ backtest_profile_metrics
+  ON submission_id AND evaluation_context_id
+ AND report_window_id AND factor_set_id
+join 전 고정: grid_id·qd_metric_id·qd_protocol_version (QD 측)
+              profile_metric_id·profile_protocol_version
+              ·backtest_protocol_version (Backtest 측)
+```
+
+**Expected join cardinality**:
+
+```
+QD grid row              → profile           6 : 1
+(grid, metric) filter 후 → profile           1 : 1   ← Q4 primary
+QD row                   → deployment cells  1 : 8
+deployment cell          → QD row            8 : 1
+```
+
+`factor_set_id`는 **content key**이므로 단독 join 금지이며(같은 집합을 낸 두
+method가 공유한다 — v2 §3.1.4) 위 join에서 D1·D5·D6와 함께 쓰이고
+**integrity 검증**을 겸한다. join 전 양쪽의 기대 cardinality를 assertion으로
+강제한다.
+
+**window pairing**: primary = (Full QD × Full outcome), supplementary =
+(Strict QD × Strict outcome). **cross-window pairing 금지** — Full QD는 부분
+오염 전반부를 포함하므로 Strict 성과의 설명변수로 쓰면 temporal
+confirmation 주장이 약해진다.
 
 **결과 변수는 family별로 정의한다**: 예측력(pool IC·RankIC·ICIR),
 Common-LS(median Sharpe, IQR, PDR) — **primary**; Anchor(초과 AR, IR) —
@@ -548,6 +796,61 @@ universes)에 도달한 뒤로 유보하며, 소표본 구간의 구간 추정�
 유의성 판정·모형 선택 비교는 보고하지 않는다 — 회귀식을 명세에 두는 목적은
 사전 등록된 통제 구조(method·universe 고정효과, run 클러스터링)를 고정하는
 것이며 지금 단계에서 추론을 개시하는 것이 아니다.
+
+---
+
+## 10.5 산출 스키마와 logical primary key (계약)
+
+정본은 `ASB_design_v2.md` §10.2이며 backtest 축의 테이블만 여기 옮긴다.
+dimension 표기: D1 = `submission_id`, D5 = `evaluation_context_id`,
+D6 = `report_window_id`.
+
+```
+backtest_factor_metrics
+  PK = D1 × D5 × D6 × backtest_protocol_version
+       × deployment_config_id × evaluation_key
+backtest_deployment_metrics                     ← cell 층 (Track A = 8행/window)
+  PK = D1 × D5 × D6 × pool_id × deployment_config_id
+       × backtest_protocol_version
+backtest_profile_metrics                        ← profile 층 (Q4 종속변수)
+  PK = D1 × D5 × D6 × factor_set_id
+       × profile_protocol_version × backtest_protocol_version
+backtest_daily                                  ← window 없음 (날짜 필터 대상)
+  PK = D1 × D5 × split × pool_id × deployment_config_id
+       × backtest_protocol_version × date
+       # split이 없으면 calibration(validation) daily와 TEST daily가
+       # 같은 namespace에서 충돌한다
+backtest_rarefaction_metrics                    ← cell 층
+  PK = D1 × D5 × D6 × draw_protocol_version × draw_id
+       × rarefaction_pool_id × deployment_config_id
+       × backtest_protocol_version
+backtest_rarefaction_profile_metrics            ← draw별 profile 층 (신설)
+  PK = D1 × D5 × D6 × draw_protocol_version × draw_id
+       × profile_protocol_version × backtest_protocol_version
+  # Q4 primary join 의 Backtest 측. wide-form (draw 1개 = 1행).
+  # profile 집계식·누락 cell 정책은 profile_protocol_version 이 commitment
+```
+
+* **daily에는 `report_window_id`를 넣지 않는다** — daily는 split당 1회
+  생성되고 window는 그 위의 **날짜 필터**다(v2 §3.3.3). 넣으면 Strict 날짜가
+  Full·Strict 아래 중복 저장된다.
+* **`backtest_protocol_version`이 PK에 있는 이유**: 회전·비용·지표 semantics는
+  D5 payload에 들어가지 않으므로, key에 없으면 같은 PK에 서로 다른 계산
+  규약의 결과가 들어간다. `deployment_config_id`가 이를 commitment한다는
+  대안은 채택하지 않는다.
+* 모든 테이블에서 **duplicate logical key = hard failure**.
+
+**`profile_protocol_version`의 commitment 의무**: 정확한 8-cell 구성 목록,
+집계식(median/IQR/PDR/worst의 정의), **누락 cell 처리**를 버전이 고정한다.
+**8개 중 일부만 존재할 때 "존재하는 cell의 median"을 계산하는 것을
+금지**하고(표본 구성이 조용히 바뀌어 pool 간 비교가 깨진다), 필수 cell이
+결손이면 profile을 **NaN + `incomplete_deployment_grid`** 로 기록한다.
+
+**Strict window slicing semantics**: Strict는 별도 백테스트가 아니라 Full
+경로의 날짜 슬라이스다 — Strict 시작일에 **포지션을 초기화하지 않고** Full
+경로의 holdings를 승계하며, 누적수익·MDD는 NAV를 1로 rebase할 수 있으나
+**holdings는 reset하지 않는다**. Strict 첫날의 turnover·cost는 **Full 경로에서
+실제 발생한 값**을 쓴다(신규 건립 비용을 재부과하면 estimand가 바뀐다).
 
 ---
 
@@ -589,8 +892,8 @@ universes)에 도달한 뒤로 유보하며, 소표본 구간의 구간 추정�
 | LS-Q leg 산정 | quantile threshold(linear interpolation) 기반 membership. tie·퇴화로 leg 크기가 정확히 20%가 아닐 수 있고, overlap 셀은 양 leg에서 제거, 한쪽 leg 공백이면 그날 무포지션 (§2.1) |
 | LS-K K 초과 | valid < 2K이면 `K ← floor(n_valid/2)`, 그래도 0이면 무포지션. 동수는 안정 정렬로 결정론적 (§2.1) |
 | z-score zero-variance day | 일별 cross-sectional std < 1e-8이면 std를 1로 치환(ddof=0), 결측 셀은 z = 0 — `QD_Descriptors_v2.md`·OOS pool 규약과 동일 커널 |
-| all-zero combined signal day | 유효 신호가 전무해 leg 구성이 불가하면 그날 weight 전부 0(무포지션)이며 `n_skipped_days` 진단으로 계수 |
-| quality-selected subset(§5 2차) | 선택 지표 = **calibration 창의 pool-level 예측 지표(Mean IC)**, 동점은 `formula_id` 사전순 tie-break, 선택 규칙은 사전 등록 |
+| all-zero combined signal day | leg 구성이 불가하면 그날 weight 전부 0(무포지션)이며 `n_skipped_days`로 계수. **판정은 `combo == 0` 단순 비교가 아니라 tolerance \(\epsilon_0\) 기반**이며(`ASB_design_v2.md` §3.4, \(\epsilon_0\)는 Deferred) 셀 단위 원인을 3분해 기록한다 — `n_zero_due_to_no_support`(support 0) / `n_supported_zero`(support 있으나 \(\|combo\| \le \epsilon_0\)) / `n_zero_excluded`(포지션 제외), 계수 단위는 `(date, instrument)` |
+| quality-selected subset(§5 2차) | 선택 지표 = **calibration 창의 factor-level Mean IC**(§5의 "개별-지표 기준 선택"과 동일 — 상위 k factor를 고르는 절차이므로 pool-level 지표는 적용 불가), 동점은 `formula_id` 사전순 tie-break, 선택 규칙은 사전 등록 |
 | rarefaction(§5 1차) | `k ≤ n_unique_factors`만 산출, `n_unique_factors < min(k)`인 pool은 rarefaction 미산출(NaN + 사유). 비복원·고정 seed |
 | MDD | **양수 크기(magnitude)** 로 보고한다(`max_drawdown_magnitude` — 부호 없는 값) |
 | AnnRet headline | Track A headline은 **산술 연환산 `AnnRet_arith` = mean(daily net) × 252**. `CAGR`은 병기 지표이며 headline이 아니다 |
@@ -611,15 +914,25 @@ universes)에 도달한 뒤로 유보하며, 소표본 구간의 구간 추정�
 
 ## 13. 버전·동결·구현 지도
 
-**버전 규율**: 본 명세는 아래 freeze 선행 조건을 충족한 뒤 **ASB-P1.0으로
-동결한다**(현재 상태는 `ASB-P1.0-RC3`, pre-freeze). 동결 이후 스윕·평가
-manifest에 `protocol_version = "ASB-P1.0"`을 스탬프한다. 구성·규칙 변경은 버전 증가와 변경 근거
-문서를 동반하고, 버전 간 대조표(기존 pool 전체 재평가)를 남긴다.
+**버전 규율 (3단 — `ASB_design_v2.md` 헤더가 정본)**:
+
+| 버전 | 조건 | manifest `protocol_version` |
+|---|---|---|
+| **`ASB-P1.0-spec`** | 계약 명세 동결 — **현재 상태**(2026-08-21). 아래 체크리스트의 구현 완료를 요구하지 않는다 | `"ASB-P1.0-spec"` |
+| `ASB-P1.0-rc1` | 구현 + VALID calibration + freeze blocker 전항 통과 후 TEST 직전 문서·코드·config·bundle hash 고정 | `"ASB-P1.0-rc1"` |
+| `ASB-P1.0` | rc1과 **동일 hash**로 TEST 1회 실행 시에만 승격 | `"ASB-P1.0"` |
+
+아래 체크리스트는 **`rc1` 진입 조건**이며 `-spec` 동결 조건이 아니다(계약
+문구와 구현 완료를 분리한다). 구성·규칙 변경은 버전 증가와 변경 근거 문서를
+동반하고, 버전 간 대조표(기존 pool 전체 재평가)를 남긴다.
 
 **버전 명명의 층위 (계약)**: `protocol_version`은 **배치 프로토콜(본
 문서) 전체의 버전**이고, 축별 규약 버전은 각 축 문서가 따로 갖는다 —
-`oos_protocol_version`(oos_test_design §7), `qd_protocol_version`·
-`descriptor_protocol_version`(qd_test_design §2.3, QD_Descriptors_v2).
+`oos_protocol_version`·`qd_protocol_version`·
+`descriptor_protocol_version`·`pool_schema_version`·
+`factor_set_schema_version`·`canonicalization_version`·
+`expression_semantics_version` — **버전 계통의 정본은
+`ASB_design_v2.md` §3.2**다.
 서로를 포함하지 않는 **병렬 버전**이므로 manifest에는 해당되는 것을 모두
 기록하고, 어느 하나가 바뀌면 그 축의 결과 의미가 달라진다는 해석을
 동일하게 적용한다.
@@ -632,10 +945,22 @@ manifest에 `protocol_version = "ASB-P1.0"`을 스탬프한다. 구성·규칙 �
 | Track B qlib anchor + 초과수익 지표 | 구현됨 (`backtest.mode: qlib`, `AnnRet_excess/IR/MDD_excess`) |
 | 스윕 러너(공식 평가 경로 재사용) | 구현됨 (`scripts/protocol_sweep.py`) |
 | `train_signed_equal` combiner (+부호 정책 τ_sign) | **구현됨** (`runner.py:66-71` combiner 검증 + `pool_weights`의 directional filtering, `default.yaml:105-106` `backtest.combiner`/`backtest.sign_threshold: 0.0`) — 단 분모는 `|kept|`이고 코드 주석의 `/n` 표기는 stale(§3.1) |
-| canonical `formula_id` dedup 적용(§5) | 미구현 (현행 pool 결합은 입력 목록 그대로 — `oos_test_design.md` §6 충족도와 동일 상태) |
+| canonical `formula_id` dedup 적용(§5) | 미구현 (현행 pool 결합은 입력 목록 그대로 — `ASB_design_v2.md` §3.6 공통 pipeline 미배선) |
+| **`factor_set_id` 도입 및 Q4 join key 적용(§5·§10)** | 미구현 — canonical renderer 부재로 identity 계층 전체가 미도입(v2 §3.1) |
+| **`pool.combiner`/`pool.sign_threshold` 공유 namespace 이동** | 미구현 — 현행은 `backtest.combiner`/`backtest.sign_threshold`(`default.yaml:105-106`)이고 OOS pool 평가도 이를 소비한다. 기존 키는 deprecated alias로 유지하고, **Track별 combiner 허용 목록**은 backtest track config가 강제한다(v2 §3.6) |
+| **공통 rarefaction draw(`draw_id`) 소비(§5)** | 미구현 — QD와 동일 subsample을 써야 Q4의 Performance@k ↔ QD@k 연결이 성립(v2 §13.1) |
+| **right buffer의 거래일화 + execution lag 반영(§6.2)** | 미구현 — 현행은 캘린더 일수이며 `next_open_oo`의 t+2 요구를 반영하지 않는다 |
+| **`valid`/`invalid_reason` + failure owner/stage 적용(§8)** | 미구현 — `evaluable`/`reason`은 deprecated alias(v2 §3.5.3) |
+| **`deployment_config_id` 도입 + cell/profile 2층 출력(§5·§10.5)** | 미구현 — 현행은 8 cell을 식별하는 ID가 없고 profile 집계 자체가 미구현 |
+| **`profile_protocol_version` + 누락 cell → NaN·`incomplete_deployment_grid`(§10.5)** | 미구현 |
+| **`report_window_id` 2 window 산출 + Strict holdings 승계 slicing(§10.5)** | 미구현 |
+| **output PK 명시 + duplicate = hard failure(§10.5)** | 미구현 |
+| **Q4 estimand·1:1 join·cardinality assertion(§10)** | 미구현 — 사전등록 triple도 미확정(Deferred) |
+| **consumer-scoped hard error + audit manifest 선기록(§8)** | 미구현 |
+| **`max_lookahead` cap 검사(§6.2)** | 미구현 — `oos.horizons` 상한 없음 |
 | **Track A의 제출 `weights`/`direction` 무시 강제(§8)** | 미구현 — 현행은 `--weights`를 pool 가중으로 소비(`weights_source="input"`). Track A 실행 경로에서 차단 필요 |
 | 실행 시맨틱 `next_open_oo` 고정(§2.1) | 구현됨 (`labels.execution_return`의 canonical enum; config에서 모드 고정 필요) |
-| 빈 pool의 run-level placeholder(`empty_pool_after_gate`, §8) | 미구현 — 현행은 `len(pool_f) >= 1` 가드로 pool 행을 생성하지 않음(silent skip) |
+| 빈 pool의 **pool-level** placeholder(`empty_pool_after_gate`/`no_active_components`, §8) + submission-level `empty_factor_set_after_identity` | 미구현 — 현행은 `len(pool_f) >= 1` 가드로 pool 행을 생성하지 않음(silent skip) |
 | τ_sign sensitivity를 8-cell 집계에서 분리(§3.2) | 미구현 (스윕 러너의 집계 범위 규칙) |
 | rarefaction 크기 정규화 | 미구현 (QD의 `rarefaction_coverage` 패턴 확장) |
 | family별 프로파일 집계(PDR·IQR 등) | 미구현 (스윕 산출물 후처리) |

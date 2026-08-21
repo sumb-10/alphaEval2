@@ -1,0 +1,60 @@
+{
+  "primary_unit_resolution_ledger_schema_version": "1.0.0",
+  "purpose": "planned evaluation slot 의 실행 시도와 최종 해소를 append-only 로 기록한다. attempt 와 terminal resolution 을 한 행에 섞으면 not_executed_protocol_violation 을 표현할 수 없으므로(실행이 없어 attempt 필드가 존재하지 않는다) tagged union 으로 분리한다.",
+  "append_only": true,
+  "planned_unit_key": ["method_id", "mining_seed", "universe_id", "mining_config_id",
+                       "evaluation_context_id", "report_window_id"],
+
+  "records": {
+    "attempt_record": {
+      "primary_key": ["planned_unit_key", "attempt_index"],
+      "fields": {
+        "attempt_index": {"type": "integer", "range": "0..3", "note": "0 = 초기 실행, 1..3 = 동일 조건 재실행"},
+        "attempt_started_at": {"type": "string", "format": "RFC3339"},
+        "attempt_finished_at": {"type": "string", "format": "RFC3339", "nullable": true},
+        "node_id": {"type": "string"},
+        "resource_profile_id": {"type": "string", "note": "사전등록 resource envelope 식별자"},
+        "data_hash": {"type": "string", "note": "입력 데이터 content hash — retry 간 동일해야 한다"},
+        "attempt_outcome": {"enum": ["success", "operational_failure", "deterministic_failure"]},
+        "failure_reason": {"type": "string", "nullable": true},
+        "retry_of": {"type": "integer", "nullable": true, "note": "이전 attempt_index; 초기 실행은 null"}
+      },
+      "note": "실행이 실제로 있었던 경우에만 생성된다."
+    },
+    "terminal_resolution_record": {
+      "primary_key": ["planned_unit_key"],
+      "fields": {
+        "terminal_state": {"enum": ["resolved_unit", "empty_factor_set", "identity_failure",
+                                    "mining_failure", "evaluation_failure",
+                                    "not_executed_protocol_violation"]},
+        "resolved_submission_id": {"type": "string", "nullable": true,
+                                   "required_when": "terminal_state == resolved_unit"},
+        "resolved_factor_set_id": {"type": "string", "nullable": true,
+                                   "required_when": "terminal_state == resolved_unit"},
+        "terminal_at": {"type": "string", "format": "RFC3339"},
+        "terminal_reason": {"type": "string"}
+      }
+    }
+  },
+
+  "invariants": [
+    "planned slot 당 terminal_resolution_record 정확히 1개",
+    "terminal_resolution_record 는 삭제·교체 불가 (append-only)",
+    "실제 attempt 는 연속된 attempt_index 를 가진다 (0,1,2,... 결번 금지)",
+    "max_retry_count = 3",
+    "max_attempt_count = 4  (초기 실행 1회 + 동일 조건 재실행 최대 3회)",
+    "모든 retry 는 동일 mining_seed · 동일 config · 동일 data_hash · 동일 resource_profile_id",
+    "next-seed 대체 0건 (planned_unit_key 의 mining_seed 가 바뀐 retry 는 위반)",
+    "not_executed_protocol_violation 에는 가짜 attempt_record 를 만들지 않는다 (attempt_record 0개)",
+    "terminal_state == resolved_unit 이면 attempt_outcome == success 인 attempt_record 가 정확히 1개 존재",
+    "attempt_outcome == deterministic_failure 이후의 retry 는 위반 (재시도 대상이 아니다)"
+  ],
+
+  "oom_classification": {
+    "operational_failure": "일시적 노드 장애 또는 동등 resource_profile_id 에서의 비정상 종료",
+    "deterministic_failure": "사전등록 resource envelope 에서 재현되는 OOM → method/evaluation failure",
+    "protocol_change": "메모리·config 를 늘려 성공시키는 것은 동일 retry 가 아니라 protocol 변경이며 resource_profile_id 가 달라지므로 위 invariant 위반으로 검출된다"
+  },
+
+  "note": "본 파일은 schema 만 동결한다. ledger instance 는 실행 산출물이며 freeze 집합에 포함되지 않는다."
+}

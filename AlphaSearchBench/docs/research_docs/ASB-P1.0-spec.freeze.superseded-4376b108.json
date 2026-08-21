@@ -1,0 +1,160 @@
+{
+  "decisions": {
+    "R_rule": {
+      "candidates": [
+        50,
+        100,
+        200,
+        500,
+        1000
+      ],
+      "criterion": "95% 이상의 primary unit이 두 조건을 모두 충족하는 최소 R",
+      "failure": "R=1000까지 실패 시 자동 채택 금지, rarefaction_mc_not_converged로 중단",
+      "mcse": "s_draw / sqrt(R)",
+      "nested_common_prng_stream": true,
+      "prohibited": "R을 method 순위·Q4 유의성에 맞춰 선택 금지",
+      "tolerance_coverage": "MCSE <= max(0.05 * between_unit_VALID_SD, 0.005)",
+      "tolerance_median_sharpe": "MCSE <= max(0.05 * between_unit_VALID_SD, 0.05)"
+    },
+    "approvals": {
+      "gp_ld_bounds": "Vanilla GP v2의 별도 freeze 항목 — ASB 계약 freeze와 분리",
+      "items": [
+        "C-0 split 배선",
+        "Primary Full/Strict 이중 집계",
+        "coverage empty-universe -> NaN",
+        "validity_protocol_version bump",
+        "Y2 canonical train IC 일원화",
+        "orientation provenance 필드",
+        "backtest_rarefaction_profile_metrics 신설",
+        "QD<->BT rarefaction profile draw_id 1:1 join",
+        "identity/JCS/failure-state/PK uniqueness/daily slicing parity 인프라"
+      ],
+      "prohibited_until_frozen_test_gate": "test split outcome 및 strict_untouched report-window outcome의 실행·열람",
+      "reevaluation_order": "coverage·Y2 변경 후 재평가는 development/TRAIN/VALID 먼저 + 비용·gate flip·method별 valid rate·SIC parity 보고. TEST 재평가는 별도 승인",
+      "scope": "코드 구현 + synthetic/development/TRAIN/VALID 실행까지"
+    },
+    "bootstrap": {
+      "B_boot": 10000,
+      "confidence_level": 0.95,
+      "method": "percentile",
+      "prohibited": "primary_full과 strict_untouched의 혼합, rarefaction draw·deployment cell을 unit으로 사용",
+      "resampling_unit": "evaluation unit"
+    },
+    "eligibility_frame": {
+      "eligibility_protocol_versions": [
+        "validity",
+        "behavior"
+      ],
+      "q4_matched_frame_stages": [
+        "gate_pass",
+        "behavior_eligible"
+      ],
+      "quality_excluded": "quality version·tau_q는 random membership을 결정하지 않으므로 analysis_frame_id에서 제외. commitment는 qd_metric_id·quality_reference_id"
+    },
+    "freeze_procedure": {
+      "gp_doc": "Vanilla_GP_v2.md 전체는 freeze 집합에서 제외, provenance_dependencies로만 기록",
+      "id_backreference": "prohibited (순환 방지)",
+      "order": [
+        "문서 최종 편집",
+        "frozen 집합 SHA-256",
+        "manifest 작성",
+        "protocol_freeze_manifest_id 계산",
+        "ID는 외부 decision log + 비규범 pointer 파일에만 기재",
+        "frozen 문서 수정 금지"
+      ],
+      "pointer_file": "ASB-P1.0-spec.freeze.pointer.json (hash 대상 제외)"
+    },
+    "hq_threshold": {
+      "absolute": "primary 아님 — 사전등록 supplementary sensitivity 시 별도 ID",
+      "applied": "공통 fixed-external reference의 VALID quality 분포에서 tau_q 실현, 전 method 동일",
+      "prohibited": "method별 quantile, TEST 재산출",
+      "threshold_rule": {
+        "kind": "quantile",
+        "method": "linear",
+        "q": 0.8
+      }
+    },
+    "k_star_rule": {
+      "U_primary": "primary_evaluation_unit_registry.json instance",
+      "below_floor": "not_evaluable_common_support (TEST 후 full_pool 전환 금지)",
+      "common_support_floor": "k_min_Q4 = 2 * max(K_B, K_T)",
+      "formula": "k* = min over U_primary of n_behavior_eligible_VALID",
+      "post_hoc_exclusion": "prohibited",
+      "test_shortfall": "k 축소 금지, NaN + insufficient_behavior_eligible_for_k"
+    },
+    "lookahead": {
+      "cap_is_not_purge_width": "실제 purge·terminal buffer는 config별 realization date를 거래일 캘린더로 계산",
+      "max_lookahead_cap_trading_days": 20,
+      "over_cap": "config 거부. 연장은 protocol version bump"
+    },
+    "prng_and_seeds": {
+      "bootstrap_seed": "low53(SHA256(JCS([spec_version,'bootstrap',q4_analysis_spec_id])))",
+      "draw_seed": "low53(SHA256(JCS([spec_version,'draw',analysis_frame_id])))",
+      "low53": "int.from_bytes(digest[:8],'big',signed=False) & ((1<<53)-1)",
+      "mining_seed": "ASB가 파생하지 않는 사전등록 실험 입력",
+      "pfs_seed": "low53(SHA256(JCS([spec_version,'pfs',evaluation_context_id,formula_id])))",
+      "pin": "구현체와 bit-generator version을 manifest에 기록",
+      "prng_algorithm": "PCG64",
+      "replicate_index": "seed에 섞지 않고 draw_id의 별도 필드로 유지"
+    },
+    "q4": {
+      "descriptor_pair": "B x T_common",
+      "draw_aggregation": "mean_within_evaluation_unit",
+      "draw_independence": "R draw는 독립 표본·bootstrap unit이 아니며 draw 간 SD·MCSE는 Monte-Carlo 진단 전용",
+      "estimand": "matched random-k (quality top-k 아님)",
+      "evaluation_unit": "submission_id x evaluation_context_id x report_window_id x factor_set_id",
+      "full_pool_placement": "as-submitted 기본 보고 / Q4 supplementary robustness / 크기 민감도. confirmatory primary 병기 금지",
+      "primary_report_window": "primary_full",
+      "profile_metric_id": "median_sharpe",
+      "q4_estimand_status": "selected_k",
+      "qd_metric": "coverage",
+      "resolved_hash_binding": "grid_id·qd_metric_id의 실현 hash는 VALID 이후 manifest에 결합. VALID 결과를 본 뒤 pair·metric 종류 변경 금지",
+      "selection_mechanism": "random_without_replacement"
+    },
+    "reference_population": {
+      "corpus_fixing": "VALID calibration 개시 전에 reference_preimage_artifact + content hash 고정",
+      "min_sample_shortfall": "pooled fallback 금지, calibration failure",
+      "policy": "fixed_external",
+      "pooled_benchmark_in_primary": "prohibited"
+    },
+    "strict": {
+      "primary_admission": "validity.mode=report_only + hard-invalid 4종",
+      "prohibited": "strict 결과가 primary 순위·Q4 결론을 번복",
+      "research_thresholds": "diagnostic",
+      "strict_role": "TRAIN/VALID에서 threshold 확정 후 실행하는 사전등록 supplementary sensitivity panel",
+      "terminology": "validity.mode=strict의 TRAIN/VALID calibration은 허용. 금지 대상은 test split outcome 및 strict_untouched report-window outcome의 실행·열람"
+    },
+    "temporal_audit": {
+      "c0_strict_evidence_class": "protocol_held_out (미열람) / retrospective_subset (열람). temporal_confirmation 표현 금지",
+      "correction": "run_manifest payload만으로는 소급 수정이 방지되지 않는다 — 불변성은 1층 외부 고정과 3층 append-only에서 나온다",
+      "layers": [
+        "protocol_freeze_manifest_id (immutable, 외부 decision log)",
+        "run_manifest_id (1층 참조 + bundle·실행 시점)",
+        "append-only hash-chained access log (결과 최초 열람)"
+      ]
+    },
+    "version_ladder": {
+      "rc": "ASB-P1.0-rc1",
+      "release": "ASB-P1.0",
+      "rule": "rc1과 동일 hash로 TEST 1회 실행 시에만 ASB-P1.0으로 승격. TEST 후 규범·파라미터·코드 변경 시 기존 결과는 development evidence로 격하",
+      "spec": "ASB-P1.0-spec"
+    }
+  },
+  "documents": {
+    "docs/QD_Descriptors_v2.md": "532a1f48d92a305f829750bdef631b6d74c1375d21bed1d0dee06a9012e52ff5",
+    "docs/research_docs/ASB_design_v2.md": "c97dc6ba71504ec6bc36409d54d45934570a2256911bcbe8f1795533b2977c0e",
+    "docs/research_docs/backtest_design.md": "a215d14f09866a9a7979c09895ebf3f9b5452396b3c194d4ac4dd5a7908ccb82",
+    "docs/research_docs/c0_split_contract.json": "e2112078ec520f373aae15da0e48a314870017d5061fe8dac22ea63d2e0ad73f",
+    "docs/research_docs/oos_test_design.md": "e959b3b26c03b46dcdc8715862e7fb36165de2c2dfd03ec27c1dc766c1ed29c4",
+    "docs/research_docs/primary_evaluation_unit_registry.json": "5744111e8f83eb7a96d67e35d7816d33edc8f8f1b837dbf9fe6594669beb99f9",
+    "docs/research_docs/qd_test_design.md": "dee2737de6bb934201114235a32c81d033aa09f1f6b52747333f2cbfc2124c16",
+    "docs/research_docs/validity_gate_design.md": "643bb46c38c481db04881a55adecb1b51859cfeed996fbeabaab607368ff50d8"
+  },
+  "frozen_at": "2026-08-21T00:00:00Z",
+  "protocol_freeze_manifest_schema_version": "1.0.0",
+  "provenance_dependencies": {
+    "docs/research_docs/Vanilla_GP_v2.md": "ffca9f89d902e5451c7db54483fe4cacd0ddef86e802edb640e47120c53c9a31"
+  },
+  "source_revision": "cfccc06",
+  "spec_version": "ASB-P1.0-spec"
+}

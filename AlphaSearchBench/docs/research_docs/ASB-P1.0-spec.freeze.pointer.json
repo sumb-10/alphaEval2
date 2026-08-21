@@ -1,0 +1,11 @@
+{
+  "canonicalization": "RFC8785-JCS + SHA-256 (lowercase hex)",
+  "manifest_path": "docs/research_docs/ASB-P1.0-spec.freeze.json",
+  "note": "비규범 pointer — freeze hash 대상에서 제외된다. 이 ID 와 실제 ratification 시각을 외부 decision log 에 고정해야 protocol freeze 가 효력을 얻는다.",
+  "pointer_schema_version": "2.0.0",
+  "protocol_freeze_manifest_id": "8c89ce52e7ef5e92b4ff1003459676f55e1fe5ec032fdf5d67c506cddb9c4c40",
+  "protocol_ratified_at": null,
+  "ratification_status": "prepared_not_ratified",
+  "spec_version": "ASB-P1.0-spec",
+  "supersedes_protocol_freeze_manifest_id": "4376b108bd45d5744ee7081b26c829c089af81d30a40c48817780508534e3043"
+}

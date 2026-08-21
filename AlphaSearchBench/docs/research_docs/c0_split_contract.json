@@ -1,0 +1,85 @@
+{
+  "c0_split_contract_schema_version": "1.0.0",
+  "contract_id_note": "ASB가 소비하는 C-0 temporal split 계약. 결정 원본은 Vanilla_GP_v2.md §6이며 본 파일은 ASB 평가에 필요한 필드만 발췌한다(GP 문서 전체를 ASB freeze 집합에 넣지 않기 위한 분리).",
+  "decision": {
+    "decided_at": "2026-08-19",
+    "decided_by": "user",
+    "source_document": "docs/research_docs/Vanilla_GP_v2.md",
+    "source_section": "6",
+    "source_revision": "cfccc06"
+  },
+  "splits": {
+    "train": {
+      "start": "2015-01-01",
+      "end": "2021-12-31",
+      "role": "mining_window"
+    },
+    "valid": {
+      "start": "2022-01-01",
+      "end": "2023-12-31",
+      "role": "deployment_calibration"
+    },
+    "test": {
+      "start": "2024-01-21",
+      "end": "2026-06-30",
+      "role": "frozen_oos"
+    }
+  },
+  "report_windows": [
+    {
+      "label": "valid_full",
+      "split": "valid",
+      "start": "2022-01-01",
+      "end": "2023-12-31"
+    },
+    {
+      "label": "primary_full",
+      "split": "test",
+      "start": "2024-01-21",
+      "end": "2026-06-30"
+    },
+    {
+      "label": "strict_untouched",
+      "split": "test",
+      "start": "2025-01-21",
+      "end": "2026-06-30"
+    }
+  ],
+  "primary_report_window": "primary_full",
+  "contamination": {
+    "partially_contaminated_range": {
+      "start": "2024-01-21",
+      "end": "2025-01-20"
+    },
+    "reason": "v1 development 과정(구 test 2021-2024) 관측과 겹친다",
+    "accepted_by_user_at": "2026-08-19"
+  },
+  "evidence_class": {
+    "strict_untouched": {
+      "assigned_at_manifest_preparation": "protocol_held_out",
+      "strict_outcome_accessed_before_ratification_attestation": false,
+      "first_strict_evaluation_at_manifest_preparation": null,
+      "post_ratification_access_record_source": "append_only_access_log",
+      "basis": "사용자 attestation(2026-08-21): ratification 전에 strict_untouched ASB outcome 을 실행·열람하지 않았다. 또한 ratification 이 strict 구간 데이터 생성 이후이므로 protocol_frozen_at < strict_start 를 충족하지 못해 temporal_confirmation 은 불가하다.",
+      "held_out_does_not_transition_on_evaluation": "ratification 이후 최초 정식 평가는 정상적인 held-out 평가이며 그 때문에 소급 분석이 되지 않는다. evidence_class 는 protocol_held_out 으로 유지되고 access_status 만 unaccessed -> evaluated 로 바뀌며 first_strict_evaluation_at 은 append-only access log 에 기록된다.",
+      "retrospective_subset_applies_only_if": [
+        "ratification 전에 결과를 실행·열람한 사실이 확인됨",
+        "결과를 본 뒤 strict window 또는 분석 규칙을 선택함"
+      ],
+      "invalidation_rule": "사후에 선행 열람 사실이 발견되면 기존 protocol_held_out 판정은 invalidated 되고 retrospective_subset 으로 정정한다.",
+      "temporal_confirmation_prohibited": true,
+      "mutation_of_this_frozen_file": "prohibited — 실제 first_strict_evaluation_at 은 본 파일을 수정하지 않고 실행 시 access log / run manifest 에 기록한다."
+    }
+  },
+  "asb_consumption_rules": {
+    "split_dates_are_injected_by_experiment_config": true,
+    "purge_required_at_internal_boundaries": [
+      "train->valid",
+      "valid->test"
+    ],
+    "post_end_price_reference_scope": "terminal_test_extension_only",
+    "valid_to_test_natural_gap_trading_days_estimate": 14,
+    "valid_to_test_gap_measurement_status": "pending_bundle_calendar_measurement",
+    "note": "약 14 거래일(2024-01-02~2024-01-19) 추정은 h=1을 충족하나 max_lookahead_cap=20을 충족하지 않는다. VALID에서 horizon-20 supplementary를 산출하면 valid 측 purge가 필요하다."
+  }
+}

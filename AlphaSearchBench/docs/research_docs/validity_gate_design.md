@@ -1,9 +1,25 @@
 # Validity Gate — Component Design (축 ①)
 
-상태: **구현 실측 기준 (2026-08-19).** 본 문서의 source of truth는 현재
-구현(`alphasearchbench/validity/`, `runner.py`)과 config이며, 모든 인용은
-실측이다. `ASB_design.md` §6이 framework-level overview를 제공하고, 본
-문서는 Validity Gate의 **component-level implementation design**을 기술한다.
+상태: **2층 문서 (2026-08-21 개정).** 본 문서는 **현행 동작(current
+behavior)** 과 **target contract**를 함께 담는다 — 이전 판은 "현행 구현이
+source of truth"라고만 선언했으나, 본문에는 이미 미구현 계약(strict
+rejection 사유 전파, 활성 threshold 컬럼 상시 emit, 공통 coverage 규약,
+zero-IC 경로 대칭화)이 섞여 있어 무엇이 규범인지 판별할 수 없었다. 따라서:
+
+* **현행 동작 서술** — 코드·config 실측(`alphasearchbench/validity/`,
+  `runner.py`). 모든 파일:줄 인용은 실측이다.
+* **target contract** — 절 말미의 `Implementation status` annotation으로
+  구분한다. 어휘는 다른 3문서와 동일: **Implemented / Proposed / Not
+  implemented** (+ 값만 미결인 항목은 **Deferred parameter**).
+
+**`ASB_design_v2.md`가 framework 계약 정본이며 축 공통 계약(identity·
+직렬화, split·purge, undefined 규약, placeholder·reason taxonomy, pool
+객체, 판독 단위, evidence class)의 owner다** — 본 문서는 그 소비자이며
+Validity Gate의 **component-level design**을 기술한다.
+
+> **인용 규약**: 구 `ASB_design.md`(v1)는 폐기 문서이므로 **`[v1-hist]`
+> = historical implementation evidence**로만 인용한다(계약 참조는 v2).
+
 후속 심화 문서: OOS Test, QD Test (동일 양식).
 
 ---
@@ -30,7 +46,7 @@ formula는 **다운스트림의 실제 metric computation 대상에서 제외**�
 
 | 용어 | 의미 |
 |---|---|
-| Validity Gate (축 ①) | 공식 명칭. 일부 대화·외부 문서의 "Pool Validation Test"는 **역사적 별칭**이며 범위를 오해시킬 수 있다 — 본 게이트는 **factor-level 전용**이고, pool-level admissibility(`no_active_components` placeholder·active component set·pool_id)는 `oos_test_design.md` §6 소관이다 |
+| Validity Gate (축 ①) | 공식 명칭. 일부 대화·외부 문서의 "Pool Validation Test"는 **역사적 별칭**이며 범위를 오해시킬 수 있다 — 본 게이트는 **factor-level 전용**이고, pool-level admissibility(pool placeholder·active component set·`factor_set_id`/`pool_id`)의 **공통 계약은 `ASB_design_v2.md` §3.5–3.6**이고 OOS 축 적용은 `oos_test_design.md` §6이다 |
 | hard invalid | canonical downstream evaluation에 필요한 최소 계산 조건을 충족하지 못한 상태(신호 생성 실패·유효 셀 부재·상관 정의 불가·orientation 재료 부재) — 코드 고정, `validity.mode`와 무관하게 제외 |
 | research threshold | signal validity 통계에 적용되는 configurable research criterion. **hard validity와 독립적으로 평가·기록**되며(hard-invalid formula도 위반을 가질 수 있다), `report_only`에서는 diagnostic, `strict`에서는 admission criterion으로 소비된다 (§3·§5) |
 | `passes_gate` | 다운스트림 진입 최종 판정 = `hard_valid ∧ research_pass` (§3) |
@@ -91,23 +107,48 @@ formula는 **다운스트림의 실제 metric computation 대상에서 제외**�
 3. **Temporal / Orientation context** — 통계 산출 대상인 **evaluation
    split**과, orientation 유도 전용의 **train split**(§6). 두 시간창의
    역할이 다르다. 추가로 **optional upstream `signed_train_IC`**: 마이너
-   결과 테이블이 train IC를 제공하면 ASB는 그 값을 신뢰해 orientation에
-   사용하고(restored=False), 없을 때만 canonical train 재평가로 복원한다
-   (B5 규약, `runner.py:113-128`). **전제(upstream contract)**: 제공값은
-   ASB의 train split·label·sign convention과 호환되어야 한다. 이는
-   **method-agnostic canonical evaluation의 예외적 경계**다 — 신호는
-   canonical하게 재계산되지만 orientation은 upstream 제공값이 사용될 수
-   있다.
+   결과 테이블이 train IC를 제공하면 **diagnostic으로 기록**한다.
 
-   **값 유효성 계약 (실측 기준)**: 제공값은 **finite scalar**여야 한다.
-   현행 동작 —
-   * **결측/NaN** → `pd.notna` 검사에서 걸러져 **"미제공"으로 취급**되고
-     canonical 복원 경로로 넘어간다(`runner.py:121`). 즉 NaN upstream
-     값은 정의된 동작을 가진다.
-   * **±Inf / 비수치** → `notna`를 통과해 그대로 사용되며
-     `sign(+∞) = +1`, `sign(−∞) = −1`로 귀결된다. **입력 검증이 없다** —
-     Known limitation(§9)으로 기재하며, 검증 추가는 판정 semantics 변경
-     (breaking change, §9 호환성)이다.
+   **Target contract (Y2 확정 2026-08-21)**: orientation과 admission의
+   기준은 **항상 ASB canonical train 재평가**이며, upstream 제공값은
+   **provenance + parity 진단 전용**이다. 따라서 §2 원칙 4의
+   method-agnostic canonical evaluation에는 **예외 경계가 없다** —
+   신호 계산과 orientation·admission이 모두 canonical이다.
+
+   **Current behavior (deviation)**: 현행 구현은 제공값이 있으면 그 값을
+   신뢰해 orientation에 사용하고(restored=False) 없을 때만 canonical
+   재평가로 복원한다(B5 규약, `runner.py:113-128`) — 이 경로가 남아 있는
+   동안은 orientation·admission이 제출 포맷에 의존한다(§6).
+
+   **`upstream_sic_status` 5값 (Target contract — 정본은
+   `ASB_design_v2.md` §4.4·부록 A.10)**: upstream 값은 **순수
+   diagnostic**이므로 **어떤 상태에서도 canonical admission을 막지
+   않는다**. upstream 값의 형식 때문에 제출이 거부되면 admission이 다시
+   제출 포맷에 종속되어 §6의 일원화 취지가 무너진다.
+
+   | status | 조건 | 처리 |
+   |---|---|---|
+   | `missing` | 미제공 또는 NaN | 진단만 |
+   | `finite_comparable` | finite + 동일 context 판정 통과 | `upstream_sic_delta` 계산 |
+   | `finite_not_comparable` | finite이나 label horizon·universe·mask 불일치 | `parity_comparable = false` + 사유 |
+   | `nonfinite` | ±Inf | 진단만 — **sign으로 귀결시키지 않는다** |
+   | `parse_error` | 비수치 → `float()` 변환 실패 | 명시적 reason으로 기록 — **uncaught 예외 금지** |
+
+   부수 명시 대상: parity tolerance, 동일 context 판정 기준, SIC label
+   horizon, universe·mask 일치 여부, restored/raw 값 구분. hard error는
+   제출자가 "이 값은 ASB canonical context에서 산출됐다"를 보증하는
+   **opt-in strict contract**를 택한 경우에만 허용한다.
+
+   **현행 동작 (Known implementation deviation)**: 현행은
+   `sic = float(row["signed_train_IC"])`(`runner.py:120-122`)이므로 —
+   NaN은 `pd.notna`에서 걸러져 복원 경로로 가고(정의된 동작), **±Inf는
+   검증 없이 `sign(±∞) = ±1`로 귀결**되며, **비수치는 `ValueError`/
+   `TypeError`로 run이 중단**된다(잘못된 sign으로 조용히 귀결되는 것이
+   아니라 **처리되지 않은 예외**이며 `invalid_reason`으로 기록되지
+   않는다).
+
+   *Implementation status: **Proposed** (5-status target 확정, 구현 변경
+   필요 — 판정 semantics 변경이므로 §9 호환성 절차 대상).*
 4. **Validity policy** — `validity.mode`와 research threshold 3종.
 
 **설정 원문** (`configs/default.yaml:41-49`):
@@ -126,6 +167,18 @@ validity:
 |---|---|---|
 | `report_only` (기본) | Reject | **Diagnostic only** (기록만, 제외 없음) |
 | `strict` | Reject | Reject |
+
+**`ASB-P1.0-spec` 확정 (2026-08-21)**: **primary admission은 `report_only`
++ hard-invalid 4종**이며 research threshold는 **diagnostic**이다.
+**`strict`는 폐기하지 않는다** — TRAIN/VALID에서 threshold를 확정한 뒤
+실행하는 **사전등록 supplementary sensitivity panel**로 채택하며, 그 결과가
+primary 순위나 Q4 결론을 번복하게 하지 않는다. threshold **값**은 Deferred
+(v2 §13.1 — 마이닝 값 0.05/30/0.90을 복사하지 않고 TRAIN/VALID에서 확인).
+
+> **용어 경계 (중요)**: `validity.mode = strict`(admission 정책)를
+> TRAIN/VALID에서 calibration·sensitivity 검증하는 것은 **허용**된다.
+> 금지 대상은 **test split outcome과 `strict_untouched` report-window
+> outcome의 실행·열람**이다(v2 §13.2) — 두 "strict"를 혼동하지 않는다.
 
 정확한 구현 semantics는 다음과 같다. threshold 검사와 `research_fail_*`
 기록은 **`ValidityGate.assess`에 진입한 경우 mode와 무관하게 항상
@@ -150,14 +203,58 @@ research_pass 구성에 반영하지 않는다"가 정확한 서술이다.
 `"test"`, `runner.py:131`), train split은 §6의 orientation 유도에만 쓰인다.
 어떤 실험이 어떤 split을 쓰는지는 각 실험 설계 문서의 소관이다.
 
+**Split-local 판정 (계약 — `ASB_design_v2.md` §3.5.2)**: validity는
+**평가하는 split마다 독립적으로 판정**한다. 목표 구조에서 OOS는 valid·test
+두 primitive를 실행하고(oos §7) QD는 VALID에서 calibration을 freeze하므로
+(qd §2.4), 단일 gate를 양쪽에 재사용하면 두 방향 모두 문제가 된다 —
+TEST gate 고정은 VALID calibration을 TEST computability에 종속시키고
+(성능 기반 선택은 아니지만 TEST-dependent population selection),
+VALID gate 고정은 TEST에서 계산 불가한 factor를 downstream에 들여보낸다.
+
+| 소비 단계 | 사용하는 gate |
+|---|---|
+| OOS VALID primitive · QD reference/edge/\(\tau_q\) calibration · Search-QD | **VALID** validity |
+| OOS TEST primitive · Final-Pool QD (TEST) · Backtest (TEST) | **TEST** validity |
+| OOS transition | VALID·TEST 양쪽 판정을 **모두 보존**(`TransitionValid`) |
+
+**행 identity (계약)**: `validity_factor_metrics` 행의 논리적 key는
+
+```
+PK = submission_id × evaluation_context_id × split × evaluation_key
+```
+
+* **`evaluation_key`를 쓰는 이유**: canonicalize 불가 후보는 `formula_id`가
+  없으므로(`ASB_design_v2.md` §3.1.2) `formula_id`를 key로 쓰면 **모든 실패
+  행이 하나의 key로 충돌**한다. `evaluation_key`는 성공 시 `formula_id`,
+  실패 시 `raw_failure_key`이므로 실패 행도 유일해진다.
+* **`submission_id`를 포함하는 이유**: `(method, seed, split)` 라벨만으로는
+  실험 문맥과 제출 artifact가 식별되지 않는다.
+* `sic_source` 같은 경로 구분을 key에 넣을 필요는 **없다** — §6의 canonical
+  일원화로 동일 key가 서로 다른 판정을 갖는 채널이 제거됐다.
+* 두 split의 gate 통과 집합이 다를 수 있으므로 `n_gate_only_valid` /
+  `n_gate_only_test` / `n_gate_both`를 진단으로 보고한다.
+
+**`validity_protocol_version`과 evaluation context (계약 — v2 §3.1.6·§3.2)**:
+본 게이트의 판정 semantics(hard reason 집합·15키 통계 정의·비교 술어)는
+**`validity_protocol_version`** 이 지배하며, 이 버전과 **정규화된 설정값**
+(`mode`, 활성 threshold key/value)은 **`evaluation_context_id` payload의
+구성요소**다. protocol version만 담고 설정값을 빼면 같은 version 아래에서
+`report_only`+null과 `strict`+값 실행이 같은 context id를 받아, metric
+kernel이 같아도 admission population·placeholder·transition validity가 달라
+QD reference와 method 비교 문맥이 조용히 충돌한다. 비활성(`null`)
+threshold는 **key를 생략**한다(v2 부록 A.0-5·A.6).
+
+— *Implementation status: Proposed (split-local 판정·row identity·context
+payload 전부 구현 변경 필요 — 현행은 `split="test"` 단일 호출)*
+
 **Eligibility가 평가 split에서 결정되는 것의 함의 (명시).** 기본 설정
 (`split="test"`)에서는 게이트 통계가 **동결 평가 구간에서 계산**되고,
 §9에 따라 탈락 factor는 downstream에서 제외되므로 **평가 모집단이 평가
 구간 데이터에 의존**한다. 이는 §6이 차단하는 orientation selection
 leakage와는 다른 채널이다 — 성능이 아니라 *계산 가능성*만으로 제외하므로
 방향·가중 최적화 누출은 아니지만, "어떤 factor가 평가되었는가"가 평가
-구간에 의존한다는 사실은 남는다. `ASB_design.md` §4.3이 같은 사실을 ⚠로
-기재한다. 대안(train에서 게이팅)은 평가 구간에서 계산 불가능한 factor를
+구간에 의존한다는 사실은 남는다(구 `ASB_design.md` §4.3 [v1-hist]도 같은
+사실을 ⚠로 기재했고, v2 §3.5.2가 이를 split-local 계약으로 정리한다). 대안(train에서 게이팅)은 평가 구간에서 계산 불가능한 factor를
 받아들여 metric NaN을 양산하므로 현행 선택이 의도적이며, 한계로 §9에
 등재한다.
 
@@ -198,14 +295,19 @@ hard_valid이면 `train_sign` 시도 — **upstream `signed_train_IC`가 있으�
 
 ## 5. Validity Criteria and Edge Semantics
 
-**Hard invalid 4종** (코드 고정, mode 무관):
+**Hard invalid 4종** (코드 고정, mode 무관). 이와 **별개 층위**로,
+canonical renderer가 실패해 stable identity를 부여할 수 없는 상태는
+**`identity_canonicalization_failed`**(v2 §3.1 ①·§3.5.3)이며
+`formula_eval_failed`로 분류하지 않는다 — 신호 계산 실패가 아니라 identity
+부여 실패이고 조치가 다르다(renderer 확장 vs 입력 수정).
+*Implementation status: Not implemented (canonical renderer 부재).*
 
 | 사유 | 조건 | 판정 위치 |
 |---|---|---|
 | `formula_eval_failed:<reason>` | 파서·엔진 예외 | `SignalContext.evaluate` (엔진 계층) |
 | `all_nonfinite` | `n_valid_cells == 0` | `assess` (`evaluator.py:90-91`) |
 | `no_correlatable_day` | `n_correlatable_days == 0` | `assess` (`evaluator.py:92-93`) |
-| `zero_ic_observations` | train 분할 label 겹침에서 유효 일별 IC 관측 0. ⚠ **canonical 복원 경로에서만 발동** — upstream `signed_train_IC` 제공 시 우회된다(§6) | `train_sign` 이후 격하 (§6) |
+| `zero_ic_observations` | train 분할 label 겹침에서 **관측 가능한 일별 IC 날짜 수가 0**. ⚠ 이는 "Mean IC = 0"이 **아니다** — 관측 자체가 없다는 뜻이다. 적용 범위는 **canonical 일원화로 경로 무관**(§6; 현행 구현은 복원 경로에서만 발동하는 deviation) | `train_sign` 이후 격하 (§6) |
 
 `formula_eval_failed`의 하위 reason은 크게 2범주다:
 
@@ -252,14 +354,18 @@ pass                ≡ ¬위반            # NaN 관측 포함
 비활성. 15키 진단 통계(§7) 중 이 3키만 임계 비교에 쓰이고 나머지는 보고
 전용이다.
 
-**Known documentation discrepancy (축 간)**: 위 표의
-`mean_daily_coverage_ratio`는 **universe 0인 날을 0으로 처리**하는데,
-`oos_test_design.md` §5.5는 동일 상황의 coverage를 **NaN**으로
-규정(undefined ≠ zero)하고 이를 ASB 공통 규약으로 제안한다.
-`Known documentation discrepancy: oos_test_design states empty-universe
-coverage = NaN; validity implementation behavior is 0.` — 두 축의 값이
-다른 상태이며, 공통 규약 확정(ASB_design 또는 본 문서)까지 sync 대상으로
-관리한다(§9).
+**Empty-universe coverage (해소 — 공통 target 확정 2026-08-21)**:
+`ASB_design_v2.md` §3.4가 축 공통 target을 **NaN**으로 확정했다
+(undefined ≠ zero). 두 층위를 분리해 읽는다:
+
+| 층위 | 값 |
+|---|---|
+| **Target contract** (v2 §3.4) | \|U_t\| = 0 → coverage(t) = **NaN**. 집계는 **finite-day mean**이며 제외 일수를 **`n_empty_universe_days`로 병기**한다(NaN을 0으로 치환하거나 전체 거래일을 분모로 삼는 것 금지) |
+| **현행 동작** (Known implementation deviation) | `mean_daily_coverage_ratio`는 **universe 0인 날을 0으로 집계**하고 분모는 split의 전체 거래일이다 → 공백일이 많은 구간에서 하향 편향 |
+
+구현 변경은 **판정 semantics 변경 = breaking change**이므로 §9 호환성
+절차(버전 명기 + 기존 `validity_factor_metrics` 재평가)를 따른다.
+— *Implementation status: Proposed (target은 확정, 구현 변경 미착수)*
 
 **Finite semantics.**
 
@@ -314,25 +420,26 @@ hard_valid ─────────────┤
 (trajectory 전용 후보 등) train split 재평가로 복원(restored=True, B5 규약)
 — `ctx.signed_ic_on_train`. `sign = +1 if signed_train_IC ≥ 0 else −1`.
 
-**`zero_ic_observations`의 적용 범위 (실측 — 중요)**: 위 ①은
-`signed_ic_on_train`을 **호출하지 않고 즉시 반환**하므로
-(`runner.py:121-123`), `zero_ic_observations` hard 검사는 **② canonical
-복원 경로에서만 발동**한다. 결과적 비대칭:
+**`zero_ic_observations`의 적용 범위 — canonical 일원화 (확정
+2026-08-21, 사용자 결정)**:
 
-| 입력 | train IC 정의 불가 factor의 판정 |
+| 층 | 규약 |
 |---|---|
-| upstream `signed_train_IC` 제공 | 검사 없음 → **hard invalid 아님** → downstream 진입 |
-| 미제공(복원 경로) | `zero_ic_observations` → **hard invalid** → 제외 |
+| **Target contract** | orientation과 admission의 기준은 **항상 ASB canonical train 재평가**다. 따라서 `zero_ic_observations`는 **제출 포맷과 무관하게 항상 적용**된다. upstream `signed_train_IC`는 **provenance + parity 진단 전용**이며 판정에 관여하지 않는다 |
+| **현행 동작** (Known implementation deviation) | 위 ①이 `signed_ic_on_train`을 **호출하지 않고 즉시 반환**하므로(`runner.py:121-123`) hard 검사가 **복원 경로에서만 발동**한다 → 동일 (formula, context, split)이 **제출 포맷에 따라 다른 admission 판정**을 받는다 |
 
-즉 §2.4의 method-agnostic canonical evaluation은 **신호 계산에는
-적용되지만 이 hard 판정에는 완전히 적용되지 않는다** — §3이 밝힌
-"upstream sic = canonical evaluation의 예외적 경계"가 orientation 값에
-그치지 않고 **admission 판정까지 미친다**는 뜻이다. 방법별 valid rate
-비교 시 이 채널을 반드시 통제해야 하며(§9), 두 경로를 일치시키는
-정책(upstream sic 사용 시에도 canonical zero-IC 가능성만 별도 검사)은
-판정 semantics 변경 = **breaking change**이므로 §9 호환성 규약에 따라
-버전 명기와 기존 결과 재평가가 선행되어야 한다 — 현재는 미채택
-결정 대기 항목이다.
+**왜 일원화했는가**: 현행 비대칭은 §2의 원칙 4(method-agnostic canonical
+evaluation)가 **신호 계산에는 적용되지만 admission 판정에는 적용되지
+않는다**는 뜻이고, 그 결과 validity 행의 identity가 제출 포맷에 의존한다.
+방법별 valid rate 비교가 "방법의 성질"이 아니라 "제출 포맷의 차이"를
+반영하게 되므로 벤치마크 목적과 충돌한다.
+
+**변경 절차**: 판정 semantics 변경이므로 **breaking change**다 —
+`validity_protocol_version` bump + 기존 `validity_factor_metrics` 재평가가
+선행된다(§9 호환성). 전 factor의 canonical train IC 재계산 비용이 발생하며,
+실행 착수는 사용자 승인 대상이다(`ASB_design_v2.md` §13.2).
+
+*Implementation status: **Proposed** (target 확정, 구현 변경 미착수).*
 
 두 가지 경계를 명확히 한다:
 
@@ -441,9 +548,22 @@ mask를 재구성할 수 있으나 즉답은 불가능하다(완전 재현에 �
 | 단계 | invalid formula 처리 |
 |---|---|
 | **OOS (개별)** | 계산하지 않고 `invalid_reason`이 담긴 **placeholder 행 기록** (`runner.py:161`) |
-| **QD** | **gated-valid formula만 순회** — placeholder 행 없음 (`runner.run_qd`) |
+| **QD** | **gated-valid formula만 순회** — placeholder 행 없음 (`runner.run_qd`). 대신 `n_factors_dropped_by_gate`로 집계 |
 | **Backtest (개별)** | 계산하지 않고 **placeholder 행 기록** (`runner.py:454`) |
-| **pool / combiner 입력** | 게이트 통과 목록만 사용 (`runner.py:177, 198, 467`) |
+| **pool / combiner 입력** | `gate_pass_components`만 사용 (`runner.py:177, 198, 467`) — **`factor_set_id`는 gate 이전 집합이므로 영향받지 않는다**(v2 §3.1.4) |
+
+**pool·submission 층위 (계약 — v2 §3.5.3의 owner 4층)**: 위 표는 factor
+층위만 다룬다. gate 결과가 pool 구성 자체를 불가능하게 만드는 경우는 별도
+owner를 갖는다 —
+
+| 상황 | owner / reason |
+|---|---|
+| gate 통과 candidate가 0개 | **pool** / `empty_pool_after_gate` (pool placeholder 행) |
+| canonicalizable formula가 0개 | **submission** / `empty_factor_set_after_identity` (`submission_evaluation_status` 1행, pool 행 없음) |
+| combiner eligibility 후 Active = ∅ | **pool** / `no_active_components` |
+
+즉 validity는 factor 층위 판정만 소유하고, 그 결과가 상위 층위 상태로
+승격되는 규칙은 v2 §3.5.3이 소유한다.
 
 **방법별 validity rate 비교 원칙.** 방법별 valid 비율은 우선 **평가 대상
 output set의 evaluability**를 나타낸다 — 게이트의 모집단은 마이너가
@@ -474,24 +594,35 @@ research-threshold failure rate를 분리**하고, **hard-invalid 내부는
 1. NaN threshold 관측의 pass 동작(§5) — strict 모드 공식 채택 시 재검토.
 2. 원본 finite mask 미저장(§7) — 사후 분석은 재계산 필요.
 3. strict 모드 실행 이력 부재(§8).
-4. **`zero_ic_observations`의 경로 의존성**(§6) — upstream
-   `signed_train_IC` 제공 시 이 hard 검사가 우회되어 admission 판정이
-   제출 포맷에 의존한다. 두 경로를 일치시키는 정책은 판정 semantics
-   변경(breaking change)이므로 미채택 결정 대기.
+4. **`zero_ic_observations`의 경로 의존성**(§6) — **정책은 canonical
+   일원화로 확정(2026-08-21)**됐고 남은 것은 구현이다. 현행 구현은 upstream
+   제공 시 hard 검사를 우회하므로 admission 판정이 제출 포맷에 의존하는
+   deviation이 남아 있다. 판정 semantics 변경이므로
+   `validity_protocol_version` bump + 기존 결과 재평가가 선행된다.
 5. **Eligibility가 평가 split(기본 `test`)에서 결정된다**(§3) — 평가
    모집단이 평가 구간 데이터에 의존하는 채널. 성능 기반 선택은 아니지만
    설계 선택으로 기재해 둔다.
 6. **`research_fail_*` 조건부 컬럼으로 인한 스키마 가변성**(§7) —
    다중 run 결합 시 비교 가능성 훼손 가능. 권고 정책은 §7.
-7. **축 간 coverage 규약 불일치**(§5 Known documentation discrepancy)
-   — empty-universe day의 coverage가 validity 0 / OOS NaN.
-8. **upstream `signed_train_IC`의 입력 검증 부재**(§3) — ±Inf·비수치가
-   검증 없이 sign으로 귀결된다(NaN은 "미제공"으로 정의된 동작).
+7. **empty-universe coverage의 구현 편차**(§5) — 공통 target은
+   **NaN으로 확정**됐고(v2 §3.4) 현행 구현의 0은 Known implementation
+   deviation이다. 변경은 breaking change 절차 대상.
+8. **upstream `signed_train_IC`의 입력 검증 부재**(§3) — 현행은 **±Inf가
+   검증 없이 `sign(±∞) = ±1`로 귀결**되고 **비수치는 `float()` 변환에서
+   uncaught 예외로 run을 중단**시킨다(NaN은 "미제공"으로 정의된 동작).
+   target contract는 §3의 `upstream_sic_status` 5값이며, 어느 상태에서도
+   admission을 막지 않는다.
 9. **Orientation provenance가 산출 스키마에 없음**(§7) —
    `restored`/`signed_train_IC`/`train_sign` 부재로 §6 경로 분기를
    validity 테이블만으로 감사할 수 없다(OOS 테이블 경유 필요).
 10. **strict research rejection의 사유·전파 계약이 미발효**(§7) —
     계약은 정의됐으나 strict 실행 이력이 없어 검증되지 않았다.
+11. **split-local 판정·row identity·context payload 미구현**(§3) —
+    현행은 `run_validity(split="test")` 단일 호출이며 행 key에
+    `formula_id`·`evaluation_context_id`가 없다. 목표 계약은 v2 §3.1·
+    §3.5.2.
+12. *(#8로 통합됨 — upstream 값 검증 부재는 ±Inf와 비수치를 함께 다루므로
+    항목을 나누지 않는다.)*
 
 **호환성.** 판정 semantics(hard 4종과 그 적용 경로, 비교 술어
 `위반 ≡ observed < th`(§5 정본), 15키 통계 정의, 산출 스키마)의 변경은

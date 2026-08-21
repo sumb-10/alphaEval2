@@ -1,0 +1,238 @@
+{
+  "decisions": {
+    "R_rule": {
+      "candidates": [
+        50,
+        100,
+        200,
+        500,
+        1000
+      ],
+      "criterion": "95% 이상의 primary unit 이 두 조건을 모두 충족하는 최소 R",
+      "failure": "R=1000 까지 실패 시 자동 채택 금지, rarefaction_mc_not_converged 로 중단",
+      "mcse": "s_draw / sqrt(R)",
+      "nested_common_prng_stream": true,
+      "prohibited": "R 을 method 순위·Q4 유의성에 맞춰 선택",
+      "tolerance_coverage": "MCSE <= max(0.05 * between_unit_VALID_SD, 0.005)",
+      "tolerance_median_sharpe": "MCSE <= max(0.05 * between_unit_VALID_SD, 0.05)"
+    },
+    "approvals": {
+      "gp_ld_bounds": "Vanilla GP v2 의 별도 freeze 항목 — ASB 계약 freeze 와 분리",
+      "items": [
+        "C-0 split 배선",
+        "Primary Full/Strict 이중 집계",
+        "coverage empty-universe -> NaN",
+        "validity_protocol_version bump",
+        "Y2 canonical train IC 일원화",
+        "orientation provenance 필드",
+        "backtest_rarefaction_profile_metrics 신설",
+        "QD<->BT rarefaction profile draw_id 1:1 join",
+        "identity/JCS/failure-state/PK uniqueness/daily slicing parity 인프라"
+      ],
+      "prohibited_until_frozen_test_gate": "test split outcome 및 strict_untouched report-window outcome 의 실행·열람",
+      "reevaluation_order": "coverage·Y2 변경 후 재평가는 development/TRAIN/VALID 먼저 + 비용·gate flip·method 별 valid rate·SIC parity 보고. TEST 재평가는 별도 승인",
+      "scope": "코드 구현 + synthetic/development/TRAIN/VALID 실행까지"
+    },
+    "bootstrap": {
+      "B_boot": 10000,
+      "confidence_level": 0.95,
+      "method": "percentile",
+      "prohibited": "primary_full 과 strict_untouched 의 혼합, rarefaction draw·deployment cell 을 unit 으로 사용",
+      "resampling_unit": "evaluation unit"
+    },
+    "eligibility_frame": {
+      "eligibility_protocol_versions": [
+        "validity",
+        "behavior"
+      ],
+      "q4_matched_frame_stages": [
+        "gate_pass",
+        "behavior_eligible"
+      ],
+      "quality_excluded": "quality version·tau_q 는 random membership 을 결정하지 않으므로 analysis_frame_id 에서 제외. commitment 는 qd_metric_id·quality_reference_id"
+    },
+    "freeze_procedure": {
+      "gp_doc": "Vanilla_GP_v2.md 전체는 freeze 집합에서 제외, provenance_dependencies 로만 기록",
+      "id_backreference": "prohibited (순환 방지)",
+      "order": [
+        "문서 최종 편집",
+        "frozen 집합 SHA-256",
+        "manifest 작성",
+        "protocol_freeze_manifest_id 계산",
+        "ID 는 외부 decision log + 비규범 pointer 파일에만 기재",
+        "frozen 문서 수정 금지"
+      ],
+      "pointer_file": "ASB-P1.0-spec.freeze.pointer.json (hash 대상 제외)"
+    },
+    "hq_threshold": {
+      "absolute": "primary 아님 — 사전등록 supplementary sensitivity 시 별도 ID",
+      "applied": "공통 fixed-external reference 의 VALID quality 분포에서 tau_q 실현, 전 method 동일",
+      "prohibited": "method 별 quantile, TEST 재산출",
+      "threshold_rule": {
+        "kind": "quantile",
+        "method": "linear",
+        "q": 0.8
+      }
+    },
+    "k_star_rule": {
+      "U_primary": "registry instance 의 planned slot 전원",
+      "below_floor": "not_evaluable_common_support (TEST 후 full_pool 전환 금지)",
+      "common_support_floor": "k_min_Q4 = 2 * max(K_B, K_T)",
+      "formula": "k* = min over U_primary of n_behavior_eligible_VALID",
+      "inclusion_outcome_condition": "prohibited (등재 조건에 실행 결과를 넣는 것도 사후 제외와 동일 위반)",
+      "post_hoc_exclusion": "prohibited",
+      "test_shortfall": "k 축소 금지, NaN + insufficient_behavior_eligible_for_k"
+    },
+    "lookahead": {
+      "cap_is_not_purge_width": "실제 purge·terminal buffer 는 config 별 realization date 를 거래일 캘린더로 계산",
+      "max_lookahead_cap_trading_days": 20,
+      "over_cap": "config 거부. 연장은 protocol version bump"
+    },
+    "primary_unit_registry": {
+      "already_executed_submissions": "launcher manifest / job ledger 의 전체 슬롯 등재. 복원 불가한 과거 run 은 primary 사용 불가",
+      "exempt": "공통 인프라의 synthetic / development fixture 만",
+      "failed_slot_deletion": "prohibited",
+      "inclusion_conditions_must_not_include_execution_outcome": true,
+      "instance_hash_required_before": "official_mining_or_evaluation_campaign_first_execution",
+      "instance_identity_required_references": [
+        "protocol_freeze_manifest_id",
+        "c0_split_contract_content_hash"
+      ],
+      "instance_identity_self_reference": "excluded",
+      "ledger": "primary_unit_resolution_ledger.schema.json (append-only tagged union: attempt_record / terminal_resolution_record)",
+      "nature": "성공한 evaluation unit 목록이 아니라 실행하기로 사전등록한 planned slot 목록",
+      "planned_unit_key": [
+        "method_id",
+        "mining_seed",
+        "universe_id",
+        "mining_config_id",
+        "evaluation_context_id",
+        "report_window_id"
+      ],
+      "terminal_states": [
+        "resolved_unit",
+        "empty_factor_set",
+        "identity_failure",
+        "mining_failure",
+        "evaluation_failure",
+        "not_executed_protocol_violation"
+      ]
+    },
+    "prng_and_seeds": {
+      "bootstrap_seed": "low53(SHA256(JCS([spec_version,'bootstrap',q4_analysis_spec_id])))",
+      "draw_seed": "low53(SHA256(JCS([spec_version,'draw',analysis_frame_id])))",
+      "low53": "int.from_bytes(digest[:8],'big',signed=False) & ((1<<53)-1)",
+      "mining_seed": "ASB 가 파생하지 않는 사전등록 실험 입력",
+      "pfs_seed": "low53(SHA256(JCS([spec_version,'pfs',evaluation_context_id,formula_id])))",
+      "pin": "구현체와 bit-generator version 을 manifest 에 기록",
+      "prng_algorithm": "PCG64",
+      "replicate_index": "seed 에 섞지 않고 draw_id 의 별도 필드로 유지"
+    },
+    "q4": {
+      "descriptor_pair": "B x T_common",
+      "draw_aggregation": "mean_within_evaluation_unit",
+      "draw_independence": "R draw 는 독립 표본·bootstrap unit 이 아니며 draw 간 SD·MCSE 는 Monte-Carlo 진단 전용",
+      "estimand": "matched random-k (quality top-k 아님)",
+      "evaluation_unit": "submission_id x evaluation_context_id x report_window_id x factor_set_id",
+      "full_pool_placement": "as-submitted 기본 보고 / Q4 supplementary robustness / 크기 민감도. confirmatory primary 병기 금지",
+      "primary_report_window": "primary_full",
+      "profile_metric_id": "median_sharpe",
+      "q4_estimand_status": "selected_k",
+      "qd_metric": "coverage",
+      "resolved_hash_binding": "grid_id·qd_metric_id 의 실현 hash 는 VALID 이후 결합. VALID 결과를 본 뒤 pair·metric 종류 변경 금지",
+      "selection_mechanism": "random_without_replacement"
+    },
+    "q4_primary_precondition": {
+      "otherwise": "q4_primary_not_evaluable_incomplete_registry",
+      "prohibited": "실패 슬롯을 제외한 complete cases 만으로 Q4 primary 계산",
+      "requires": [
+        "모든 planned slot 의 terminal_state == resolved_unit",
+        "k_star >= k_min_Q4"
+      ]
+    },
+    "reference_population": {
+      "corpus_fixing": "VALID calibration 개시 전에 reference_preimage_artifact + content hash 고정",
+      "min_sample_shortfall": "pooled fallback 금지, calibration failure",
+      "policy": "fixed_external",
+      "pooled_benchmark_in_primary": "prohibited"
+    },
+    "resolution_policy": {
+      "failed_unit_deletion": "prohibited",
+      "max_attempt_count": 4,
+      "max_retry_count": 3,
+      "next_seed_substitution": "prohibited",
+      "oom_deterministic": "사전등록 resource envelope 에서 재현되는 OOM → method/evaluation failure",
+      "oom_operational": "일시적 노드 장애 또는 동등 resource profile 의 비정상 종료",
+      "oom_protocol_change": "메모리·config 를 늘려 성공시키는 것은 동일 retry 가 아니라 protocol 변경",
+      "operational_failure": "동일 planned slot · 동일 seed · 동일 config · 동일 data hash · 동일 resource profile 로 최대 3회 재실행 (다른 정상 노드에서의 동일 실행 허용, 모든 attempt append-only 기록)",
+      "seed_change_failure": "재시도 대상이 아니라 방법의 실패",
+      "success_only_analysis": "supplementary 로만 보고",
+      "terminal_after_exhaustion": "재현 가능한 알고리즘 실패 / empty factor set / identity failure / 3회 후 미해소 → 원 slot 의 최종 failure outcome"
+    },
+    "strict": {
+      "primary_admission": "validity.mode=report_only + hard-invalid 4종",
+      "prohibited": "strict 결과가 primary 순위·Q4 결론을 번복",
+      "research_thresholds": "diagnostic",
+      "strict_role": "TRAIN/VALID 에서 threshold 확정 후 실행하는 사전등록 supplementary sensitivity panel",
+      "terminology": "validity.mode=strict 의 TRAIN/VALID calibration 은 허용. 금지 대상은 test split outcome 및 strict_untouched report-window outcome 의 실행·열람"
+    },
+    "strict_evidence_class": {
+      "assigned_at_manifest_preparation": "protocol_held_out",
+      "first_strict_evaluation_at_manifest_preparation": null,
+      "held_out_does_not_transition_on_evaluation": "ratification 이후 최초 정식 평가는 정상적인 held-out 평가이며 evidence_class 는 protocol_held_out 으로 유지된다. access_status 만 unaccessed -> evaluated 로 바뀌고 first_strict_evaluation_at 은 append-only access log 에 기록된다",
+      "invalidation_rule": "사후에 선행 열람 사실이 발견되면 protocol_held_out 판정은 invalidated 되고 retrospective_subset 으로 정정",
+      "post_ratification_access_record_source": "append_only_access_log",
+      "retrospective_subset_applies_only_if": [
+        "ratification 전에 결과를 실행·열람한 사실이 확인됨",
+        "결과를 본 뒤 strict window 또는 분석 규칙을 선택함"
+      ],
+      "strict_outcome_accessed_before_ratification_attestation": false,
+      "temporal_confirmation_prohibited": true
+    },
+    "temporal_audit": {
+      "correction": "run_manifest payload 만으로는 소급 수정이 방지되지 않는다 — 불변성은 1층 외부 고정과 3층 append-only 에서 나온다",
+      "layers": [
+        "protocol_freeze_manifest_id (immutable, 외부 decision log)",
+        "run_manifest_id (1층 참조 + registry_id + bundle·실행 시점)",
+        "append-only hash-chained access log (결과 최초 열람)"
+      ],
+      "protocol_frozen_at_source": "external_decision_log.protocol_ratified_at"
+    },
+    "version_ladder": {
+      "rc": "ASB-P1.0-rc1",
+      "release": "ASB-P1.0",
+      "rule": "rc1 과 동일 hash 로 TEST 1회 실행 시에만 ASB-P1.0 으로 승격. TEST 후 규범·파라미터·코드 변경 시 기존 결과는 development evidence 로 격하",
+      "spec": "ASB-P1.0-spec"
+    }
+  },
+  "documents": {
+    "docs/QD_Descriptors_v2.md": "532a1f48d92a305f829750bdef631b6d74c1375d21bed1d0dee06a9012e52ff5",
+    "docs/research_docs/ASB_design_v2.md": "e212e1a881789086504a75769b215f74e6e1453ea2ceda23747ead832c919d9e",
+    "docs/research_docs/backtest_design.md": "f2ee68ba764509c7c0b8945b1f65d067ad42d4926f12051b37fd5e4ed3478cdc",
+    "docs/research_docs/c0_split_contract.json": "e2379766eda71b1e728d539446d5abf2d5a5b27c21b095c6c56c7fe22cc41b4b",
+    "docs/research_docs/oos_test_design.md": "e959b3b26c03b46dcdc8715862e7fb36165de2c2dfd03ec27c1dc766c1ed29c4",
+    "docs/research_docs/primary_evaluation_unit_registry.json": "2644468a36b6e433e39f82e0afbd505f3baa7f6ea9be945c1a346449573d3d4b",
+    "docs/research_docs/primary_unit_resolution_ledger.schema.json": "6403fa8f6ead86dd2b1a45999fe7aef4832f2ce81661ebf976af90af614accde",
+    "docs/research_docs/qd_test_design.md": "b9b231b50bb84e81e59d5adb746eecba37ec1430e544919629030699d1d3f579",
+    "docs/research_docs/validity_gate_design.md": "643bb46c38c481db04881a55adecb1b51859cfeed996fbeabaab607368ff50d8"
+  },
+  "manifest_prepared_at": "2026-08-21T05:07:31Z",
+  "protocol_freeze_manifest_schema_version": "2.0.0",
+  "provenance_dependencies": {
+    "docs/research_docs/Vanilla_GP_v2.md": "ffca9f89d902e5451c7db54483fe4cacd0ddef86e802edb640e47120c53c9a31"
+  },
+  "ratification": {
+    "effective_time_source": "external_decision_log",
+    "note": "manifest 는 외부 ratification 이후에도 수정하지 않는다. 실제 효력 시각은 외부 decision log 와 비규범 pointer 가 참조한다.",
+    "protocol_frozen_at_definition": "external_decision_log.protocol_ratified_at",
+    "protocol_ratified_at": null,
+    "status_at_manifest_preparation": "prepared_not_ratified"
+  },
+  "source_revision": "cfccc06b03911bc452076cc34d36a9bd23497d66",
+  "spec_version": "ASB-P1.0-spec",
+  "supersedes": {
+    "archived_as": "docs/research_docs/ASB-P1.0-spec.freeze.superseded-4376b108.json",
+    "protocol_freeze_manifest_id": "4376b108bd45d5744ee7081b26c829c089af81d30a40c48817780508534e3043",
+    "reason": "P0 4건(registry survivorship · registry 고정 시점 · identity commitment 공백 · freeze/ratification 시각 혼용) 및 보정 3건(held-out 비전이 · ratification snapshot · ledger tagged union) 반영. 구 manifest 는 외부 ratification 전이었으므로 효력을 얻지 않았다."
+  }
+}

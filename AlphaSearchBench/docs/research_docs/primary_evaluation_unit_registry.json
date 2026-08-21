@@ -1,0 +1,110 @@
+{
+  "primary_evaluation_unit_registry_schema_version": "2.0.0",
+  "purpose": "Q4 primary 분석에 투입되는 planned evaluation slot 집합을 사전 고정한다. 이것은 성공한 evaluation unit 목록이 아니라 실행하기로 사전등록한 슬롯 목록이다 — 빈 factor set·identity 실패·mining 실패를 등재 자체에서 배제하면 '등록 후 제거 금지' 규율이 우회되기 때문이다(사후 생존자 선택 차단).",
+  "schema_change_note": "v1.0.0 의 inclusion condition 'factor_set_id 가 non-empty (n_unique_factors > 0)' 는 survivorship 경로였으므로 제거됐다.",
+
+  "planned_unit_key": {
+    "fields": ["method_id", "mining_seed", "universe_id", "mining_config_id",
+               "evaluation_context_id", "report_window_id"],
+    "uniqueness": "planned_unit_key",
+    "canonical_order": "위 6필드 튜플의 사전순(문자열 비교; mining_seed 는 10진 문자열로 정규화)"
+  },
+
+  "instance_status": "pending_campaign_registration",
+  "planned_units": [],
+
+  "inclusion_rule": {
+    "rule_id": "asb-p1.0-spec.primary-units.v2",
+    "deterministic": true,
+    "conditions": [
+      "method category == \"mined\"  (static_reference 는 primary 에서 제외하고 supplementary anchor 로만 사용)",
+      "evaluation_context_id 가 c0_split_contract.json 의 splits 와 일치",
+      "report_window_id.label == \"primary_full\"",
+      "planned slot 이 campaign 최초 실행 전에 registry instance 에 등재됨"
+    ],
+    "explicitly_not_a_condition": [
+      "factor_set_id 의 non-empty 여부",
+      "mining 성공 여부",
+      "identity 부여 성공 여부",
+      "evaluation 성공 여부"
+    ],
+    "rationale": "위 4항은 실행 결과이므로 등재 조건이 될 수 없다. 등재 조건으로 쓰면 실패 슬롯이 population 에서 사라져 k* 가 생존자 기준으로 커진다."
+  },
+
+  "resolution_states": {
+    "terminal_states": ["resolved_unit", "empty_factor_set", "identity_failure",
+                        "mining_failure", "evaluation_failure",
+                        "not_executed_protocol_violation"],
+    "cardinality": "planned slot 당 terminal state 정확히 1개",
+    "resolved_unit_binding": "정확히 하나의 (submission_id, factor_set_id) 로 resolve",
+    "ledger": "primary_unit_resolution_ledger.schema.json (append-only, tagged union)",
+    "deletion": "prohibited — 실패 슬롯도 registry·ledger 에서 삭제하지 않는다"
+  },
+
+  "resolution_policy": {
+    "operational_failure": {
+      "definition": "일시적 노드 장애·I/O 오류 등 환경 문제",
+      "action": "동일 planned slot · 동일 seed · 동일 config · 동일 data hash · 동일 resource profile 로 재실행",
+      "other_node_allowed": true,
+      "max_retry_count": 3,
+      "max_attempt_count": 4,
+      "logging": "모든 attempt 를 append-only ledger 에 기록"
+    },
+    "deterministic_failure": {
+      "definition": "seed 를 바꿔야만 해결되는 실패는 재시도 대상이 아니라 방법의 실패다",
+      "action": "원 slot 의 최종 failure outcome 으로 남긴다"
+    },
+    "next_seed_substitution": "prohibited",
+    "failed_unit_deletion": "prohibited",
+    "terminal_after_exhaustion": "재현 가능한 알고리즘 실패 / empty factor set / identity failure / 3회 후 미해소 → 원 slot 의 최종 failure outcome",
+    "success_only_analysis": "supplementary 로만 보고",
+    "oom_classification": {
+      "operational": "일시적 노드 장애 또는 동등 resource profile 의 비정상 종료",
+      "deterministic": "사전등록 resource envelope 에서 재현되는 OOM → method/evaluation failure",
+      "protocol_change": "메모리·config 를 늘려 성공시키는 것은 동일 retry 가 아니라 protocol 변경이다"
+    }
+  },
+
+  "q4_primary_precondition": {
+    "requires": [
+      "모든 planned slot 의 terminal_state == resolved_unit",
+      "common support 조건 충족 (k_star >= k_min_Q4)"
+    ],
+    "otherwise": "q4_primary_not_evaluable_incomplete_registry",
+    "reporting_obligation": "미해소·실패 슬롯의 비율과 terminal_state 별 분포를 별도 보고",
+    "prohibited": "실패 슬롯을 제외한 complete cases 만으로 조용히 Q4 primary 를 계산하는 것"
+  },
+
+  "k_star_rule": {
+    "formula": "k_star = min over u in U_primary of n_behavior_eligible_VALID(u)",
+    "U_primary": "본 registry instance 의 planned_units 전체 (terminal_state == resolved_unit 인 것에 한해 값이 정의되며, 하나라도 resolved_unit 이 아니면 q4_primary_not_evaluable_incomplete_registry)",
+    "post_hoc_exclusion": "prohibited",
+    "common_support_floor": "k_min_Q4 = 2 * max(K_B, K_T)",
+    "if_below_floor": "not_evaluable_common_support (TEST 결과를 본 뒤 full_pool primary 로 전환 금지)",
+    "test_shortfall_policy": "TEST 에서 n_behavior_eligible < k_star 이면 k 축소 없이 해당 행을 NaN + insufficient_behavior_eligible_for_k 로 기록"
+  },
+
+  "instance_identity": {
+    "primary_evaluation_unit_registry_instance_schema_version": "2.0.0",
+    "serialization": "RFC8785-JCS",
+    "hash": "SHA-256, lowercase hex",
+    "preimage_fields": ["primary_evaluation_unit_registry_instance_schema_version",
+                        "planned_units", "protocol_freeze_manifest_id",
+                        "c0_split_contract_content_hash"],
+    "self_reference": "excluded — primary_evaluation_unit_registry_id 자신은 preimage 에 넣지 않는다",
+    "required_references": {
+      "protocol_freeze_manifest_id": "required",
+      "c0_split_contract_content_hash": "required"
+    },
+    "mutation_after_registration": "addition / deletion / replacement 전부 금지"
+  },
+
+  "immutability": {
+    "instance_hash_required_before": "official_mining_or_evaluation_campaign_first_execution",
+    "exempt": "공통 인프라의 synthetic / development fixture 만 예외",
+    "already_executed_submissions": "임의 선택 금지 — 해당 campaign 의 launcher manifest / job ledger 에 존재하는 전체 슬롯을 등재한다. ledger 를 복원할 수 없는 과거 run 은 primary 로 사용할 수 없고 supplementary 로만 쓴다",
+    "removal_after_count_observation": "prohibited",
+    "additions_after_instance_hash": "prohibited_for_primary (신규 제출물은 다음 protocol version 또는 confirmation run 으로)",
+    "violation_consequence": "Q4 결과는 confirmatory 가 아니라 development evidence 로 격하"
+  }
+}

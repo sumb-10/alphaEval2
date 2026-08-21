@@ -4,9 +4,14 @@
 **normative design specification**이다 — 향후 구현·수정이 따라야 할 계약을
 선언하고, 현행 구현의 충족도는 보조 annotation으로만 기술한다. 코드
 인용(파일:줄)은 현행 충족도의 증거이지 사양의 근거가 아니다.
-`ASB_design.md` §7이 framework-level overview를 제공하고, 본 문서는 OOS
-Test의 component-level specification이다. 선행 문서:
-`validity_gate_design.md` (계약 소유권 참조 관계는 §4).
+**`ASB_design_v2.md`가 framework 계약 정본이며 축 공통 계약(identity·
+직렬화, split·purge, undefined 규약, placeholder·reason taxonomy, pool
+객체 2층, 판독 단위, evidence class)의 owner다** — 본 문서는 그 소비자이며
+OOS 축의 component-level specification이다. 선행 문서:
+`validity_gate_design.md`(orientation 유도 — 축 고유 참조).
+
+> 구 `ASB_design.md`(v1)는 **historical implementation evidence**로만
+> 인용한다 — split·descriptor·identity·orchestration이 폐기됐다(v2 §14.2).
 
 ---
 
@@ -25,7 +30,7 @@ generalization test다. 측정 대상은 포트폴리오 수익률이 아니라 
 
 | 용어 | 의미 |
 |---|---|
-| Framework axis | **OOS Factor Evaluation (축 ②, `ASB_design.md` §7)** — 공식 명칭 |
+| Framework axis | **OOS Factor Evaluation (축 ②, `ASB_design_v2.md` §6)** — 공식 명칭 |
 | Document shorthand | "OOS Test" — 본 문서의 호칭 |
 | primitive | 단일 split에서의 factor/pool OOS 평가 1회 (§3) |
 | transition | valid·test의 **individual factor primitive**를 소비하는 파생 분석 계층 (§7). **Pool transition은 v1 scope-out** — 현행 schema는 factor 키(formula_id) 전용이며 pool까지 담으려면 polymorphic schema(entity_kind + formula_id\|pool_id)가 필요하다 |
@@ -106,12 +111,26 @@ flowchart TD
 * **단일 split primitive**: OOS 평가의 기본 단위는 "한 split에서의 1회
   평가"다. 여러 split의 비교는 primitive를 반복 실행한 뒤 파생
   계층(§7)이 수행한다.
+* **Gate의 split 귀속 (계약 — v2 §3.5.2)**: 각 primitive는 **그 primitive의
+  split에서 판정된 validity**를 소비한다 — `run_oos(valid)`는 VALID gate,
+  `run_oos(test)`는 TEST gate. 어느 한 split의 gate를 양쪽에 재사용하면
+  (TEST gate 고정 → VALID 산출물이 TEST computability에 의존 / VALID gate
+  고정 → TEST에서 계산 불가한 factor가 metric NaN 양산) 둘 다 문제이므로
+  **split-local**이 정본이다. 따라서 validity 행의 논리적 key는
+  **`submission_id × evaluation_context_id × split × evaluation_key`**
+  (정본: `validity_gate_design.md` §3 · v2 §10.2.3)이고, 두 split의 gate 통과
+  집합이 다를 수 있으므로 `n_gate_only_valid`/`n_gate_only_test`/
+  `n_gate_both`를 진단으로 기록한다. transition은 두 split의 validity를
+  모두 보존한 상태에서 `TransitionValid`(§7)로 결합한다.
 
 충족도: 현행 `runner.run_validity/run_oos`(runner.py:131-191 — run_validity :131-153, run_oos :156-191)와
 `SignalContext.evaluate`(signal_context.py:166-178 docstring)가 위 계약과
 일치한다. **status scope**: 본 절의 계약은 primitive pipeline까지다 —
 점선의 transition layer와 pool dedup 상세는 각각 §7·§6 소관이며 그
-절들의 status를 따른다. — *Implementation status: Implemented*
+절들의 status를 따른다. **단 본 절이 추가로 선언한 split-local gate 귀속·
+validity row identity·차집합 진단은 미구현**이므로(현행은
+`split="test"` 단일 호출) 혼합 subsection 규칙에 따라 절 status는
+Proposed다. — *Implementation status: Proposed*
 
 ## 4. Input과 Output
 
@@ -124,10 +143,13 @@ Conceptual input (함수 인자가 아니라 설계상의 입력):
    공통 표현으로 들어온다. "유일 required"는 **컬럼 단위 제약**이며 행
    단위 유일성(같은 formula가 여러 행으로 오는 raw multiplicity)을
    금지하지 않는다 — dedup·multiplicity 규약은 §6·§7.
-2. **Optional upstream `signed_train_IC`** — **계약 소유권: 생산자는
-   validity/loader 측이며 본 문서는 소비자다.** 정의·신뢰/복원 규약·
-   upstream 호환 전제는 `validity_gate_design.md` §3(Temporal/Orientation
-   context)·§6이 규범이고 여기서 재정의하지 않는다(drift 방지).
+2. **Optional upstream `signed_train_IC` — diagnostic 전용 (Y2 확정
+   2026-08-21)**: orientation과 admission의 기준은 **항상 ASB의 canonical
+   train 재평가**이며 upstream 값은 **provenance + parity 진단**으로만
+   쓰인다. 따라서 OOS는 upstream 값을 orientation 입력으로 소비하지 않는다.
+   상태 어휘(`upstream_sic_status` 5값)와 처리 규약은
+   **`ASB_design_v2.md` §4.4**가 정본이고 축 세부는
+   `validity_gate_design.md` §3·§6이다 — 여기서 재정의하지 않는다.
 3. **Provenance** — method, seed 등.
 4. **SignalContext** — market data, PIT universe, train/valid/test split,
    forward labels. split 날짜는 experiment config가 주입한다.
@@ -182,15 +204,42 @@ canonical schema(사양)**.
 
 **Target canonical schema (사양)** — 채택된 계약들(§5.5·§6·§7)의 통합:
 
+**Logical primary key (계약 — 정본은 `ASB_design_v2.md` §10.2)**. dimension
+표기: D1 = `submission_id`, D5 = `evaluation_context_id`, D6 =
+`report_window_id`.
+
+```
+oos_factor_metrics  PK = D1 × D5 × split × D6 × oos_protocol_version
+                         × evaluation_key
+oos_daily           PK = D1 × D5 × split × oos_protocol_version
+                         × entity_kind × entity_id × horizon × date
+oos_pool_metrics    PK = D1 × D5 × split × D6 × oos_protocol_version × pool_id
+```
+
+* **horizon 형식**: `oos_factor_metrics`는 **wide**(`_{h}d` suffix — §5.2)
+  이므로 **horizon을 key에 넣지 않는다**. `oos_daily`·
+  `oos_transition_metrics`는 **long**이므로 horizon이 key다. 두 형식을
+  혼용하거나 wide 테이블에 horizon을 key로 넣으면 breaking change다.
+* **`oos_protocol_version`이 PK에 있는 이유**: 이 버전은 D5 payload에
+  들어가지 않으므로(v2 §3.1.6) key에 없으면 **같은 PK에 서로 다른 pair
+  masking·aggregate semantics의 결과가 들어간다**.
+* **daily에는 D6를 넣지 않는다**: daily panel은 split당 1회 생성되고
+  window는 그 위의 날짜 필터이므로(v2 §3.3.3), D6를 넣으면 Strict 날짜가
+  Full·Strict 아래 중복 저장된다. D6는 **집계 산출물에만** 붙는다.
+* **`evaluation_key`를 쓰는 이유**: `formula_id = null`을 key로 쓰면
+  canonicalization 실패 행이 전부 한 key로 충돌한다(v2 §3.1.2).
+
 * `oos_factor_metrics` — 현행 + **`formula_id`**(stable hash, §7 —
   transition join key를 primitive가 직접 제공; `formula`는 audit field로
-  유지).
-* `oos_daily` —
+  유지) + `evaluation_key`.
+* `oos_daily` — **polymorphic entity key**(factor 행과 pool 행을 한 key로
+  겸할 수 없다):
 
   ```
-  date, kind,                 # individual | pool 행 구분
-  formula_id, formula,        # kind=individual 전용 (pool 행은 null)
-  pool_id,                    # kind=pool 전용 (individual 행은 null)
+  date, entity_kind,          # factor | pool   ← 논리 key 구성요소
+  entity_id,                  # evaluation_key (factor) | pool_id (pool)
+  formula_id, formula,        # entity_kind=factor 전용 (가독용 — pool 행은 null)
+  pool_id,                    # entity_kind=pool 전용 (가독용)
   horizon, IC, RankIC,
   n_universe, n_signal_valid, signal_coverage_ratio,
   n_pair_valid, pair_coverage_ratio,
@@ -199,11 +248,13 @@ canonical schema(사양)**.
 
   **Identity 분리 (계약)**: `formula_id`는 formula 전용 stable
   identity(§7)이므로 pool 행에 재사용하지 않는다 — 현행의
-  "formula_id = pool_id" 관행은 target schema에서 폐기하고 **`pool_id`
-  컬럼을 별도 도입**한다(정의는 §6 Pool identity).
+  "formula_id = pool_id" 관행은 폐기한다. 현행 `kind` 컬럼과 분리 컬럼
+  (`formula_id`/`pool_id`)은 **가독용으로 유지**하되 논리 key는
+  `entity_kind × entity_id`다(제3의 스키마를 만들지 않는다).
 * `oos_pool_metrics` — 현행 + **`valid`, `invalid_reason`**(§6의
-  no_active_components placeholder가 요구 — schema bookkeeping),
-  `pool_id`(§6), `n_factors_raw`,
+  pool-level placeholder가 요구 — schema bookkeeping),
+  `pool_id`·**`factor_set_id`**·**`submission_id`**(§6 — v2 §3.1 ②③),
+  `n_factors_raw`,
   `n_unique_factors`(dedup 후), **`n_active_factors`**(combiner
   eligibility 후 실제 weight ≠ 0인 component 수 — zero-support의 k 집합과
   일치), `duplicate_rate`(§6), **`weight_source`**, `weight_fit_scope`
@@ -214,14 +265,28 @@ canonical schema(사양)**.
   (복수형)가 존재하므로 이는 신규 필드가 아니라 **개명**이다 —
   canonical 이름은 `weight_source`(단수, `weight_fit_scope`와 짝),
   `weights_source`는 **deprecated alias**로 유지하며 두 컬럼을 동시에
-  신설하지 않는다. 값 도메인은 현행(`"input"`/`"equal_default"`)을
-  확장해 external/raw_equal/train_signed_equal 출처를 구분한다(§6).
+  신설하지 않는다. **값 도메인 (canonical enum — 정본은
+  `ASB_design_v2.md` 부록 A.10)**:
+  `raw_equal` | `train_signed_equal` | `external` | `native`.
+  **deprecated 값 매핑**: 현행 `"input"` → `external`,
+  `"equal_default"` → `raw_equal`. 신규 코드는 canonical 값만 쓴다.
 * **`zero_support_ratio`의 저장 위치 (결정)**: 일별 지표이므로 별도
   파일을 신설하지 않고 **`oos_daily`의 pool 행(kind="pool")의 추가
   컬럼**으로 저장한다 — 현행 구조상 pool daily가 이미 같은 테이블에
   있으므로 정합적.
-* `oos_transition_metrics` — §7의 long-form schema
-  (evaluation_context_id·retention_eligible 포함).
+* `oos_transition_metrics` — §7의 long-form schema. PK는 **window pair를
+  포함**한다:
+
+  ```
+  PK = D1 × D5 × oos_protocol_version
+       × source_split × source_window_id
+       × target_split × target_window_id
+       × evaluation_key × horizon
+  ```
+
+  window가 key에 없으면 Full transition과 Strict transition이 충돌한다.
+  VALID은 window가 1개이므로 명시적 ID **`valid_full`** 을 부여한다
+  (v2 부록 A.7).
 
 **Invalid placeholder 행 invariant (계약)** — `passes_gate=False`
 formula는 계산 없이 행으로 기록되며 반드시: `valid = False` ∧ metric
@@ -237,16 +302,25 @@ provenance·transition)는 구현 변경 필요.
 
 ### 5.1 Signal Orientation
 
-* `train_sign = +1 if signed_train_IC ≥ 0 else −1` — **0은 +1로**
-  귀속(경계 규약). `oriented(values, train_sign)`은 ±1 외 입력을
-  거부한다(signal_context.py:222-225).
+* `train_sign = +1 if IC_train ≥ 0 else −1` — **0은 +1로** 귀속(경계
+  규약). `IC_train`은 **ASB canonical train 재평가값**이다(Y2 확정 —
+  upstream 제출값을 쓰지 않는다, `ASB_design_v2.md` §4.4).
+  `oriented(values, train_sign)`은 ±1 외 입력을 거부한다
+  (signal_context.py:222-225).
 * valid/test에서 sign을 재추정하지 않는다 — OOS evaluator는 train_sign을
   **입력으로만** 받으며 평가 데이터로 방향을 추정하는 경로가 존재하지
   않는다(oos/evaluator.py:6-7).
-* `signed_train_IC`의 정의·복원(B5)·upstream 호환 전제는
-  `validity_gate_design.md` §3·§6이 규범(§4.1).
+* upstream `signed_train_IC`의 **diagnostic 지위**와 5-status 어휘는
+  `ASB_design_v2.md` §4.4가 규범이며, 축 세부는
+  `validity_gate_design.md` §3·§6이다(§4.1). **`zero_ic_observations`는
+  경로와 무관하게 항상 적용**된다 — 이전 판의 "upstream 제공 시 우회"는
+  폐기됐다.
 
-— *Implementation status: Implemented*
+충족도 — orientation의 **1회 적용**과 평가 구간 sign 재추정 금지: 구현됨
+(`oos/evaluator.py:6-7`, `signal_context.py:222-225`) / **canonical
+재평가 일원화**(upstream SIC를 orientation 입력으로 쓰지 않음): 현행
+구현은 upstream 값을 사용하므로 **구현 변경 필요**.
+— *Implementation status: Proposed*
 
 ### 5.2 Forward Return과 Multi-Horizon
 
@@ -254,21 +328,33 @@ provenance·transition)는 구현 변경 필요.
   (labels.py:31-35). h = horizon.
 * **Primary/additional**: primary = `horizons[0]` — 컬럼 suffix 없음;
   나머지 h는 `IC_{h}d` 식 suffix(oos/evaluator.py:46).
-* **Post-end 가격 참조 (범위 잠금)**: 평가 구간 마지막 날의 label 계산을
-  위한 t+h 가격 참조는 허용되며 manifest에
-  `label_uses_post_end_price`로 기록된다(manifest.py:55). 단 **post-end
-  관측은 target construction 전용**이다 — signal evaluation,
-  orientation, universe 구성, weight/threshold 결정 어디에도 사용할 수
-  없다.
+* **Post-end 가격 참조 (범위 잠금 — v2 §3.3.2)**: 이 허용은
+  **terminal TEST extension 전용**이다 — 데이터셋 종료 이후 가격을 참조해
+  **이미 고정된 TEST 구간**의 label을 완성하는 경우에만 적용되고,
+  manifest에 `label_uses_post_end_price`로 기록된다(manifest.py:55).
+  **내부 경계(TRAIN→VALID, VALID→TEST)에서는 이 플래그로 post-end 참조를
+  정당화할 수 없다** — 그 경계는 purge 대상이다(그러지 않으면 VALID 마지막
+  h일의 label이 TEST 가격을 쓰고, 그 label로 freeze한 QD τ_q·grid가 TEST를
+  간접 소비한다). 또한 **post-end 관측은 target construction 전용**이다 —
+  signal evaluation, orientation, universe 구성, weight/threshold 결정
+  어디에도 사용할 수 없다. purge 거래일 수·buffer 거래일 수·실제 참조한
+  마지막 날짜는 manifest에 기록한다.
+* **status 주의**: 본 절의 label 정의·primary/additional suffix·enum 공존은
+  구현됐으나 **post-end 범위 잠금(terminal TEST extension 한정)과 purge
+  경계 판정, manifest 기록 의무는 미구현**이다 → 혼합 subsection 규칙에 따라
+  절 status는 Proposed.
 * **OOS label ≠ Backtest execution return.** labels.py에
   `forward_return`(OOS)과 `execution_return`(backtest,
-  same_close/next_open 모드)이 **별도 함수로 공존**한다
+  canonical enum `same_close`/`next_open_oo`/`next_open_oc`/
+  `delayed_close_cc`)이 **별도 함수로 공존**한다
   (`forward_return` :31-35, `execution_return` :38-50). OOS는
   predictive relationship을, Backtest는 tradable execution outcome을
   측정하며, 두 정의를 일치시킬 의무는 설계상 존재하지 않는다 — 이것이
   축 분리의 구체적 표현이다.
 
-— *Implementation status: Implemented*
+충족도 — label 정의·primary/additional suffix·두 함수 공존: 구현됨 /
+post-end 범위 잠금(terminal TEST extension 한정)·purge 경계 판정·manifest
+기록: 구현 변경 필요. — *Implementation status: Proposed*
 
 ### 5.3 Daily IC / RankIC
 
@@ -328,11 +414,12 @@ provenance·transition)는 구현 변경 필요.
   축의 현행 규약(universe 0 → coverage 0,
   `validity_gate_design.md` §5의 threshold 표 실측 기재)과 어긋나므로
   `Known documentation discrepancy`로 기록하고 축 간 sync 대상으로
-  관리한다. **소유권 (문서 관리)**: 축을 넘는 공통 규약이므로 최종
-  선언은 `ASB_design.md`(또는 validity 문서)가 맡아야 하며 — §1의
-  scope 선언과 정합 — 본 절은 OOS 측 요구와 근거를 제시하는 **제안·
-  소비자** 위치다. 두 축이 다른 값을 규정하는 상태는 공통 문서에서
-  단일 값으로 확정될 때까지 미해소로 남는다.
+  관리한다. **소유권 (문서 관리 — 2026-08-21 해소)**: 축을 넘는 공통 규약이므로 최종
+  선언은 **`ASB_design_v2.md` §3.4**가 맡으며, 그 문서가 **coverage =
+  NaN을 공통 target으로 확정**했다(집계 규약 포함: 빈 날은 평균 분모에서
+  제외하고 `n_empty_universe_days` 병기). 본 절은 소비자이며, validity
+  구현의 0은 **Known implementation deviation**으로 남는다(변경은 판정
+  semantics breaking change).
 * **신명명 체계 채택**: `n_universe`, `n_signal_valid`,
   `signal_coverage_ratio`, `n_pair_valid`, `pair_coverage_ratio`. 기존
   `n_valid`/`coverage_ratio`는 backward-compatible alias로 유지한다.
@@ -353,24 +440,40 @@ combined_t = Σₖ wₖ · CSZScore(alpha⁽ᵏ⁾_t). z-score는 일별 cross-s
 **Pool pipeline 순서 (계약)** — 결합의 각 단계는 아래 순서로 고정된다:
 
 ```
-Raw pool components
-→ stable formula_id 부여 (§7)
+제출 components
+→ formula_id 부여 (§7 — 정본은 ASB_design_v2 §3.1.3)
+    └─ canonicalize 실패 → evaluation_key = raw_failure_key,
+                            owner=factor / stage=identity, 집합에서 제외
 → canonical dedup (본 절 duplicate 사양)
-→ [guard] N_unique == 0 ?
-    └─ yes → no_active_components placeholder → pool_id 생성 → STOP
+→ **factor_set_id 생성**            ← split-local gate·combiner 이전
+→ [guard] n_unique_factors == 0 ?
+    └─ yes → submission_evaluation_status(empty_factor_set_after_identity)
+             owner=submission / stage=identity, pool 행 없음 → STOP
+→ split-local gate 적용 → gate_pass_components (해시에 들어가지 않음)
+→ [guard] |gate_pass_components| == 0 ?
+    └─ yes → pool placeholder(empty_pool_after_gate)
+             owner=pool / stage=gate → pool_id 생성 → STOP
 → combiner별 eligibility
     └─ train_signed_equal: directional filtering (|sic| > sign_threshold)
-→ [guard] eligible set == ∅ ?
-    └─ yes → no_active_components placeholder → pool_id 생성 → STOP
+→ [guard] Active == ∅ ?
+    └─ yes → pool placeholder(no_active_components)
+             owner=pool / stage=combiner → pool_id 생성 → STOP
 → weight construction / resolution / validation
     ├─ external:           formula_id → weight (매핑 invariant W = C 검사)
+    │                       위반 → malformed_external_weights
+    │                       owner=track / stage=input_validation (hard error)
     ├─ raw_equal:          1/N_unique
     └─ train_signed_equal: signᵢ / |kept|
-→ pool_id 생성 (canonical construction payload 기준 — 본 절 Pool identity)
+→ pool_id 생성 (pool_scope = full_factor_set)
 → daily z-score
 → combined signal
 → OOS evaluation
 ```
+
+**`factor_set_id`는 gate 이전에 생성된다 (계약)**: gate 이후에 만들면 같은
+제출물이 VALID·TEST에서 다른 ID를 받아 combiner-independent submission
+identity라는 정의가 깨진다. **전원 gate 탈락에도 원래 `factor_set_id`를
+유지**한다(정본: `ASB_design_v2.md` §3.1.4).
 
 canonical identity → dedup → **directional eligibility → weight
 normalization**의 순서는 뒤집을 수 없다 — train_signed_equal의 분모
@@ -391,18 +494,24 @@ active가 비었는지 추적할 수 없다). 따라서 pool_id는 **resolved we
 확정 직후**, 아래 construction payload 전체로 생성한다:
 
 ```
-pool_id = SHA256(JCS({
-  "pool_schema_version": <version>,
-  "combiner": <policy>,
-  "combiner_params": { "sign_threshold": <값> },   # combiner별 구성 파라미터
-                       # raw_equal/external은 {} 가능
-  "candidate_components": [formula_id₁, …, formula_idₙ],
-                 # dedup 후 · eligibility 전 — formula_id 정렬
-  "active_components": [[formula_id₁, w₁], …, [formula_idₖ, wₖ]]
-                 # eligibility + weight resolution 후, **w ≠ 0인 것만**
-                 # — formula_id 정렬 (active set 단일 정의: 아래)
-}))
+factor_set_id : 제출 집합의 content identity (gate·combiner 이전)
+pool_id       : construction identity (pool_scope·resolved weights 포함)
 ```
+
+**payload의 정본은 `ASB_design_v2.md` 부록 A**(A.3·A.4)이며 본 절은
+재정의하지 않는다. OOS 측에서 알아야 할 것만 요약한다:
+
+* `factor_set_id`는 **combiner-independent**하고 gate 이전 집합을 담는다 →
+  Final-Pool QD·as-submitted provenance의 key.
+* `pool_id`는 `factor_set_id` + combiner + `combiner_params` +
+  `weight_source` + **`ordered_resolved_weights`** + `pool_scope`를 담는다 —
+  resolved weights가 없으면 **같은 active 집합에 서로 다른 external weight를
+  적용한 두 pool이 같은 ID를 얻는다**.
+* Track A는 하나의 `factor_set_id` 아래 **`pool_id` 2개**(combiner)를 만들고,
+  각 `pool_id`에 **`deployment_config_id` 4개**가 붙어 8행이 된다 —
+  `pool_id`는 "8 cell의 identity"가 아니다.
+* ⚠ payload 변경은 **`pool_schema_version` bump**를 동반하며 기존 산출물의
+  `pool_id`와 값이 달라진다.
 
 **Active set의 단일 정의 (계약 — 세 축 공통)**:
 
@@ -415,21 +524,26 @@ pool_id = SHA256(JCS({
 
 | 대상 | 집합 |
 |---|---|
-| `candidate_components` (pool_id payload) | dedup 후 canonical candidate 전체 — **external weight = 0인 component도 포함** |
-| `active_components` (pool_id payload) / `n_active_factors` (§4.2) | Active (위 정의 — w = 0은 제외) |
+| `candidate_components` (**`factor_set_id` payload** — v2 부록 A.3) | canonicalizable + dedup된 **제출 formula 전체**(gate·combiner 이전) — external weight = 0인 component도 포함 |
+| `gate_pass_components` (해시 밖, split별) | 위 중 split-local gate를 통과한 부분집합 |
+| `active_components` (`pool_id` payload) / `n_active_factors` (§4.2) | Active (위 정의 — w = 0은 제외) |
 | SupportCount·zero_support_ratio의 k 범위 (아래 zero-support 진단) | Active |
+
+⚠ **소속 주의**: `candidate_components`는 **`factor_set_id`의 payload**이며
+`pool_id` payload에는 없다 — `pool_id`는 `factor_set_id`를 참조한다
+(v2 §3.1.5). 이전 판이 이를 pool_id payload 필드로 기술했던 것은 폐기됐다.
 
 즉 external weights에서 명시적으로 0을 받은 component는
 **construction candidate로는 존재하지만 signal support에는 기여하지
 않는다** — combined signal에 실제로 들어가지 않으므로 active가 아니다.
 
-candidate_components가 없으면 서로 다른 construction attempt가 모두
-active = []가 될 때 같은 pool_id를 얻어 "어떤 attempt가 실패했는지
-추적"이라는 목적과 모순된다. 이 정의에서: [A,A,B]와 [A,B]는 dedup 후
-candidate set이 같아 **동일 identity**(dedup 동등성 보존) / [A,B]→
-active=[]와 [C,D,E]→active=[]는 **서로 다른 identity** / 같은 candidate
-set이라도 threshold·combiner 또는 resolved weights가 다르면 서로 다른
-identity.
+`pool_id`가 `factor_set_id`를 참조하지 않으면 서로 다른 construction
+attempt가 모두 active = []일 때 같은 pool_id를 얻어 "어떤 attempt가
+실패했는지 추적"이라는 목적과 모순된다. 이 정의에서: [A,A,B]와 [A,B]는
+dedup 후 factor set이 같아 **동일 `factor_set_id`**(dedup 동등성 보존) /
+[A,B]→active=[]와 [C,D,E]→active=[]는 `factor_set_id`가 달라 **서로 다른
+pool_id** / 같은 factor set이라도 threshold·combiner 또는 resolved weights가
+다르면 서로 다른 pool_id.
 
 이 규칙 하나로 raw_equal / train_signed_equal / external weights가 모두
 동일 identity 체계로 처리된다. **pool_id는 signal-equivalence hash가
@@ -466,11 +580,20 @@ pool 형태. external weights의 leakage provenance 계약은 §4.1-6.
 **No-active-components 규약 (계약)**: 평가 가능한 pool이 존재하지 않는
 상태는 입력 오류와 구분해 처리한다 —
 
-* **empty canonical component set**(dedup 후 N_unique = 0) 또는
-  **train_signed_equal에서 kept = ∅**(전 factor가 sign_threshold 미달):
-  malformed input이 아니라 "평가할 pool이 없음"이므로 hard error가 아닌
-  **pool-level invalid placeholder**로 기록한다. **기록 범위 (계약)** —
-  `valid = False`, `invalid_reason = "no_active_components"`이며 두
+**reason 3값 (배타 — v2 §3.5.3)**: 실패 단계가 다르므로 하나의 이름으로
+접지 않는다.
+
+| reason | 조건 | 처리 |
+|---|---|---|
+| `empty_pool_after_gate` | **`n_unique_factors > 0`이면서** split-local gate를 통과한 candidate가 **0개** → combiner 진입 불가 | pool-level invalid placeholder |
+| `empty_factor_set_after_identity` | **`n_unique_factors = 0`**(canonicalizable formula가 없음) → pool construction 시도 자체가 없음 | **owner = submission** — `submission_evaluation_status` 1행, **`pool_id` 없음**(v2 §3.5.3) |
+| `no_active_components` | candidate는 존재하나 combiner eligibility·weight support 이후 **Active = ∅**(예: train_signed_equal의 kept = ∅) | pool-level invalid placeholder |
+| `malformed_external_weights` | 매핑 invariant W = C 위반 또는 non-empty all-zero external vector | **hard error**(placeholder 아님) |
+
+* 위 두 placeholder 사유는 malformed input이 아니라 "평가할 pool이
+  없음"이므로 hard error가 아닌 **pool-level invalid placeholder**로
+  기록한다. **기록 범위 (계약)** — `valid = False`,
+  `invalid_reason ∈ {empty_pool_after_gate, no_active_components}`이며 두
   필드군을 구분한다:
   * **diagnostic·identity·provenance 필드는 가능한 범위에서 기록**:
     `pool_id`, `n_factors_raw`, `n_unique_factors`,
@@ -482,11 +605,13 @@ pool 형태. external weights의 leakage provenance 계약은 §4.1-6.
 
   daily pool series는 미생성이며, pipeline의 guard(위)에 의해
   division-by-zero 경로는 존재해서는 안 된다.
-  **placeholder의 pool_id는 null이 아니다** — `active_components: []`를 포함하되, dedup 후 candidate가 존재하는 경우 candidate_components는 그대로 보존한 동일 construction payload의 deterministic hash를 부여한다.(어떤 pool
+  **placeholder의 pool_id는 null이 아니다** — `active_components: []`를
+  포함하되 `construction_input_id`(= 원래 `factor_set_id`)는 **그대로
+  보존**한 동일 payload의 deterministic hash를 부여한다(어떤 pool
   construction attempt가 실패했는지 안정적으로 추적 — provenance-first).
   결과 상태는 pool_id가 아니라 `valid=False`가 나타낸다.
-* **external weights의 non-empty all-zero vector**: malformed input — 기존 규약대로
-  **hard error**(매핑 invariant W = C 참조).
+* **external weights의 non-empty all-zero vector**: malformed input —
+  `malformed_external_weights`로 **hard error**(매핑 invariant W = C 참조).
 
 충족도: 현행 구현은 kept = ∅에서 빈 목록을 반환하고
 (runner.py:107-108) `len(pool_f) >= 1` 가드로 pool 평가를 **기록 없이
@@ -571,7 +696,8 @@ run_oos(test) ──┘
 (asb_results_explorer_v2.ipynb — 정의·cutoff 사전 등록), 본 사양은 이를
 정식 산출물로 승격한다.
 
-**IC_valid 출처의 변경 (명시)**: 현행 실측(`ASB_design.md` §4.3)은
+**IC_valid 출처의 변경 (명시)**: 구 구현 실측(`ASB_design.md` §4.3
+[v1-hist])은
 "OOS는 test에서만 실행되며 pool-level valid IC는 저장되지 않으므로
 valid→test 전이 분석은 **QD descriptor의 `valid_IC_1d`** 를
 사용한다"이다. 본 사양은 IC_valid의 출처를 **`run_oos(valid)`
@@ -605,70 +731,105 @@ horizon)이 unique여야 하며(valid∪test 합집합에는 당연히 같은 �
 error**(동일 값이라도 자동 collapse하지 않는다).
 **Evaluation context 계약**: method+seed만으로는 실험 문맥이 식별되지
 않는다(예: CSI300과 CSI800의 GP seed 42가 섞이면 안 됨). transition은
-join 전에 **valid와 test가 동일 manifest-level evaluation context**의
-pair라는 assertion을 통과해야 하며, `evaluation_context_id`를 출력에
-포함한다. **생성 규칙 (계약)**:
-`evaluation_context_id = SHA256(JCS(context))` — context에는
-dataset/version, market, universe, **full train/valid/test split 날짜
-전체**, label convention, orientation convention, validity
-protocol/version, **`oos_protocol_version`**(pair masking·aggregate·
-coverage·min-pair semantics의 버전 — 같은 데이터·formula라도 평가
-규약이 바뀌면 결과 의미가 달라지므로 identity에 포함),
-canonicalization_version이 들어가고, **현재 평가 중인
-split selector(valid|test)는 제외**한다 — manifest 전체를 hash하면
-split 필드 차이로 valid/test의 ID가 달라져 pair가 성립하지 않기
-때문이다. 이 정의에서 같은 실험의 두 primitive는
-(evaluation_context_id = X, split=valid)와 (X, split=test)로 정확히
-짝지어진다. transition의 논리적 identity는 **composite key
-(evaluation_context_id × formula_id × method × seed × horizon)**이다 —
-context equality assertion 후 나머지 키로 join해도 결과는 같지만,
-context ID를 join key에 포함하는 쪽이 오조합에 더 안전하다.
+join 전에 **valid와 test가 동일 `evaluation_context_id`이고 동일
+`oos_protocol_version`** 이라는 assertion을 통과해야 하며 두 값을 출력에
+포함한다. **`oos_protocol_version`을 별도로 검사하는 이유**: 이 버전은 D5
+payload에 들어가지 않으므로(v2 §3.1.6) context 동일성만으로는 동일 OOS
+semantics가 보장되지 않는다.
+
+**`evaluation_context_id`의 payload는 본 문서가 정의하지 않는다** —
+정본은 **`ASB_design_v2.md` 부록 A.6**이다. OOS가 알아야 할 두 가지만
+기술한다:
+
+1. **`oos_protocol_version`은 context payload에 들어가지 않는다**
+   (v2 §3.1.6 — 축 버전을 공통 context에 넣으면 QD descriptor 버전 변경이
+   OOS cache와 validity 행 identity까지 무효화한다). 대신 **OOS 산출물의
+   PK와 cache key에 별도 컬럼으로 노출**된다(§4.2·§8).
+2. **현재 평가 중인 split selector(valid|test)는 제외**된다 — 그래야 같은
+   실험의 두 primitive가 `(evaluation_context_id = X, split=valid)`와
+   `(X, split=test)`로 정확히 짝지어진다.
+
+**transition의 논리적 identity**는 §4.2의 PK를 따른다 —
+`D1 × D5 × oos_protocol_version × source_split × source_window_id ×
+target_split × target_window_id × evaluation_key × horizon`. 이전 판의
+`(evaluation_context_id × formula_id × method × seed × horizon)` 표기는
+**폐기**한다: `method`·`seed`는 `submission_id`(D1)에 흡수되고,
+`formula_id`는 canonicalize 실패 행을 담지 못하므로 `evaluation_key`로
+대체되며, window pair가 없으면 Full/Strict transition이 충돌한다.
+
+**normalized validity config 포함 (계약 — v2 §3.1 ⑤)**: validity의
+**protocol/version만** 담으면 부족하다 — threshold 값은 experiment
+config가 주입하므로(`validity_gate_design.md` §3) 같은 protocol version
+아래에서 `report_only`+threshold null 실행과 `strict`+threshold 값 실행이
+**같은 `evaluation_context_id`를 받는다.** metric kernel이 동일해도
+admission population·placeholder·`TransitionValid`가 달라지므로 QD
+reference population과 method 비교 문맥이 조용히 충돌한다. 따라서
+payload에 `{validity.mode, 활성 threshold key/value(키 정렬),
+comparison semantics version}`을 정규화해 포함한다. metric context와
+admission context를 별도 ID로 분리하는 대안은 채택하지 않는다.
 충족도: 현행 individual primitive는 이미 raw-string 기준
 unique다(`runner.py:59`의 `unique_formulas`를 validity/OOS/backtest
 individual 루프가 공유 — :134/:159/:452). 따라서 본 계약의 실질 변경분은
 ① identity를 raw string에서 **stable formula_id로 승격**(문법 변형이
 같은 canonical form으로 접히는 경우 대비), ② pool 구성의 dedup(§6)
-두 가지다. join key인 **stable `formula_id`는 OOS 소유가 아니라 ASB
-공통 identity 계약**이며(validity·OOS·QD·backtest·trajectory·cache가
-공유) 본 문서는 소비자로서 기술한다. **소유권 규약 (문서 관리)**:
-공통 identity 계약을 담당하는 별도 문서가 생기기 전까지는 아래 3종
-(`formula_id`·`pool_id`·`evaluation_context_id`)의 **정의 원본(source
-of record)은 본 절**이며, 다른 문서(qd_test_design §2.3 등)는 여기를
-참조하는 소비자다 — 두 문서가 서로를 소비자로 선언해 owner가 공백이
-되는 상태를 막기 위한 잠정 지정이다. 공통 문서로 승격되면 본 절은
-참조로 대체한다.
+두 가지다.
+
+**소유권 규약 (2026-08-21 갱신 — owner 이관 완료)**: identity 계약
+(`formula_id`·`evaluation_key`·`factor_set_id`·`pool_id`·
+`evaluation_context_id`)과 직렬화 규약의 **정의 원본은
+`ASB_design_v2.md` §3.1**이다. 본 절은 **소비자**이며, 아래는 OOS가
+소비하는 방식과 OOS 측 파생 규약만 기술한다(이전 판의 "본 절이 잠정
+source of record"는 폐기).
 
 ```
-formula_id = SHA256(JCS({
+formula_id = SHA256(JCS({          # 정의 원본: ASB_design_v2 §3.1 ①
   "canonicalization_version": <version>,
+  "expression_semantics_version": <dsl version>,
   "canonical_formula": <canonical form>
 }))
 ```
 
-**직렬화 규약 (단일 확정)**: hash 이전의 byte representation이
-deterministic하고 unambiguous해야 한다 — 단순 문자열 concatenation은
-금지한다(`"ab"∥"c"`와 `"a"∥"bc"`가 같은 입력이 되는 모호성).
-**ASB Canonical Serialization v1 = RFC 8785 JSON Canonicalization
-Scheme(JCS)**으로 확정한다 — UTF-8, deterministic key ordering,
-whitespace 없음, canonical number representation(pool_id에
-floating-point weight가 들어가므로 수 표현 정규화가 필수: 0.1과 1e-1이
-다른 hash를 내면 안 된다). 모든 hash input은 **JCS canonical bytes**이며
-다른 serialization은 허용하지 않는다. 내부 serializer를 사용할 경우 그
-출력은 **RFC 8785와 byte-for-byte 동일**해야 한다. 대안 인코딩
-(length-prefixed 등)은 채택하지 않는다 — 구현별로 다른 방식을 쓰면
-같은 대상이 다른 ID를 얻어 stable identity가 무너진다.
-**`formula_id`·`pool_id`·`evaluation_context_id` 3종은 전부 이 동일
-serialization contract를 사용한다.** canonical_formula는 ASB canonical renderer의 **syntactic
-canonical form**이다 — algebraic simplification(예: A+B ↔ B+A 동일화)은
-하지 않는다. canonicalization_version은 manifest에 기록한다.
+**`expression_semantics_version` 포함 (v2 §3.1 ①)**: 같은 canonical
+문자열이 DSL 버전에 따라 다른 의미를 가지면 서로 다른 대상이 같은 ID를
+얻는다. 입력 계약의 `dsl_version`(backtest §8)이 이 값의 출처다.
+
+**canonical renderer의 문법 범위 (v2 §3.1 ①)**: renderer는 **ASB가
+허용하는 전체 expression grammar**를 지원해야 하며 그 범위를
+`FormulaEngine` 파서 범위와 **분리**한다 — §3의 engine selection에서
+qlib-native만 평가할 수 있는 문법(infix 등)이 canonicalize되지 않으면
+그 formula는 `formula_id = null`로 canonical 평가 전체에서 배제되어
+**엔진 선택이 admission을 좌우**하게 된다. 이는 §2 불변식 5(동일
+SignalContext)의 위반이다.
+
+**직렬화 규약 (참조)**: hash 이전의 byte representation은 deterministic·
+unambiguous해야 하며, ASB는 **RFC 8785 JCS**를 유일 serialization으로
+확정했다. 수 표현·null 정책·배열 정렬·빈 배열·SHA-256 표기 등 **exact
+규칙과 golden vector는 `ASB_design_v2.md` 부록 A.0·A.9**가 정본이다 — 본
+문서는 재정의하지 않는다(두 곳에 두면 한쪽만 갱신되어 갈라진다).
+`canonical_formula`는 ASB canonical renderer의 **syntactic canonical
+form**이며 algebraic simplification(A+B ↔ B+A 동일화)은 하지 않는다.
+
 **Canonicalization 실패 규약**: canonical renderer 자체가 실패하는
-formula(파스 불가 등 — validity hard-invalid)는 canonical form이 없어
-stable formula_id를 만들 수 없다. 이 경우 **`formula_id = null`을
+formula는 canonical form이 없어 stable formula_id를 만들 수 없다. 이
+상태의 canonical reason은 **`identity_canonicalization_failed`**(v2
+§3.5.3)이며 **`formula_eval_failed`로 분류하지 않는다** — 후자는 신호
+계산 실패이고 전자는 identity 부여 실패로, 조치가 다르다(renderer 확장
+vs 입력 수정). 따라서 "canonicalization 실패 ⊂ validity hard-invalid"로
+동일시하지 않는다. 이 경우 **`formula_id = null`을
 허용**하고 raw formula를 audit field로 반드시 보존한다 — raw string
 hash를 대용하지 않는다(canonical ID와 raw ID의 semantics 혼합 금지).
 **canonical unique evaluation과 transition의 대상은 non-null stable
 formula_id를 가진 formula뿐**이다 — 단 이는 **필요조건**이며 충분조건이
 아니다(transition은 추가로 §7의 TransitionValid를 요구한다).
+**budget 계수는 예외 (계약 — v2 §3.1.2·§7.4)**: canonicalize 불가 후보도
+evaluator 요청을 소비했으므로 Search-QD budget에서 사라져서는 안 된다.
+계수는 두 층으로 분리된다 — 사건은 **`proposal_event_id`**, dedup 단위는
+**`evaluation_key`**(성공 시 `formula_id`, 실패 시 `raw_failure_key`).
+`formula_id = null`을 단일 key로 쓰면 서로 다른 실패가 합쳐지고(과소 계수)
+동일 실패의 retry를 접을 수 없다(중복 계수). 실패 결과를 캐시하지 않더라도
+ledger는 `raw_failure_key`로 retry를 dedup한다. \(B_{unique}\)는 **mining
+run 내 logical first-seen**이며(평가 순서 의존성 차단) 소비 규약은
+`qd_test_design.md` §7.3 소관이다.
 **placeholder 행의 formula_id는 두
 경우로 구분한다** (혼동 금지):
 
@@ -768,19 +929,25 @@ test에서 무너지면(낮은 retention·sign 역전) "탐색 품질은 높아 
 
   ```
   Individual OOS cache key ⊇ (evaluation_context_id, split,
+                              oos_protocol_version,
                               formula_id, horizon, train_sign)
   Pool OOS cache key       ⊇ (evaluation_context_id, split,
-                              pool_id, horizon)
+                              oos_protocol_version, pool_id, horizon)
   ```
 
-  `evaluation_context_id`(§7)가 dataset/version·market·universe·전체
-  split 날짜·label·orientation·validity protocol·`oos_protocol_version`·
-  `canonicalization_version`을 이미 포함하므로, 규약이 바뀌면 key가
-  자동으로 달라진다. `split`을 별도 키로 두는 이유는 §7이
-  evaluation_context_id에서 **split selector를 제외**했기 때문이다.
-  engine 의존 cache라면 `signal_engine`(+engine version)을 추가한다.
-  **canonicalization 실패 formula(`formula_id = null`, §7)는 캐시
-  대상이 아니다** — hard-invalid이므로 캐시할 값이 없다.
+  `evaluation_context_id`는 dataset/bundle·universe·calendar·전체 split
+  날짜·label·canonical expression semantics·validity config·numerical
+  policy를 담는다(v2 §3.1.6). **`oos_protocol_version`은 context에 없으므로
+  cache key에 명시적으로 넣는다** — 그러지 않으면 pair masking·aggregate
+  규약을 바꿔도 stale cache가 재사용된다. `split`을 별도 키로 두는 이유는
+  context id가 **split selector를 제외**하기 때문이다. engine 의존
+  cache라면 `signal_engine`(+engine version)을 추가한다.
+  **PRNG·seed**: OOS는 난수를 쓰지 않지만, 축 공통 seed 규약(PCG64 pin +
+  namespace별 결정론 파생 — `ASB_design_v2.md` 부록 A.8b)의 **소비자**로서
+  manifest에 해당 값을 그대로 전달한다.
+  **canonicalize 불가 formula(`evaluation_key = raw_failure_key`)는 캐시
+  대상이 아니다** — 캐시할 값이 없다. 단 **budget ledger는 별개**로
+  `raw_failure_key`로 retry를 dedup한다(§7).
 * **Manifest** — dataset/version, market, universe, split 날짜, label
   정의(`label_uses_post_end_price` 포함), train sign rule, validity
   설정, formula 수/unique 수, weight_source/weight_fit_scope(§4.1).
@@ -791,9 +958,9 @@ test에서 무너지면(낮은 retention·sign 역전) "탐색 품질은 높아 
   `pool_schema_version`(§6), `canonical_serialization = "RFC8785-JCS"`
   (§7), 그리고 `evaluation_context_id` 자체.
   **Pool identity 재구성 invariant (계약)**: canonical research
-  bundle에서는 각 `pool_id`에 대해 hash 입력인 `candidate_components`와
-  `active_components`의 (formula_id, weight) mapping을 **재구성할 수
-  있어야** 한다 — `oos_pool_metrics` 한 행에 넣을 필요는 없고
+  bundle에서는 각 `pool_id`에 대해 hash 입력인 `factor_set_id`(→
+  `candidate_components`)와 `ordered_resolved_weights`/`active_components`의
+  (formula_id, weight) mapping을 **재구성할 수 있어야** 한다 — `oos_pool_metrics` 한 행에 넣을 필요는 없고
   companion artifact(예: pool 구성 테이블)나 manifest여도 된다.
   이것이 없으면 pool_id를 사후 검증할 수 없다. row-level provenance
   (method/seed/split/signal_engine)는 추적용 최소 필드이며 완전한
@@ -857,22 +1024,34 @@ placeholder row invariant, empty-universe day coverage = NaN(§5.5).
 7. **train_signed_equal 순서 검증** — directional filtering → 분모
    |kept| 계산 순서가 지켜지는지(§6 pipeline — filter 전 분모 계산은
    오류).
-8. **dedup metadata conflict** — 동일 formula_id + 상충하는
-   `signed_train_IC` → hard error(§6).
+8. **dedup metadata conflict** — 동일 formula_id로 collapse되는 row가
+   **contract-relevant metadata**에서 상충하면 hard error(§6). ⚠ **`signed_train_IC`는
+   대상이 아니다** — Y2 확정으로 upstream SIC는 diagnostic-only이므로
+   (§4.1·§5.1) canonical train IC가 같다면 upstream 값 차이가 admission을
+   중단해서는 안 된다. 대신 `upstream_sic_status`·`parity_comparable`
+   진단으로 기록하고, dedup 대상 metadata는 canonical 평가에 실제로
+   관여하는 필드(예: `dsl_version`)로 한정한다.
 9. **evaluation-context mismatch** — valid/test가 다른 manifest-level
    context면 transition 거부(§7).
 10. **uncanonicalizable formula** — canonical renderer 실패 입력 →
-    hard invalid + raw formula 보존 + `formula_id = null` + canonical
-    unique evaluation·transition 대상에서 제외(§7).
+    `identity_canonicalization_failed` + raw formula 보존 +
+    **`evaluation_key = raw_failure_key`**(행이 유일해짐) + canonical
+    unique evaluation·transition 대상에서 제외(§7). `formula_eval_failed`로
+    분류되지 않는지도 확인.
 11. **no_active_components** — 전 factor가 sign_threshold에 걸러지는
     입력 → division-by-zero 없이 pool-level invalid placeholder
     (`invalid_reason="no_active_components"`, `n_active_factors=0`,
-    **pool_id ≠ null** — 빈 active_components의 deterministic hash)
-    생성(§6); empty canonical set도 동일.
+    **pool_id ≠ null** — 빈 `active_components` + 원래 `factor_set_id`를
+    담은 payload의 deterministic hash) 생성(§6).
+11b. **empty_factor_set_after_identity** — canonicalizable formula가 0개인
+    입력 → **pool 행이 생성되지 않고** `submission_evaluation_status` 1행만
+    남으며 `factor_set_id`는 빈 집합의 deterministic ID, **`pool_id`는
+    부재**인지. `empty_pool_after_gate`(gate-pass 0, `n_unique > 0`)와
+    **서로 다른 owner·서로 다른 산출물**임을 확인.
 12. **no-active pool identity** — 서로 다른 canonical candidate set이
     모두 active=[]이 되어도 **서로 다른 pool_id**를 가져야 하며,
     raw duplicate만 다른 [A,A,B]와 [A,B]는 **동일 pool_id**여야
-    한다(§6 candidate_components).
+    한다(§6 — `factor_set_id`가 payload에 있으므로).
 13. **pool_id parameter sensitivity** — 동일 candidate set에서 **같은
     kept·resolved weights를 낳는 서로 다른 `sign_threshold`** 는
     `combiner_params` 때문에 **다른 pool_id**를 가져야 한다; 반대로
@@ -891,10 +1070,10 @@ placeholder row invariant, empty-universe day coverage = NaN(§5.5).
     `IC_valid`가 동일 factor·horizon에서 기존 notebook 경로(QD
     descriptor `valid_IC_1d`)와 수치 일치하는지(§7 — 동일 kernel
     전제의 검증).
-17. **pipeline guard (no division by zero)** — `N_unique = 0` 및
-    `kept = ∅` 입력이 **weight construction 단계에 진입하지 않고**
-    guard에서 placeholder로 빠지는지(§6 pipeline). weight 계산 코드에
-    0 분모가 도달하는 경로가 없음을 확인.
+17. **pipeline guard (no division by zero)** — 세 guard(`n_unique = 0` →
+    submission 상태 / gate-pass = 0 → pool placeholder / `kept = ∅` →
+    pool placeholder)가 **weight construction 진입 전에** 걸리는지(§6
+    pipeline). weight 계산 코드에 0 분모가 도달하는 경로가 없음을 확인.
 18. **active set 3축 일치** — external weights `{A:0.5, B:0, C:−0.5}`
     입력에서 `candidate_components` = {A,B,C},
     `active_components`/`n_active_factors` = {A,C}/2,
@@ -903,9 +1082,58 @@ placeholder row invariant, empty-universe day coverage = NaN(§5.5).
     performance metric(IC/RankIC/ICIR/…/n_ic_obs)은 NaN이고
     diagnostic·identity(pool_id·n_*·duplicate_rate·weight_source·
     combiner)는 채워지는지(§6).
-20. **cache key ↔ identity 재사용** — `oos_protocol_version`만 바뀐
-    두 실행이 **다른 cache key**를 갖는지(§8 — evaluation_context_id
-    경유), 그리고 `formula_id = null`인 입력이 캐시되지 않는지.
+20. **cache key ↔축 버전 직접 포함** — `oos_protocol_version`만 바뀐 두
+    실행이 **다른 cache key**를 갖는지(§8 — 이 버전은 D5 payload에 없으므로
+    **cache key에 직접 포함**되어야 한다. "context 경유"로는 격리되지
+    않는다), 그리고 canonicalize 불가 입력(`evaluation_key =
+    raw_failure_key`)이 캐시되지 않는지.
+
+21. **factor_set_id combiner-invariance** — 같은 제출 집합에
+    `raw_equal`과 `train_signed_equal`을 적용하면 **`factor_set_id`는
+    동일**하고 `pool_id`는 **서로 다른지**(§6 — v2 §3.1 ②③). 또한
+    raw duplicate만 다른 [A,A,B]와 [A,B]는 동일 `factor_set_id`.
+22. **budget ledger dedup** — canonicalize 불가한 동일 raw formula를
+    operational retry로 2회 제출하면 \(B_{unique}\)가 **1만 증가**하고
+    (`retry_of` 연결), 서로 다른 두 개의 canonicalize-불가 formula는
+    **2 증가**하며(`raw_failure_key` 상이), 다른 mining run이 먼저 같은
+    formula를 평가했더라도 **후속 run의 \(B_{unique}\)가 줄지 않는지**
+    (run-local first-seen — §7, v2 §3.1.2·§7.4).
+23. **evaluation_context_id ↔ validity config** — `validity.mode` 또는
+    활성 threshold 값만 다른 두 실행이 **다른
+    `evaluation_context_id`** 를 갖는지(§7 — v2 §3.1 ⑤). 같은 값의
+    반복 실행은 동일 ID(determinism).
+24. **canonicalizer grammar coverage** — `FormulaEngine`이 파싱하지
+    못하지만 qlib-native가 평가하는 문법(infix 등)이 **정상
+    canonicalize되어 non-null `formula_id`를 받는지**(§7 — 엔진 선택이
+    admission을 좌우하지 않음). 실패 시 reason이
+    `identity_canonicalization_failed`이고 `formula_eval_failed`가
+    아닌지.
+25. **pool reason 3값 배타** — 전 factor gate 탈락 →
+    `empty_pool_after_gate` / gate 통과 후 전 factor no_direction →
+    `no_active_components` / all-zero external vector → hard error
+    (`malformed_external_weights`)로 각각 갈리는지(§6).
+26. **split-local gate** — 같은 formula가 VALID에서는 gate 통과,
+    TEST에서는 탈락인 입력에서 `run_oos(valid)`는 metric을 산출하고
+    `run_oos(test)`는 placeholder를 남기며, `n_gate_only_valid = 1`이
+    기록되고 transition은 `transition_valid=False`가 되는지(§3·§7).
+
+27. **PK uniqueness와 protocol version 분리** — §4.2의 세 PK에서
+    duplicate logical key가 **hard failure**이고, **`oos_protocol_version`만
+    바꾼 두 실행이 같은 PK를 만들지 않는지**.
+28. **daily에 window가 없음** — Full과 Strict 집계가 **동일 `oos_daily`에서
+    날짜 필터만으로** 산출되고 daily 행이 중복 저장되지 않는지
+    (v2 §3.3.3의 재평가 없음 계약).
+29. **transition window pair** — Full transition과 Strict transition이 같은
+    `evaluation_key`·horizon에서 **충돌 없이 저장**되고, VALID 측
+    `source_window_id = valid_full`인지.
+30. **polymorphic daily key** — 같은 날짜·horizon에서 factor 행과 pool 행이
+    `entity_kind`/`entity_id`로 분리되어 저장되는지(한 key로 겸하지 않음).
+31. **upstream SIC 5-status** — `missing`/`finite_comparable`/
+    `finite_not_comparable`/`nonfinite`/`parse_error` 전부에서 **canonical
+    admission이 진행**되고, `upstream_sic_delta`는 `finite_comparable`에서만
+    계산되며, 비수치가 **uncaught 예외로 새지 않는지**(§4.1·§5.1).
+32. **`zero_ic_observations` 경로 무관성** — upstream SIC 제공 여부와
+    무관하게 동일 판정이 나오는지(Y2 확정).
 
 **핵심 invariants** (향후 어떤 구현 변경에서도 보존):
 
@@ -916,7 +1144,7 @@ placeholder row invariant, empty-universe day coverage = NaN(§5.5).
 3. **평가 split 데이터는 sign/weight/threshold 결정에 불사용**.
 
 충족도 — OOS-specific acceptance 2본: 구현·통과 / 추가 요구 케이스·
-신규 계약 tests 1–20: 구현 필요. — *Implementation status: Proposed*
+신규 계약 tests 1–32: 구현 필요. — *Implementation status: Proposed*
 
 **문서-구현 정합 관리**: 본 문서의 Proposed 항목이 구현되면 해당
 subsection의 상태만 Implemented로 갱신한다. 구현이 사양과 다르게
